@@ -9,6 +9,8 @@
 !*/
 !*.h
 !*.cpp
+*.vcxproj
+*.filters
 
 # Build results
 

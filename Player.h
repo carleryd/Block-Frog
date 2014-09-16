@@ -17,7 +17,7 @@
 class Player
 {
 public:
-    Player(b2World* world);
+	Player(b2World* world, sf::RenderWindow* w);
     void draw(sf::RenderWindow* window);
     Rectangle* box;
 };

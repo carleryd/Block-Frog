@@ -13,7 +13,7 @@
 #include <SFML/Graphics.hpp>
 #include <Box2D/Box2D.h>
 #include "Player.h"
-#include "Rectangle.h"
+class Shape;
 
 class Controller;
 
@@ -21,17 +21,20 @@ class Game
 {
 public:
     Game(sf::RenderWindow* window);
+	~Game();
     void run();
+
     void spawnBox(sf::Vector2i position);
     
     sf::RenderWindow* getWindow();
     b2World* getWorld();
     
 private:
+
     sf::RenderWindow* window;
     b2World* world;
     Player* player;
-    std::vector<Rectangle*> boxes;
+    std::vector<Shape*> boxes;
 };
 
 #endif /* defined(__Block_Frog__Game__) */
