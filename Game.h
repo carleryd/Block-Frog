@@ -13,6 +13,7 @@
 #include <SFML/Graphics.hpp>
 #include <Box2D/Box2D.h>
 #include "Player.h"
+#include "ShapeFactory.h"
 class Shape;
 
 class Controller;
@@ -35,6 +36,7 @@ private:
     b2World* world;
     Player* player;
     std::vector<Shape*> boxes;
+	ShapeFactory* shapeFactory;
 };
 
 #endif /* defined(__Block_Frog__Game__) */

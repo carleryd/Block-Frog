@@ -8,7 +8,10 @@
 
 #include "Game.h"
 
-Game::Game(sf::RenderWindow* window_) {
+
+Game::Game(sf::RenderWindow* window_)
+	
+{
     window = window_;
     
     // Setting up Box2D physics
@@ -17,18 +20,19 @@ Game::Game(sf::RenderWindow* window_) {
     
     // Construct a world object, which will hold and simulate the rigid bodies.
     world = new b2World(gravity);
+	shapeFactory = new ShapeFactory(world, window);
     
-    boxes.push_back(
+    /*boxes.push_back(
 		new Rectangle(
 			world, new b2Vec2(750.0f, 50.0f), 
 			new b2Vec2(0.0f, 
 			-float(window->getSize().y)/2), 
 			false, 
-			window));
+			window));*/
 	//boxes.push_back(new Rectangle(world, new b2Vec2(750.0f, 50.0f), new b2Vec2(0.0f, -windowHeight/2), false, window));
 	//boxes.push_back(new Rectangle(world, new b2Vec2(100.0f, 100.0f), new b2Vec2(0.0f, 200.0f), true, window));
     //boxes.push_back(new Rectangle(world, new b2Vec2(50.0f, 50.0f), new b2Vec2(-50.0f, 100.0f),  true, window));
-    boxes.push_back(new Rectangle(world, new b2Vec2(750.0f, 50.0f), new b2Vec2(0.0f, -float(window->getSize().y)/2), false, window));
+    boxes.push_back(shapeFactory->createRectangle(new b2Vec2(750.0f, 50.0f), new b2Vec2(0.0f, -float(window->getSize().y)/2), true));
     
     player = new Player(world, window);
 }
@@ -68,11 +72,9 @@ void Game::spawnBox(sf::Vector2i position) {
                                                   -position.y + window->getSize().y/2);
     std::cout << "Spawning box at position " << position.x << " " << position.y << std::endl;
 	boxes.push_back(
-		new Rectangle(
-		world, 
+		shapeFactory->createRectangle(
 		new b2Vec2(20.0f, 20.0f), 
 		new b2Vec2(float(adjPos.x), float(adjPos.y)), 
-		window,
 		true));
     std::cout << boxes.size() << std::endl;
 }
