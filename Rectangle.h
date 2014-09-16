@@ -12,24 +12,27 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 #include <Box2D/Box2D.h>
+#include "Shape.h"
 
-class Rectangle
+class Rectangle: public Shape
 {
 public:
-    Rectangle(b2World* world, b2Vec2* recSize, b2Vec2* recPosition, bool recDynamic, float recDensity = 1.0f, float recFriction = 0.3f);
-    void update();
+	Rectangle(b2World* world, b2Vec2* recSize, b2Vec2* recPosition, sf::RenderWindow* w,
+		bool recDynamic, float recDensity = 1.0f, float recFriction = 0.3f);
+	~Rectangle();
+    /*void update();
     sf::RectangleShape* getShape();
-    b2Body* getBody();
+    b2Body* getBody();*/
     
 private:
-    sf::RectangleShape* shape;
+    /*sf::RectangleShape* shape;
     b2Body* body;
     float pixelToMeter, meterToPixel, offSetX, offSetY;
     float density, friction;
     bool dynamic;
     b2Vec2* size;
     b2Vec2* position;
-    float angle;
+    float angle;*/
 };
 
 #endif /* defined(__Block_Frog__Square__) */

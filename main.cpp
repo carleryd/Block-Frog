@@ -18,7 +18,6 @@
 #include <SFML/Graphics.hpp>
 
 // Here is a small helper for you ! Have a look.
-#include "ResourcePath.hpp"
 #include "Game.h"
 #include "Controller.h"
 #include <Box2D/Box2D.h>
@@ -30,7 +29,7 @@ int main(int, char const**)
 
     // Set the Icon
     sf::Image icon;
-    if (!icon.loadFromFile(resourcePath() + "icon.png")) {
+    if (!icon.loadFromFile("icon.png")) {
         return EXIT_FAILURE;
     }
     window->setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());

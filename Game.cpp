@@ -18,9 +18,28 @@ Game::Game(sf::RenderWindow* window_) {
     // Construct a world object, which will hold and simulate the rigid bodies.
     world = new b2World(gravity);
     
-    boxes.push_back(new Rectangle(world, new b2Vec2(750.0f, 50.0f), new b2Vec2(0.0f, -float(window->getSize().y)/2), false));
+    boxes.push_back(
+		new Rectangle(
+			world, new b2Vec2(750.0f, 50.0f), 
+			new b2Vec2(0.0f, 
+			-float(window->getSize().y)/2), 
+			false, 
+			window));
+	//boxes.push_back(new Rectangle(world, new b2Vec2(750.0f, 50.0f), new b2Vec2(0.0f, -windowHeight/2), false, window));
+	//boxes.push_back(new Rectangle(world, new b2Vec2(100.0f, 100.0f), new b2Vec2(0.0f, 200.0f), true, window));
+    //boxes.push_back(new Rectangle(world, new b2Vec2(50.0f, 50.0f), new b2Vec2(-50.0f, 100.0f),  true, window));
+    boxes.push_back(new Rectangle(world, new b2Vec2(750.0f, 50.0f), new b2Vec2(0.0f, -float(window->getSize().y)/2), false, window));
     
-    player = new Player(world);
+    player = new Player(world, window);
+}
+
+Game::~Game()
+{
+	while(!boxes.empty())
+	{
+		delete boxes.back();
+		boxes.pop_back();
+	}
 }
 
 sf::RenderWindow* Game::getWindow() {
@@ -36,7 +55,7 @@ Player* Game::getPlayer() {
 }
 
 void Game::run() {
-    for(Rectangle* box : boxes) {
+    for(Shape* box : boxes) {
         box->update();
         window->draw(*box->getShape());
     }
@@ -51,6 +70,12 @@ void Game::spawnBox(sf::Vector2i position) {
     sf::Vector2i adjPos = sf::Vector2i(position.x - window->getSize().x/2,
                                                   -position.y + window->getSize().y/2);
     std::cout << "Spawning box at position " << position.x << " " << position.y << std::endl;
-    boxes.push_back(new Rectangle(world, new b2Vec2(20.0f, 20.0f), new b2Vec2(float(adjPos.x), float(adjPos.y)), true));
+	boxes.push_back(
+		new Rectangle(
+		world, 
+		new b2Vec2(20.0f, 20.0f), 
+		new b2Vec2(float(adjPos.x), float(adjPos.y)), 
+		window,
+		true));
     std::cout << boxes.size() << std::endl;
 }
