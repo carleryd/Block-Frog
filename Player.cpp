@@ -15,7 +15,7 @@ Player::Player(b2World* world) {
 
 void Player::draw(sf::RenderWindow* window) {
     window->draw(*box->getShape());
-    std::cout << "Player: x: " << box->getBody()->GetPosition().x << " y: " << box->getBody()->GetPosition().y << std::endl;
+//    std::cout << "Player: x: " << box->getBody()->GetPosition().x << " y: " << box->getBody()->GetPosition().y << std::endl;
     
     box->getShape()->setPosition(box->getBody()->GetPosition().x, box->getBody()->GetPosition().y);
 }
