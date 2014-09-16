@@ -19,8 +19,12 @@
 class Controller
 {
 public:
-    void checkInput(Game* game);
+    Controller(Game* game);
+    void checkInput();
 private:
     void spawnBox(sf::Vector2i position, b2World* world, std::vector<Rectangle*>& boxes);
+    void moveLeft();
+    
+    Game* game;
 	bool pressedLastFrame;
 };

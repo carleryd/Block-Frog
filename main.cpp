@@ -61,7 +61,7 @@ int main(int, char const**)
     // AKMLSDMFLKSDMFLKMSDLKFML
     
     Game* game = new Game(window);
-    Controller* controller = new Controller();
+    Controller* controller = new Controller(game);
 
     // Start the game loop
     while (window->isOpen())
@@ -71,7 +71,7 @@ int main(int, char const**)
         
         game->run();
         
-        controller->checkInput(game);
+        controller->checkInput();
         
         // New comment!
 

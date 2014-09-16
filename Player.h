@@ -18,8 +18,12 @@ class Player
 {
 public:
 	Player(b2World* world, sf::RenderWindow* w);
+    
+    void setPosition(b2Vec2* newPos);
     void draw(sf::RenderWindow* window);
     Rectangle* box;
+private:
+    b2Vec2 pos;
 };
 
 #endif /* defined(__Block_Frog__Player__) */

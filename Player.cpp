@@ -19,3 +19,8 @@ void Player::draw(sf::RenderWindow* window) {
     
     box->getShape()->setPosition(box->getBody()->GetPosition().x, box->getBody()->GetPosition().y);
 }
+
+void Player::setPosition(b2Vec2* newPos) {
+    pos.x = newPos->x;
+    pos.y = newPos->y;
+}

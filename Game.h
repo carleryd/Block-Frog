@@ -29,6 +29,7 @@ public:
     
     sf::RenderWindow* getWindow();
     b2World* getWorld();
+    Player* getPlayer();
     
 private:
 

@@ -54,6 +54,9 @@ b2World* Game::getWorld() {
     return world;
 }
 
+Player* Game::getPlayer() {
+    return player;
+}
 
 void Game::run() {
     for(Shape* box : boxes) {
