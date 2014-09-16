@@ -1,5 +1,8 @@
 #include "Shape.h"
-//const int M_PI = 3.14;
+//#include <math.h>
+//#ifdef OS_WINDOWS
+const int M_PI = 3.14;
+//#endif
 
 #include <iostream>
 
