@@ -1,7 +1,5 @@
 #include "Shape.h"
-//#include <math.h>
-//#ifdef OS_WINDOWS
-const int M_PI = 3.14;
+const int PI = 3.14;
 //#endif
 
 #include <iostream>
@@ -64,9 +62,9 @@ Shape::~Shape(void)
 void Shape::update()
 {
     shape->setPosition((body->GetPosition().x + offSetX) * meterToPixel, (-body->GetPosition().y + offSetY) * meterToPixel);
-    shape->setRotation((-body->GetAngle() / M_PI) * 180);
+    shape->setRotation((-body->GetAngle() / PI) * 180);
 //    std::cout << "shape angle: " << shape->getRotation() << std::endl;
-//    std::cout << "body angle: " << body->GetAngle() / M_PI * 180 << std::endl;
+//    std::cout << "body angle: " << body->GetAngle() / PI * 180 << std::endl;
 }
 
 sf::Shape* Shape::getShape()
