@@ -21,6 +21,7 @@
 #include "Game.h"
 #include "Controller.h"
 #include <Box2D/Box2D.h>
+#include "ResourcePath.hpp"
 
 int main(int, char const**)
 {
@@ -29,7 +30,7 @@ int main(int, char const**)
 
     // Set the Icon
     sf::Image icon;
-    if (!icon.loadFromFile("icon.png")) {
+    if (!icon.loadFromFile(resourcePath() + "icon.png")) {
         return EXIT_FAILURE;
     }
     window->setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());

@@ -1,8 +1,9 @@
 #ifndef SHAPE_H
 #define SHAPE_H
 
-#include <SFML\Graphics.hpp>
+#include <SFML/Graphics.hpp>
 #include <Box2D/Box2D.h>
+#include <math.h>
 
 class Shape
 {

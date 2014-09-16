@@ -1,6 +1,7 @@
 #include "Shape.h"
-const int M_PI = 3.14;
+//const int M_PI = 3.14;
 
+#include <iostream>
 
 Shape::Shape(b2World* world, b2Vec2* recSize, b2Vec2* recPosition, bool recDynamic, float recDensity, float recFriction, sf::RenderWindow* w)
 {
@@ -10,6 +11,8 @@ Shape::Shape(b2World* world, b2Vec2* recSize, b2Vec2* recPosition, bool recDynam
     // Box2D coordinate system is in the middle of screen, SFML is top-left. These offsets will make SFML start off drawing in the middle
     offSetX = 800 / meterToPixel / 2;
     offSetY = 600 / meterToPixel / 2;
+    std::cout << w->getSize().x << std::endl;
+    
     size = recSize;
     position = recPosition;
     dynamic = recDynamic;
