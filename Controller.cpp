@@ -8,7 +8,11 @@
 
 #include "Controller.h"
 
-void Controller::checkInput(Game* game) {
+Controller::Controller(Game* game_) {
+    game = game_;
+}
+
+void Controller::checkInput() {
 	sf::Event event;
     while (game->getWindow()->pollEvent(event))
     {
@@ -23,7 +27,7 @@ void Controller::checkInput(Game* game) {
                     game->getWindow()->close();
                     break;
              	case sf::Keyboard::Left:
-                    // gå vänster
+                    moveLeft();
                     break;
              	case sf::Keyboard::Right:
                     // gå höger
@@ -42,4 +46,8 @@ void Controller::checkInput(Game* game) {
 //            spawnBox(sf::Vector2i(position.x - game->getWindow()->getSize().x/2, -position.y + game->getWindow()->getSize().y/2), game->getWorld(), boxes);
         }
     }
+}
+
+void Controller::moveLeft() {
+    game->getPlayer()->setPosition(new b2Vec2(50, 50));
 }
