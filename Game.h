@@ -14,8 +14,8 @@
 #include <Box2D/Box2D.h>
 #include "Player.h"
 #include "ShapeFactory.h"
+#include <list>
 class Shape;
-
 class Controller;
 
 class Game
@@ -32,12 +32,14 @@ public:
     Player* getPlayer();
     
 private:
-
+	void removeFallenBoxes(std::list<Shape*>& todelete);
     sf::RenderWindow* window;
     b2World* world;
     Player* player;
+	sf::View* view;
     std::vector<Shape*> boxes;
 	ShapeFactory* shapeFactory;
+	float riseSpeed;
 };
 
 #endif /* defined(__Block_Frog__Game__) */

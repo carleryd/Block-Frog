@@ -62,6 +62,7 @@ int main(int, char const**)
     
     Game* game = new Game(window);
     Controller* controller = new Controller(game);
+	window->setFramerateLimit(60);
 
     // Start the game loop
     while (window->isOpen())
@@ -72,8 +73,6 @@ int main(int, char const**)
         game->run();
         
         controller->checkInput();
-        
-        // New comment!
 
         // Update the window
         window->display();
