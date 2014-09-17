@@ -22,6 +22,14 @@
 #include "Controller.h"
 #include <Box2D/Box2D.h>
 
+#ifdef _WIN32
+	#define windows true
+#else
+	#include "ResourcePath.hpp"
+#endif
+
+//#define std::string resourcePath();
+
 int main(int, char const**)
 {
     // Create the main window
@@ -29,9 +37,18 @@ int main(int, char const**)
 
     // Set the Icon
     sf::Image icon;
-    if (!icon.loadFromFile("icon.png")) {
-        return EXIT_FAILURE;
-    }
+	if(windows)
+	{
+		if (!icon.loadFromFile(/*resourcePath()*/ + "icon.png")) {
+			return EXIT_FAILURE;
+		}
+	}
+	else
+	{/*
+		if (!icon.loadFromFile(resourcePath() + "icon.png")) { 
+			return EXIT_FAILURE;
+		}*/
+	}
     window->setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 
     // Load a sprite to display

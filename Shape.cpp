@@ -1,9 +1,10 @@
 #include "Shape.h"
-//#include <math.h>
+#include <math.h>
 //#ifdef OS_WINDOWS
-	const float M_PI = 3.14f;
+const float PI = 3.14f;
 //#endif
 
+#include <iostream>
 
 Shape::Shape(b2World* world, b2Vec2* recSize, b2Vec2* recPosition, bool recDynamic, float recDensity, float recFriction, sf::RenderWindow* w)
 {
@@ -13,6 +14,8 @@ Shape::Shape(b2World* world, b2Vec2* recSize, b2Vec2* recPosition, bool recDynam
     // Box2D coordinate system is in the middle of screen, SFML is top-left. These offsets will make SFML start off drawing in the middle
     offSetX = 800 / meterToPixel / 2;
     offSetY = 600 / meterToPixel / 2;
+    std::cout << w->getSize().x << std::endl;
+    
     size = recSize;
     position = recPosition;
     dynamic = recDynamic;
@@ -64,7 +67,10 @@ Shape::~Shape(void)
 void Shape::update()
 {
     shape->setPosition((body->GetPosition().x + offSetX) * meterToPixel, (-body->GetPosition().y + offSetY) * meterToPixel);
-    shape->setRotation((-body->GetAngle() / M_PI) * 180);
+    shape->setRotation((-body->GetAngle() / PI) * 180);
+
+	//just a try to set a non-moving body to static and vice versa when moving
+	//not functional at the moment
 	/*double duration = (std::clock() - clock) / (double) CLOCKS_PER_SEC;
 	if(body->GetLinearVelocity().LengthSquared() < 0.5f && duration > 3)
 	{
@@ -77,7 +83,7 @@ void Shape::update()
 		body->SetActive(true);
 	}*/
 //    std::cout << "shape angle: " << shape->getRotation() << std::endl;
-//    std::cout << "body angle: " << body->GetAngle() / M_PI * 180 << std::endl;
+//    std::cout << "body angle: " << body->GetAngle() / PI * 180 << std::endl;
 }
 
 sf::Shape* Shape::getShape()
