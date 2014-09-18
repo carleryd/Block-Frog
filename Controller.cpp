@@ -8,8 +8,10 @@
 
 #include "Controller.h"
 
-Controller::Controller(Game* game_) {
+Controller::Controller(Game* game_) 
+{
     game = game_;
+	game->window->setKeyRepeatEnabled(false); 
 }
 
 void Controller::checkInput() {
@@ -20,8 +22,12 @@ void Controller::checkInput() {
         if (event.type == sf::Event::Closed) {
             game->getWindow()->close();
         }
+
         // Escape pressed : exit
         if (event.type == sf::Event::KeyPressed) {
+
+			
+
             switch(event.key.code) {
                 case sf::Keyboard::Escape:
                     game->getWindow()->close();
@@ -35,8 +41,24 @@ void Controller::checkInput() {
                 case sf::Keyboard::Space:
                     // JUMP AROUND
                     break;
+				
+					//dev ctrls
+				case sf::Keyboard::R:
+					if(game->riseSpeed == 0)
+					{
+						game->riseSpeed = -0.5f; 
+						cout << "Water rising turned ON." << endl;
+					}
+					else
+					{
+						game->riseSpeed = 0; 
+						cout << "Water rising turned OFF." << endl;
+					}
+					break;
+
+
                 default:
-                    std::cout << "AAAH OF COURSE" << std::endl;
+                    //std::cout << "AAAH OF COURSE" << std::endl;
                     break;
             }
         }
@@ -49,5 +71,6 @@ void Controller::checkInput() {
 }
 
 void Controller::moveLeft() {
-    game->getPlayer()->setPosition(new b2Vec2(50, 50));
+    //game->getPlayer()->setPosition(new b2Vec2(50, 50));
+	game->getPlayer()->move(b2Vec2(-10, 0));
 }

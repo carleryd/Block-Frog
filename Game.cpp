@@ -13,13 +13,13 @@ Game::Game(sf::RenderWindow* window_)
 {
     window = window_;
 	view = new sf::View();
-	view->setCenter(window->getSize().x/2, window->getSize().y/2);
+	view->setCenter((float)window->getSize().x/2, (float)window->getSize().y/2);
 	view->setSize(sf::Vector2f(window->getSize()));
 	window->setView(*view);
     
     // Setting up Box2D physics
     // Define the gravity vector.
-    b2Vec2 gravity(0.0f, -0.1f);
+    b2Vec2 gravity(0.0f, -9.8f);
     
     // Construct a world object, which will hold and simulate the rigid bodies.
     world = new b2World(gravity);
@@ -33,8 +33,11 @@ Game::Game(sf::RenderWindow* window_)
     
     player = new Player(world, window);
 
-	//TEMP
-	riseSpeed = -0.01f;
+	riseSpeed = -0.2f;
+	killOffset = 30;
+	secPerDrops = 1;
+
+	clock = clock_t();
 }
 
 Game::~Game()
@@ -62,21 +65,32 @@ Player* Game::getPlayer() {
 }
 
 void Game::run() {
+	//calculate view offset;
+	calcViewOffset();
 
 	//handle boxes
 	list<Shape*> deletion;
     for(Shape* box : boxes) 
 	{
 		//check if box has fallen "outside"
-		if(box->getShape()->getPosition().y > window->getSize().y)
+		if(box->getShape()->getPosition().y > window->getSize().y - viewOffset.y + killOffset)
 			deletion.push_back(box);
         box->update();
         window->draw(*box->getShape());
     }
 	removeFallenBoxes(deletion);
 
-	//draw
+	//random dropping of boxes
+	duration = ( std::clock() - clock ) / (double) CLOCKS_PER_SEC;
+	if(duration > secPerDrops)
+	{
+		boxes.push_back(shapeFactory->createRandomShape(viewOffset));
+		clock = std::clock();
+	}
+
+	//player
     player->draw(window);
+	player->updatePlayer();
 
 	//move view up/raise water level
 	view->move(0, riseSpeed);
@@ -87,16 +101,19 @@ void Game::run() {
 }
 
 void Game::spawnBox(sf::Vector2i position) {
+	//add view offset
+	position += viewOffset;
     // adjPos is a position adjusted to window position, also adjusted according to Box2D positions, y upwards
     sf::Vector2i adjPos = sf::Vector2i(position.x - window->getSize().x/2,
-                                                  -position.y + window->getSize().y/2);
-    std::cout << "Spawning box at position " << position.x << " " << position.y << std::endl;
+		-position.y + window->getSize().y/2);
+
+    //std::cout << "Spawning box at position " << position.x << " " << position.y << std::endl;
 	boxes.push_back(
 		shapeFactory->createRectangle(
 		new b2Vec2(20.0f, 20.0f), 
 		new b2Vec2(float(adjPos.x), float(adjPos.y)), 
 		true));
-    std::cout << boxes.size() << std::endl;
+    //std::cout << boxes.size() << std::endl;
 }
 
 void Game::removeFallenBoxes(list<Shape*>& deletion)
@@ -115,6 +132,13 @@ void Game::removeFallenBoxes(list<Shape*>& deletion)
 		delete deletion.front();
 		deletion.pop_front();
 	}
-		
 	deletion.clear();
+}
+
+void Game::calcViewOffset()
+{
+	sf::Vector2f halfExtents = view->getSize() / 2.0f;
+	sf::Vector2f translation = view->getCenter() - halfExtents;
+	viewOffset.x = (int)translation.x;
+	viewOffset.y = (int)translation.y;
 }

@@ -10,7 +10,8 @@
 
 
 Player::Player(b2World* world, sf::RenderWindow* w) {
-    box = new Rectangle(world, new b2Vec2(50.0f, 50.0f), new b2Vec2(400.0f, 100.0f), w, true); // Size, Position, Density, Friction
+    box = new Rectangle(world, new b2Vec2(50.0f, 50.0f), new b2Vec2(0, 0), w, true); // Size, Position, Density, Friction
+	box->getShape()->setFillColor(sf::Color(0, 255, 0));
 }
 
 void Player::draw(sf::RenderWindow* window) {
@@ -21,6 +22,16 @@ void Player::draw(sf::RenderWindow* window) {
 }
 
 void Player::setPosition(b2Vec2* newPos) {
-    pos.x = newPos->x;
-    pos.y = newPos->y;
+	box->getBody()->SetTransform(b2Vec2(newPos->x, newPos->y), box->getBody()->GetAngle());
+}
+
+void Player::move(b2Vec2&& dir)
+{
+	box->getBody()->ApplyLinearImpulse(dir, box->getBody()->GetPosition(), true);
+}
+
+void Player::updatePlayer()
+{
+	
+	box->update();
 }
