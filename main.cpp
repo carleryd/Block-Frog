@@ -21,7 +21,14 @@
 #include "Game.h"
 #include "Controller.h"
 #include <Box2D/Box2D.h>
-#include "ResourcePath.hpp"
+
+#ifdef _WIN32
+	#define windows true
+#else
+	#include "ResourcePath.hpp"
+#endif
+
+//#define std::string resourcePath();
 
 int main(int, char const**)
 {
@@ -30,9 +37,18 @@ int main(int, char const**)
 
     // Set the Icon
     sf::Image icon;
-    if (!icon.loadFromFile(resourcePath() + "icon.png")) {
-        return EXIT_FAILURE;
-    }
+	if(windows)
+	{
+		if (!icon.loadFromFile(/*resourcePath()*/ + "icon.png")) {
+			return EXIT_FAILURE;
+		}
+	}
+	else
+	{/*
+		if (!icon.loadFromFile(resourcePath() + "icon.png")) { 
+			return EXIT_FAILURE;
+		}*/
+	}
     window->setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 
     // Load a sprite to display
@@ -61,6 +77,7 @@ int main(int, char const**)
     
     Game* game = new Game(window);
     Controller* controller = new Controller(game);
+	window->setFramerateLimit(60);
 
     // Start the game loop
     while (window->isOpen())

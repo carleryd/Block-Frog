@@ -1,18 +1,20 @@
 #include "Shape.h"
-const float PI = 3.14;
+#include <math.h>
+//#ifdef OS_WINDOWS
+const float PI = 3.14f;
 //#endif
 
 #include <iostream>
 
 Shape::Shape(b2World* world, b2Vec2* recSize, b2Vec2* recPosition, bool recDynamic, float recDensity, float recFriction, sf::RenderWindow* w)
 {
-	pixelToMeter = 1.0/30.0; // Box2D meter equals 50 pixels?
+	pixelToMeter = 1.0f/30.0f; // Box2D meter equals 50 pixels?
     meterToPixel = 30.0;
     // Window: 800x600
     // Box2D coordinate system is in the middle of screen, SFML is top-left. These offsets will make SFML start off drawing in the middle
     offSetX = 800 / meterToPixel / 2;
     offSetY = 600 / meterToPixel / 2;
-    std::cout << w->getSize().x << std::endl;
+    //std::cout << w->getSize().x << std::endl;
     
     size = recSize;
     position = recPosition;
@@ -52,17 +54,34 @@ Shape::Shape(b2World* world, b2Vec2* recSize, b2Vec2* recPosition, bool recDynam
     // This makes SFML use the same origin for shapes as Box2D(middle, middle)
     shape->setOrigin(size->x/2, size->y/2);
     shape->setPosition(position->x, position->y);	
+	//clock = std::clock();
 }
 
 Shape::~Shape(void)
 {
-	//delete body;
+	//delete body; not access?
+	delete size;
+	delete position;
 }
 
 void Shape::update()
 {
     shape->setPosition((body->GetPosition().x + offSetX) * meterToPixel, (-body->GetPosition().y + offSetY) * meterToPixel);
     shape->setRotation((-body->GetAngle() / PI) * 180);
+
+	//just a try to set a non-moving body to static and vice versa when moving
+	//not functional at the moment
+	/*double duration = (std::clock() - clock) / (double) CLOCKS_PER_SEC;
+	if(body->GetLinearVelocity().LengthSquared() < 0.5f && duration > 3)
+	{
+		body->SetActive(false);
+	}
+	/*else if(body->GetWorld()->GetContactCount() > 2)
+	{
+		//b2Contact* contact =  body->GetWorld()->GetContactList();
+		//contact->GetTangentSpeed();
+		body->SetActive(true);
+	}*/
 //    std::cout << "shape angle: " << shape->getRotation() << std::endl;
 //    std::cout << "body angle: " << body->GetAngle() / PI * 180 << std::endl;
 }

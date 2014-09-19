@@ -3,7 +3,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <Box2D/Box2D.h>
-#include <math.h>
+#include <ctime>
 
 class Shape
 {
@@ -24,6 +24,7 @@ protected:
     float density, friction;
     bool dynamic;
     float angle;
+	std::clock_t clock;
 private:
 
 };

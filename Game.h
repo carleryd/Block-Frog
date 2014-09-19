@@ -14,8 +14,9 @@
 #include <Box2D/Box2D.h>
 #include "Player.h"
 #include "ShapeFactory.h"
+#include <list>
+#include <ctime>
 class Shape;
-
 class Controller;
 
 class Game
@@ -32,11 +33,22 @@ public:
     Player* getPlayer();
     
 private:
+	void removeFallenBoxes(std::list<Shape*>& todelete);
+	void calcViewOffset();
+	
     sf::RenderWindow* window;
     b2World* world;
     Player* player;
+	sf::View* view;
     std::vector<Shape*> boxes;
 	ShapeFactory* shapeFactory;
+	float riseSpeed;
+	std::clock_t clock;
+	double duration;
+	int secPerDrops; //time before a new block is dropped
+	sf::Vector2i viewOffset;
+	int killOffset; //how far under the screen blocks will be killed
+	friend Controller;
 };
 
 #endif /* defined(__Block_Frog__Game__) */
