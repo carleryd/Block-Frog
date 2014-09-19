@@ -59,8 +59,6 @@ int main(int, char const**)
     // Play the music
 //    music.play();
     
-    // AKMLSDMFLKSDMFLKMSDLKFML
-    
     Game* game = new Game(window);
     Controller* controller = new Controller(game);
 
@@ -73,8 +71,6 @@ int main(int, char const**)
         game->run();
         
         controller->checkInput();
-        
-        // New comment!
 
         // Update the window
         window->display();

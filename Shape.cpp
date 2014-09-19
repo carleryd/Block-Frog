@@ -1,5 +1,5 @@
 #include "Shape.h"
-const int PI = 3.14;
+const float PI = 3.14;
 //#endif
 
 #include <iostream>
