@@ -71,6 +71,5 @@ void Controller::checkInput() {
 }
 
 void Controller::moveLeft() {
-    //game->getPlayer()->setPosition(new b2Vec2(50, 50));
 	game->getPlayer()->move(b2Vec2(-10, 0));
 }
