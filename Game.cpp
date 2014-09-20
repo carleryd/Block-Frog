@@ -35,7 +35,7 @@ Game::Game(sf::RenderWindow* window_)
 
 	riseSpeed = -0.2f;
 	killOffset = 30;
-	secPerDrops = 1;
+	secPerDrops = 5;
 }
 
 Game::~Game()
@@ -111,9 +111,9 @@ void Game::spawnBox(sf::Vector2i position) {
     //std::cout << "Spawning box at position " << position.x << " " << position.y << std::endl;
 	boxes.push_back(
 		shapeFactory->createRectangle(
-		new b2Vec2(20.0f, 20.0f), 
-		new b2Vec2(float(adjPos.x), float(adjPos.y)), 
-		true));
+			new b2Vec2(20.0f, 20.0f),
+			new b2Vec2(float(adjPos.x), float(adjPos.y)),
+			true));
     //std::cout << boxes.size() << std::endl;
 }
 
@@ -123,7 +123,6 @@ void Game::removeFallenBoxes(list<Shape*>& deletion)
 		cout << deletion.size() << " shapes have fallen out of the screen and been deleted this frame." << endl;
 	while(!deletion.empty())
 	{
-		Shape* del = deletion.front();
 		vector<Shape*>::iterator todelete = std::remove_if(boxes.begin(), boxes.end(), [&deletion](Shape* b)
 		{
 			return deletion.front() == b;

@@ -20,7 +20,7 @@ public:
 	Player(b2World* world, sf::RenderWindow* w);
     
     void setPosition(b2Vec2* newPos);
-	enum {LEFT, RIGHT, JUMP};
+	enum { LEFT, RIGHT, JUMP, LEFT_STOP, RIGHT_STOP };
 	void move(int dir);
 	/*
 	*	Pushes player in the direction
@@ -28,10 +28,13 @@ public:
 	void push(b2Vec2&& direction);
     void draw(sf::RenderWindow* window);
 	void updatePlayer();
+    void isJumping();
     Rectangle* box;
 private:
-	float movementSpeed;
+    b2World* world;
+	float leftSpeed, rightSpeed;
 	float jumpHeight;
+    bool jumping;
 };
 
 #endif /* defined(__Block_Frog__Player__) */

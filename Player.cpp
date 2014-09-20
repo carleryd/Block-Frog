@@ -9,16 +9,15 @@
 #include "Player.h"
 
 
-Player::Player(b2World* world, sf::RenderWindow* w) {
+Player::Player(b2World* world_, sf::RenderWindow* w) {
+    world = world_;
     box = new Rectangle(world, new b2Vec2(50.0f, 50.0f), new b2Vec2(0, 0), w, true); // Size, Position, Density, Friction
 	box->getShape()->setFillColor(sf::Color(0, 255, 0));
-	movementSpeed = 5;
 	jumpHeight = 10;
 }
 
 void Player::draw(sf::RenderWindow* window) {
     window->draw(*box->getShape());
-//    std::cout << "Player: x: " << box->getBody()->GetPosition().x << " y: " << box->getBody()->GetPosition().y << std::endl;
     
     box->getShape()->setPosition(box->getBody()->GetPosition().x, box->getBody()->GetPosition().y);
 }
@@ -29,23 +28,39 @@ void Player::setPosition(b2Vec2* newPos) {
 
 void Player::move(int dir)
 {
-	b2Vec2 oldSpeed = box->getBody()->GetLinearVelocity();
 	switch (dir)
 	{
 	case LEFT:
-		if(oldSpeed.x < 1)
-			box->getBody()->SetLinearVelocity(b2Vec2(-movementSpeed, 0) + oldSpeed);
+            leftSpeed = -10;
 		break;
 	case RIGHT:
-		if(oldSpeed.x < 1)
-			box->getBody()->SetLinearVelocity(b2Vec2(movementSpeed, 0) + oldSpeed);
+			rightSpeed = 10;
 		break;
+    case LEFT_STOP:
+            leftSpeed = 0;
+        break;
+    case RIGHT_STOP:
+            rightSpeed = 0;
+        break;
 	case JUMP:
 		push(b2Vec2(0, jumpHeight));
 		break;
 	default:
 		break;
 	}
+}
+
+void Player::isJumping() {
+//    std::vector<b2Contact> contactList = world->GetContactList();
+	b2Contact* contact = world->GetContactList();
+//    std::cout << world->GetContactCount() << std::endl;
+	
+    while(contact != nullptr) {
+        if(contact->GetFixtureA() == box->getBody()->GetFixtureList())
+            std::cout << "COLLISION" << std::endl;
+		
+        contact = contact->GetNext();
+    }
 }
 
 void Player::push(b2Vec2&& dir)
@@ -55,5 +70,9 @@ void Player::push(b2Vec2&& dir)
 
 void Player::updatePlayer()
 {
+    isJumping();
+	b2Vec2 oldSpeed = box->getBody()->GetLinearVelocity();
+    oldSpeed = b2Vec2(0, oldSpeed.y);
 	box->update();
+    box->getBody()->SetLinearVelocity(b2Vec2(leftSpeed + rightSpeed, 0) + oldSpeed);
 }
