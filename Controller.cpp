@@ -25,40 +25,23 @@ void Controller::checkInput() {
 
         // Escape pressed : exit
         if (event.type == sf::Event::KeyPressed) {
-
-			
-
             switch(event.key.code) {
                 case sf::Keyboard::Escape:
                     game->getWindow()->close();
                     break;
              	case sf::Keyboard::Left:
-                    moveLeft();
+                    game->getPlayer()->move(game->getPlayer()->LEFT);
                     break;
              	case sf::Keyboard::Right:
-                    // gå höger
+                    game->getPlayer()->move(game->getPlayer()->RIGHT);
                     break;
                 case sf::Keyboard::Space:
-                    // JUMP AROUND
+                    game->getPlayer()->move(game->getPlayer()->JUMP);
                     break;
-				
-					//dev ctrls
-				case sf::Keyboard::R:
-					if(game->riseSpeed == 0)
-					{
-						game->riseSpeed = -0.5f; 
-						cout << "Water rising turned ON." << endl;
-					}
-					else
-					{
-						game->riseSpeed = 0; 
-						cout << "Water rising turned OFF." << endl;
-					}
-					break;
-
 
                 default:
-                    //std::cout << "AAAH OF COURSE" << std::endl;
+					if(event.key.alt)
+						devInput(event);
                     break;
             }
         }
@@ -70,6 +53,38 @@ void Controller::checkInput() {
     }
 }
 
-void Controller::moveLeft() {
-	game->getPlayer()->move(b2Vec2(-10, 0));
+void Controller::devInput(sf::Event& e)
+{
+	switch (e.key.code)
+	{
+		//dev ctrls
+	case sf::Keyboard::R: //water rising
+		if(game->riseSpeed == 0)
+		{
+			game->riseSpeed = -0.5f; 
+			cout << "Water rising turned ON." << endl;
+		}
+		else
+		{
+			game->riseSpeed = 0; 
+			cout << "Water rising turned OFF." << endl;
+		}
+		break;
+	case sf::Keyboard::S: //reset player
+		game->getPlayer()->setPosition(new b2Vec2(0,0));
+		break;
+	case sf::Keyboard::G: //gravity
+		if(game->world->GetGravity().y == 0)
+		{
+			game->world->SetGravity(b2Vec2(0, -9.8)); 
+			cout << "Gravity is turned ON." << endl;
+		}
+		else
+		{
+			game->world->SetGravity(b2Vec2(0, 0)); 
+			cout << "Gravity is turned OFF." << endl;
+		}
+	default:
+		break;
+	}
 }

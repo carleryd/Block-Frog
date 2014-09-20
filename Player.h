@@ -20,11 +20,18 @@ public:
 	Player(b2World* world, sf::RenderWindow* w);
     
     void setPosition(b2Vec2* newPos);
-	void move(b2Vec2&& direction);
+	enum {LEFT, RIGHT, JUMP};
+	void move(int dir);
+	/*
+	*	Pushes player in the direction
+	*/
+	void push(b2Vec2&& direction);
     void draw(sf::RenderWindow* window);
 	void updatePlayer();
     Rectangle* box;
 private:
+	float movementSpeed;
+	float jumpHeight;
 };
 
 #endif /* defined(__Block_Frog__Player__) */

@@ -13,7 +13,7 @@
 #include <SFML/Graphics.hpp>
 #include "Game.h"
 
-#endif /* defined(__Block_Frog__Controller__) */
+
 
 
 class Controller
@@ -23,8 +23,10 @@ public:
     void checkInput();
 private:
     void spawnBox(sf::Vector2i position, b2World* world, std::vector<Rectangle*>& boxes);
-    void moveLeft();
+	void devInput(sf::Event& e);
     
     Game* game;
 	bool pressedLastFrame;
 };
+
+#endif /* defined(__Block_Frog__Controller__) */

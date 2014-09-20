@@ -12,6 +12,8 @@
 Player::Player(b2World* world, sf::RenderWindow* w) {
     box = new Rectangle(world, new b2Vec2(50.0f, 50.0f), new b2Vec2(0, 0), w, true); // Size, Position, Density, Friction
 	box->getShape()->setFillColor(sf::Color(0, 255, 0));
+	movementSpeed = 5;
+	jumpHeight = 10;
 }
 
 void Player::draw(sf::RenderWindow* window) {
@@ -25,13 +27,33 @@ void Player::setPosition(b2Vec2* newPos) {
 	box->getBody()->SetTransform(b2Vec2(newPos->x, newPos->y), box->getBody()->GetAngle());
 }
 
-void Player::move(b2Vec2&& dir)
+void Player::move(int dir)
+{
+	b2Vec2 oldSpeed = box->getBody()->GetLinearVelocity();
+	switch (dir)
+	{
+	case LEFT:
+		if(oldSpeed.x < 1)
+			box->getBody()->SetLinearVelocity(b2Vec2(-movementSpeed, 0) + oldSpeed);
+		break;
+	case RIGHT:
+		if(oldSpeed.x < 1)
+			box->getBody()->SetLinearVelocity(b2Vec2(movementSpeed, 0) + oldSpeed);
+		break;
+	case JUMP:
+		push(b2Vec2(0, jumpHeight));
+		break;
+	default:
+		break;
+	}
+}
+
+void Player::push(b2Vec2&& dir)
 {
 	box->getBody()->ApplyLinearImpulse(dir, box->getBody()->GetPosition(), true);
 }
 
 void Player::updatePlayer()
 {
-	
 	box->update();
 }
