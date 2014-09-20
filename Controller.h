@@ -13,9 +13,6 @@
 #include <SFML/Graphics.hpp>
 #include "Game.h"
 
-
-
-
 class Controller
 {
 public:
