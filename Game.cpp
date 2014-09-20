@@ -26,11 +26,13 @@ Game::Game(sf::RenderWindow* window_)
 	//shapefactory for creating shapes easily
 	shapeFactory = new ShapeFactory(world, window);
     
+    boxes.push_back(shapeFactory->createRectangle(new b2Vec2(750.0f, 50.0f),
+                                                  new b2Vec2(0.0f, -float(window->getSize().y)/2),
+                                                  false)
+                    );
 	//boxes.push_back(new Rectangle(world, new b2Vec2(750.0f, 50.0f), new b2Vec2(0.0f, -windowHeight/2), false, window));
 	//boxes.push_back(new Rectangle(world, new b2Vec2(100.0f, 100.0f), new b2Vec2(0.0f, 200.0f), true, window));
     //boxes.push_back(new Rectangle(world, new b2Vec2(50.0f, 50.0f), new b2Vec2(-50.0f, 100.0f),  true, window));
-    boxes.push_back(shapeFactory->createRectangle(new b2Vec2(750.0f, 50.0f), new b2Vec2(0.0f, -float(window->getSize().y)/2), false));
-    
     player = new Player(world, window);
 
 	riseSpeed = -0.2f;

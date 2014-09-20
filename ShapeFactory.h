@@ -1,7 +1,7 @@
 #ifndef SHAPE_FACTORY_H
 #define SHAPE_FACTORY_H
 
-#include <Box2D\Box2D.h>
+#include <Box2D/Box2D.h>
 #include "Shape.h"
 #include <random>
 using namespace std;
