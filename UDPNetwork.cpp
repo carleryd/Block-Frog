@@ -5,7 +5,11 @@ UDPNetwork::UDPNetwork(string PlayerName)
 {
 	if(mySocket.bind(sf::Socket::AnyPort) != sf::Socket::Done)
 		cerr << "Could not bind port" << endl;
-
+	else
+	{
+		cout << "My IP address: "<< myAddress.getPublicAddress().toString() << endl;
+		cout << "My port: " << mySocket.getLocalPort() << endl;
+	}
 }
 
 UDPNetwork::~UDPNetwork(void)

@@ -21,33 +21,32 @@
 #include "Game.h"
 #include "Controller.h"
 #include <Box2D/Box2D.h>
+#include "OSHandler.h"
 
-#define windows false
-#ifdef _WIN32
-	#define windows true
-#else
-	#include "ResourcePath.hpp"
-#endif
 
 int main(int, char const**)
 {
+    OSHandler* osHandler = new OSHandler();
+	#ifdef _WIN32
+	    osHandler->win32();
+	#elif __APPLE__
+	    osHandler->mac();
+	#else
+	    std::cout << "LAKSMLKSEMFL" << std::endl;
+	#endif
+    
+    
+    
     // Create the main window
     sf::RenderWindow* window = new sf::RenderWindow(sf::VideoMode(800, 600), "SFML window");
 
     // Set the Icon
     sf::Image icon;
-	if(windows)
-	{
-		if (!icon.loadFromFile( + "icon.png")) {
-			return EXIT_FAILURE;
-		}
-	}
-	else
-	{
-		if (!icon.loadFromFile(/*macResourcePath() +*/ "icon.png")) { 
-			return EXIT_FAILURE;
-		}
-	}
+    
+    if (!icon.loadFromFile(osHandler->getResourcePath() + "icon.png")) {
+        return EXIT_FAILURE;
+    }
+    
     window->setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 
     // Load a sprite to display
@@ -73,21 +72,35 @@ int main(int, char const**)
 
     // Play the music
 //    music.play();
+	Game* game;
+
 	string in;
 	cout << "Server? (y/n) ";
 	cin >> in;
     bool server;
+	sf::IpAddress* a = nullptr;
+	unsigned short p = 0;
 	if(in == "y")
 	{
 		server = true;
+		game = new Game(window, server);
 	}
 	else
 	{
 		server = false;
+		cout << "Enter host's IP address: ";
+		cin >> in;
+		cout << endl;
+		a = new sf::IpAddress(in);
+		cout << "Enter host's port: ";
+		cin >> in;
+		p = stoi(in);
+		cout << endl;
+		game = new Game(window, server, a, p);
 	}
 
 
-    Game* game = new Game(window, server);
+    //Game* game = new Game(window, server, a, p);
     Controller* controller = new Controller(game);
 	window->setFramerateLimit(60);
 

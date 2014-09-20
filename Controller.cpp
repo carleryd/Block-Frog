@@ -45,6 +45,19 @@ void Controller::checkInput() {
                     break;
             }
         }
+        else if(event.type == sf::Event::KeyReleased) {
+            switch(event.key.code) {
+                case sf::Keyboard::Left:
+                    game->getPlayer()->move(game->getPlayer()->LEFT_STOP);
+                    break;
+                case sf::Keyboard::Right:
+                    game->getPlayer()->move(game->getPlayer()->RIGHT_STOP);
+                    break;
+                default:
+                    // Default action
+                    break;
+            }
+        }
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
 	        sf::Vector2i position = sf::Mouse::getPosition(*game->getWindow());
             game->spawnBox(position);
