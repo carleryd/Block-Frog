@@ -30,16 +30,12 @@ Game::Game(sf::RenderWindow* window_)
                                                   new b2Vec2(0.0f, -float(window->getSize().y)/2),
                                                   false)
                     );
-	//boxes.push_back(new Rectangle(world, new b2Vec2(750.0f, 50.0f), new b2Vec2(0.0f, -windowHeight/2), false, window));
-	//boxes.push_back(new Rectangle(world, new b2Vec2(100.0f, 100.0f), new b2Vec2(0.0f, 200.0f), true, window));
-    //boxes.push_back(new Rectangle(world, new b2Vec2(50.0f, 50.0f), new b2Vec2(-50.0f, 100.0f),  true, window));
+    
     player = new Player(world, window);
 
 	riseSpeed = -0.2f;
 	killOffset = 30;
 	secPerDrops = 1;
-
-	clock = clock_t();
 }
 
 Game::~Game()
@@ -83,11 +79,14 @@ void Game::run() {
 	removeFallenBoxes(deletion);
 
 	//random dropping of boxes
-	duration = ( std::clock() - clock ) / (double) CLOCKS_PER_SEC;
+    timer = clock.getElapsedTime();
+    duration = timer.asSeconds();
+    
 	if(duration > secPerDrops)
 	{
 		boxes.push_back(shapeFactory->createRandomShape(viewOffset));
-		clock = std::clock();
+		duration = 0;
+        clock.restart();
 	}
 
 	//player

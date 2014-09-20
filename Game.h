@@ -36,17 +36,20 @@ private:
 	void removeFallenBoxes(std::list<Shape*>& todelete);
 	void calcViewOffset();
 	
-    sf::RenderWindow* window;
     b2World* world;
     Player* player;
+	ShapeFactory* shapeFactory;
+    sf::RenderWindow* window;
 	sf::View* view;
     std::vector<Shape*> boxes;
-	ShapeFactory* shapeFactory;
-	float riseSpeed;
-	std::clock_t clock;
-	double duration;
-	int secPerDrops; //time before a new block is dropped
 	sf::Vector2i viewOffset;
+    
+    sf::Clock clock;
+    sf::Time timer;
+    
+	double duration;
+	float riseSpeed;
+	int secPerDrops; //time before a new block is dropped
 	int killOffset; //how far under the screen blocks will be killed
 	friend Controller;
 };

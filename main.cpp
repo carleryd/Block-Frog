@@ -23,14 +23,11 @@
 #include <Box2D/Box2D.h>
 
 #define windows false
-
 #ifdef _WIN32
 	#define windows true
 #else
 	#include "ResourcePath.hpp"
 #endif
-
-//#define std::string resourcePath();
 
 int main(int, char const**)
 {
@@ -41,15 +38,15 @@ int main(int, char const**)
     sf::Image icon;
 	if(windows)
 	{
-		if (!icon.loadFromFile(/*resourcePath()*/ + "icon.png")) {
+		if (!icon.loadFromFile( + "icon.png")) {
 			return EXIT_FAILURE;
 		}
 	}
 	else
-	{/*
-		if (!icon.loadFromFile(resourcePath() + "icon.png")) { 
+	{
+		if (!icon.loadFromFile(/*macResourcePath() +*/ "icon.png")) { 
 			return EXIT_FAILURE;
-		}*/
+		}
 	}
     window->setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 
