@@ -7,9 +7,11 @@
 //
 
 #include "Game.h"
+#include "Server.h"
+#include "Client.h"
 using namespace std;
 
-Game::Game(sf::RenderWindow* window_)
+Game::Game(sf::RenderWindow* window_, bool server, sf::IpAddress* serverAddress, unsigned short serverPort)
 {
     window = window_;
 	view = new sf::View();
@@ -36,6 +38,12 @@ Game::Game(sf::RenderWindow* window_)
 	riseSpeed = -0.2f;
 	killOffset = 30;
 	secPerDrops = 1;
+
+	//networking
+	if(server)
+		localHost = new Server("HOST");
+	else
+		localHost = new Client("CLIENT", *serverAddress, serverPort);
 }
 
 Game::~Game()

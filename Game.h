@@ -11,6 +11,7 @@
 
 #include <iostream>
 #include <SFML/Graphics.hpp>
+#include "UDPNetwork.h"
 #include <Box2D/Box2D.h>
 #include "Player.h"
 #include "ShapeFactory.h"
@@ -18,11 +19,12 @@
 #include <ctime>
 class Shape;
 class Controller;
+class UDPNetwork;
 
 class Game
 {
 public:
-    Game(sf::RenderWindow* window);
+	Game(sf::RenderWindow* window, bool server, sf::IpAddress* serverip=nullptr, unsigned short serverPort = 0);
 	~Game();
     void run();
 
@@ -43,6 +45,9 @@ private:
 	sf::View* view;
     std::vector<Shape*> boxes;
 	sf::Vector2i viewOffset;
+
+	//network
+	UDPNetwork* localHost;
     
     sf::Clock clock;
     sf::Time timer;

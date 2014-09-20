@@ -73,8 +73,21 @@ int main(int, char const**)
 
     // Play the music
 //    music.play();
-    
-    Game* game = new Game(window);
+	string in;
+	cout << "Server? (y/n) ";
+	cin >> in;
+    bool server;
+	if(in == "y")
+	{
+		server = true;
+	}
+	else
+	{
+		server = false;
+	}
+
+
+    Game* game = new Game(window, server);
     Controller* controller = new Controller(game);
 	window->setFramerateLimit(60);
 
