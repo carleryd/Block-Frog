@@ -22,6 +22,8 @@
 #include "Controller.h"
 #include <Box2D/Box2D.h>
 
+#define windows false
+
 #ifdef _WIN32
 	#define windows true
 #else

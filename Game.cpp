@@ -120,8 +120,8 @@ void Game::spawnBox(sf::Vector2i position) {
 
 void Game::removeFallenBoxes(list<Shape*>& deletion)
 {
-	if(!deletion.empty())
-		cout << deletion.size() << " shapes have fallen out of the screen and been deleted this frame." << endl;
+	//if(!deletion.empty())
+	//	cout << deletion.size() << " shapes have fallen out of the screen and been deleted this frame." << endl;
 	while(!deletion.empty())
 	{
 		Shape* del = deletion.front();
