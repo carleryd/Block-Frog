@@ -8,9 +8,11 @@
 
 #include "Game.h"
 #include "OSHandler.h"
+#include "Server.h"
+#include "Client.h"
 using namespace std;
 
-Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_)
+Game::Game(sf::RenderWindow* window_, bool server, sf::IpAddress* serverAddress, unsigned short serverPort)
 {
     window = window_;
     osHandler = osHandler_;
@@ -38,6 +40,13 @@ Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_)
 
 	riseSpeed = -0.2f;
 	killOffset = 30;
+	secPerDrops = 1;
+
+	//networking
+	if(server)
+		localHost = new Server("HOST");
+	else
+		localHost = new Client("CLIENT", *serverAddress, serverPort);
 	secPerDrops = 5;
 }
 

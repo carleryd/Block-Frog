@@ -72,8 +72,40 @@ int main(int, char const**)
 
     // Play the music
 //    music.play();
+<<<<<<< HEAD
     
     Game* game = new Game(window, osHandler);
+=======
+	Game* game;
+
+	string in;
+	cout << "Server? (y/n) ";
+	cin >> in;
+    bool server;
+	sf::IpAddress* a = nullptr;
+	unsigned short p = 0;
+	if(in == "y")
+	{
+		server = true;
+		game = new Game(window, server);
+	}
+	else
+	{
+		server = false;
+		cout << "Enter host's IP address: ";
+		cin >> in;
+		cout << endl;
+		a = new sf::IpAddress(in);
+		cout << "Enter host's port: ";
+		cin >> in;
+		p = stoi(in);
+		cout << endl;
+		game = new Game(window, server, a, p);
+	}
+
+
+    //Game* game = new Game(window, server, a, p);
+>>>>>>> 66d2c95938eddcd21904aeb5007c8ce3d319f8aa
     Controller* controller = new Controller(game);
 	window->setFramerateLimit(60);
 
