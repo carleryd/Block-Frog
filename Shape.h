@@ -13,6 +13,8 @@ public:
 	void update();
 	sf::Shape* getShape();
 	b2Body* getBody();
+	b2Vec2* getSize() const {return size;};
+	b2Vec2* getPosition() const {return position;};
 protected:
 	Shape(b2World* world, b2Vec2* recSize, b2Vec2* recPosition, 
 		bool recDynamic, float recDensity, float recFriction, sf::RenderWindow* w);

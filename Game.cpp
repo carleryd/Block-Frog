@@ -9,6 +9,7 @@
 #include "Game.h"
 #include "Server.h"
 #include "Client.h"
+
 using namespace std;
 
 Game::Game(sf::RenderWindow* window_, bool server, sf::IpAddress* serverAddress, unsigned short serverPort)
@@ -41,9 +42,23 @@ Game::Game(sf::RenderWindow* window_, bool server, sf::IpAddress* serverAddress,
 
 	//networking
 	if(server)
-		localHost = new Server("HOST");
+	{
+		localHost = new Server("HOST", *shapeFactory);
+		dynamic_cast<Server*>(localHost)->waitForPlayers();
+	}
 	else
-		localHost = new Client("CLIENT", *serverAddress, serverPort);
+	{
+		localHost = new Client("CLIENT", *serverAddress, serverPort, *shapeFactory);
+		Client* client = dynamic_cast<Client*>(localHost);
+		if(!client->connect())
+		{
+			cerr << "Failed to connect" << endl;
+		}
+	}
+	network = new thread(&UDPNetwork::listen, localHost);
+	window->setActive(true);
+	
+	// 
 	secPerDrops = 5;
 }
 
@@ -57,6 +72,7 @@ Game::~Game()
 	delete world;
 	delete player;
 	delete view;
+	delete shapeFactory;
 }
 
 sf::RenderWindow* Game::getWindow() {
@@ -72,31 +88,22 @@ Player* Game::getPlayer() {
 }
 
 void Game::run() {
+	//Handle data that was received since last timestep
+	localHost->handleReceivedData(this);
+
+
 	//calculate view offset;
 	calcViewOffset();
 
-	//handle boxes
-	list<Shape*> deletion;
-    for(Shape* box : boxes) 
+	if(localHost->isServer())
 	{
-		//check if box has fallen "outside"
-		if(box->getShape()->getPosition().y > window->getSize().y - viewOffset.y + killOffset)
-			deletion.push_back(box);
-        box->update();
-        window->draw(*box->getShape());
-    }
-	removeFallenBoxes(deletion);
-
-	//random dropping of boxes
-    timer = clock.getElapsedTime();
-    duration = timer.asSeconds();
-    
-	if(duration > secPerDrops)
-	{
-		boxes.push_back(shapeFactory->createRandomShape(viewOffset));
-		duration = 0;
-        clock.restart();
+		Shape* box = boxHandling();
+		dynamic_cast<Server*>(localHost)->broadCast(box);
 	}
+	//else 
+	//{
+	//	boxes.push_back( static_cast<Shape*>(dynamic_cast<Client*>(localHost)->listenToServer()));
+	//}
 
 	//player
     player->draw(window);
@@ -108,6 +115,18 @@ void Game::run() {
     
     // timeStep, velocityIterations, positionIterations
     world->Step(1.0f/60.0f, 10, 10);
+
+	//do  networking that has happened during this frame
+	//e.g. send data that player has moved a block
+
+
+	//rebroadcast everything that server has learnt from the other clients about the game state
+	if(localHost->isServer())
+	{
+		//localHost->handleReceivedData(this);
+		//rebroadcast
+	}
+
 }
 
 void Game::spawnBox(sf::Vector2i position) {
@@ -150,4 +169,31 @@ void Game::calcViewOffset()
 	sf::Vector2f translation = view->getCenter() - halfExtents;
 	viewOffset.x = (int)translation.x;
 	viewOffset.y = (int)translation.y;
+}
+
+Shape* Game::boxHandling()
+{
+	//handle boxes
+	list<Shape*> deletion;
+    for(Shape* box : boxes) 
+	{
+		//check if box has fallen "outside"
+		if(box->getShape()->getPosition().y > window->getSize().y - viewOffset.y + killOffset)
+			deletion.push_back(box);
+        box->update();
+        window->draw(*box->getShape());
+    }
+	removeFallenBoxes(deletion);
+
+	//random dropping of boxes
+    timer = clock.getElapsedTime();
+    duration = timer.asSeconds();
+    
+	if(duration > secPerDrops)
+	{
+		boxes.push_back(shapeFactory->createRandomShape(viewOffset));
+		duration = 0;
+        clock.restart();
+	}	
+	return boxes.back();
 }

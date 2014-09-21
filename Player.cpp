@@ -14,6 +14,8 @@ Player::Player(b2World* world_, sf::RenderWindow* w) {
     box = new Rectangle(world, new b2Vec2(50.0f, 50.0f), new b2Vec2(0, 0), w, true); // Size, Position, Density, Friction
 	box->getShape()->setFillColor(sf::Color(0, 255, 0));
 	jumpHeight = 10;
+	leftSpeed = 0;
+	rightSpeed = 0;
 }
 
 void Player::draw(sf::RenderWindow* window) {
