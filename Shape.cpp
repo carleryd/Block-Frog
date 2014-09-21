@@ -12,8 +12,8 @@ Shape::Shape(b2World* world, b2Vec2* recSize, b2Vec2* recPosition, bool recDynam
     meterToPixel = 30.0;
     // Window: 800x600
     // Box2D coordinate system is in the middle of screen, SFML is top-left. These offsets will make SFML start off drawing in the middle
-    offSetX = 800 / meterToPixel / 2;
-    offSetY = 600 / meterToPixel / 2;
+    offSetX = 800/*w->getSize().x*/ / meterToPixel / 2;
+    offSetY = 600/*w->getSize().y*/ / meterToPixel / 2;
     //std::cout << w->getSize().x << std::endl;
     
     size = recSize;
@@ -53,7 +53,7 @@ Shape::Shape(b2World* world, b2Vec2* recSize, b2Vec2* recPosition, bool recDynam
     shape = new sf::RectangleShape(sf::Vector2f(size->x, size->y));
     // This makes SFML use the same origin for shapes as Box2D(middle, middle)
     shape->setOrigin(size->x/2, size->y/2);
-    shape->setPosition(position->x, position->y);	
+    shape->setPosition(position->x, position->y);
 	//clock = std::clock();
 }
 

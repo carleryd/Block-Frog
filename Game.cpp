@@ -7,11 +7,14 @@
 //
 
 #include "Game.h"
+#include "OSHandler.h"
 using namespace std;
 
-Game::Game(sf::RenderWindow* window_)
+Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_)
 {
     window = window_;
+    osHandler = osHandler_;
+    
 	view = new sf::View();
 	view->setCenter((float)window->getSize().x/2, (float)window->getSize().y/2);
 	view->setSize(sf::Vector2f(window->getSize()));
@@ -31,7 +34,7 @@ Game::Game(sf::RenderWindow* window_)
                                                   false)
                     );
     
-    player = new Player(world, window);
+    player = new Player(this);
 
 	riseSpeed = -0.2f;
 	killOffset = 30;
@@ -60,6 +63,10 @@ b2World* Game::getWorld() {
 
 Player* Game::getPlayer() {
     return player;
+}
+
+OSHandler* Game::getOSHandler() {
+    return osHandler;
 }
 
 void Game::run() {

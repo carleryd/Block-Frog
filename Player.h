@@ -13,11 +13,13 @@
 #include <SFML/Graphics.hpp>
 #include <Box2D/Box2D.h>
 #include "Rectangle.h"
+#include "ContactListener.h"
+class Game;
 
 class Player
 {
 public:
-	Player(b2World* world, sf::RenderWindow* w);
+	Player(Game* game);
     
     void setPosition(b2Vec2* newPos);
 	enum { LEFT, RIGHT, JUMP, LEFT_STOP, RIGHT_STOP };
@@ -28,10 +30,16 @@ public:
 	void push(b2Vec2&& direction);
     void draw(sf::RenderWindow* window);
 	void updatePlayer();
-    void isJumping();
+    bool isJumping();
     Rectangle* box;
 private:
     b2World* world;
+    sf::RenderWindow* window;
+    Game* game;
+    ContactListener* contactListener;
+    sf::Sprite frogSprite;
+    sf::Texture frogTexture;
+    
 	float leftSpeed, rightSpeed;
 	float jumpHeight;
     bool jumping;

@@ -43,7 +43,7 @@ int main(int, char const**)
     // Set the Icon
     sf::Image icon;
     
-    if (!icon.loadFromFile(osHandler->getResourcePath() + "icon.png")) {
+    if (!icon.loadFromFile(osHandler->getResourcePath() + "frog_placeholder.png")) {
         return EXIT_FAILURE;
     }
     
@@ -73,7 +73,7 @@ int main(int, char const**)
     // Play the music
 //    music.play();
     
-    Game* game = new Game(window);
+    Game* game = new Game(window, osHandler);
     Controller* controller = new Controller(game);
 	window->setFramerateLimit(60);
 

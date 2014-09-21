@@ -18,11 +18,12 @@
 #include <ctime>
 class Shape;
 class Controller;
+class OSHandler;
 
 class Game
 {
 public:
-    Game(sf::RenderWindow* window);
+    Game(sf::RenderWindow* window, OSHandler* osHandler);
 	~Game();
     void run();
 
@@ -31,6 +32,7 @@ public:
     sf::RenderWindow* getWindow();
     b2World* getWorld();
     Player* getPlayer();
+    OSHandler* getOSHandler();
     
 private:
 	void removeFallenBoxes(std::list<Shape*>& todelete);
@@ -38,6 +40,7 @@ private:
 	
     b2World* world;
     Player* player;
+    OSHandler* osHandler;
 	ShapeFactory* shapeFactory;
     sf::RenderWindow* window;
 	sf::View* view;
