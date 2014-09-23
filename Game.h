@@ -16,7 +16,8 @@
 #include "Player.h"
 #include "ShapeFactory.h"
 #include <list>
-#include <ctime>
+#include <thread>
+#include <typeinfo>
 class Shape;
 class Controller;
 class OSHandler;
@@ -25,7 +26,7 @@ class UDPNetwork;
 class Game
 {
 public:
-	Game(sf::RenderWindow* window, bool server, sf::IpAddress* serverip=nullptr, unsigned short serverPort = 0);
+	Game(sf::RenderWindow* window, OSHandler* osHandler,bool server, sf::IpAddress* serverip=nullptr, unsigned short serverPort = 0);
 	~Game();
     void run();
 
@@ -39,6 +40,7 @@ public:
 private:
 	void removeFallenBoxes(std::list<Shape*>& todelete);
 	void calcViewOffset();
+	Shape* boxHandling(); //create and destroy boxes. Returns pointer to last created box
 	
     b2World* world;
     Player* player;
@@ -51,7 +53,7 @@ private:
 
 	//network
 	UDPNetwork* localHost;
-    
+
     sf::Clock clock;
     sf::Time timer;
     
@@ -60,6 +62,9 @@ private:
 	int secPerDrops; //time before a new block is dropped
 	int killOffset; //how far under the screen blocks will be killed
 	friend Controller;
+	friend UDPNetwork;
+
+	std::thread* network;
 };
 
 #endif /* defined(__Block_Frog__Game__) */
