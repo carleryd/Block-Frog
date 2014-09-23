@@ -5,7 +5,7 @@
 Client::Client(string name, sf::IpAddress sAddress, unsigned short port, ShapeFactory& f):
 	UDPNetwork(name, f), serverAddress(sAddress), serverPort(port)
 {
-	cout << (connect() ? "Connected to "  : "Failed to connect to " ) << sAddress.toString() << endl;
+	//cout << (connect() ? "Connected to "  : "Failed to connect to " ) << sAddress.toString() << endl;
 	selector.add(mySocket);
 }
 
