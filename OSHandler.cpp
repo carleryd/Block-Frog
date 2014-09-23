@@ -1,11 +1,3 @@
-//
-//  OSHandler.cpp
-//  Block Frog
-//
-//  Created by roflmao on 2014-09-20.
-//  Copyright (c) 2014 TDDD23. All rights reserved.
-//
-
 #include "OSHandler.h"
 #ifdef __APPLE__
 #include "ResourcePath.hpp"

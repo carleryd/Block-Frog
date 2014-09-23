@@ -1,11 +1,3 @@
-//
-//  Player.h
-//  Block Frog
-//
-//  Created by roflmao on 2014-09-05.
-//  Copyright (c) 2014 TDDD23. All rights reserved.
-//
-
 #ifndef __Block_Frog__Player__
 #define __Block_Frog__Player__
 
@@ -28,13 +20,11 @@ public:
 	*	Pushes player in the direction
 	*/
 	void push(b2Vec2&& direction);
-    void draw(sf::RenderWindow* window);
+    void draw();
 	void updatePlayer();
     bool isJumping();
     Rectangle* box;
 private:
-    b2World* world;
-    sf::RenderWindow* window;
     Game* game;
     ContactListener* contactListener;
     sf::Sprite frogSprite;

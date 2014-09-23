@@ -1,11 +1,3 @@
-//
-//  Game.h
-//  Block Frog
-//
-//  Created by roflmao on 2014-09-05.
-//  Copyright (c) 2014 TDDD23. All rights reserved.
-//
-
 #ifndef __Block_Frog__Game__
 #define __Block_Frog__Game__
 
@@ -14,11 +6,11 @@
 #include "UDPNetwork.h"
 #include <Box2D/Box2D.h>
 #include "Player.h"
-#include "ShapeFactory.h"
 #include <list>
 #include <thread>
 #include <typeinfo>
 class Shape;
+class ShapeFactory;
 class Controller;
 class OSHandler;
 class UDPNetwork;
@@ -26,7 +18,7 @@ class UDPNetwork;
 class Game
 {
 public:
-	Game(sf::RenderWindow* window, OSHandler* osHandler,bool server, sf::IpAddress* serverip=nullptr, unsigned short serverPort = 0);
+	Game(sf::RenderWindow* window, OSHandler* osHandler,bool server, sf::IpAddress* serverip = nullptr, unsigned short serverPort = 0);
 	~Game();
     void run();
 
@@ -46,25 +38,24 @@ private:
     Player* player;
     OSHandler* osHandler;
 	ShapeFactory* shapeFactory;
+    
     sf::RenderWindow* window;
 	sf::View* view;
-    std::vector<Shape*> boxes;
 	sf::Vector2i viewOffset;
+    sf::Clock clock;
+    sf::Time timer;
 
 	//network
 	UDPNetwork* localHost;
-
-    sf::Clock clock;
-    sf::Time timer;
     
+	std::thread* network;
+    std::vector<Shape*> boxes;
 	double duration;
 	float riseSpeed;
 	int secPerDrops; //time before a new block is dropped
 	int killOffset; //how far under the screen blocks will be killed
 	friend Controller;
 	friend UDPNetwork;
-
-	std::thread* network;
 };
 
 #endif /* defined(__Block_Frog__Game__) */

@@ -1,15 +1,8 @@
-//
-//  Game.cpp
-//  Block Frog
-//
-//  Created by roflmao on 2014-09-05.
-//  Copyright (c) 2014 TDDD23. All rights reserved.
-//
-
 #include "Game.h"
 #include "OSHandler.h"
 #include "Server.h"
 #include "Client.h"
+#include "ShapeFactory.h"
 
 using namespace std;
 
@@ -29,8 +22,9 @@ Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_, bool server, sf::Ip
     
     // Construct a world object, which will hold and simulate the rigid bodies.
     world = new b2World(gravity);
+    
 	//shapefactory for creating shapes easily
-	shapeFactory = new ShapeFactory(world, window);
+	shapeFactory = new ShapeFactory(this);
     
     boxes.push_back(shapeFactory->createRectangle(new b2Vec2(750.0f, 50.0f),
                                                   new b2Vec2(0.0f, -float(window->getSize().y)/2),
@@ -113,7 +107,7 @@ void Game::run() {
 	//}
 
 	//player
-    player->draw(window);
+    player->draw();
 	player->updatePlayer();
 
 	//move view up/raise water level
@@ -133,7 +127,6 @@ void Game::run() {
 		//localHost->handleReceivedData(this);
 		//rebroadcast
 	}
-
 }
 
 void Game::spawnBox(sf::Vector2i position) {
@@ -143,13 +136,11 @@ void Game::spawnBox(sf::Vector2i position) {
     sf::Vector2i adjPos = sf::Vector2i(position.x - window->getSize().x/2,
 		-position.y + window->getSize().y/2);
 
-    //std::cout << "Spawning box at position " << position.x << " " << position.y << std::endl;
 	boxes.push_back(
 		shapeFactory->createRectangle(
 			new b2Vec2(20.0f, 20.0f),
 			new b2Vec2(float(adjPos.x), float(adjPos.y)),
 			true));
-    //std::cout << boxes.size() << std::endl;
 }
 
 void Game::removeFallenBoxes(list<Shape*>& deletion)

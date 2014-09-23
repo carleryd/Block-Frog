@@ -1,11 +1,3 @@
-//
-//  Controller.cpp
-//  Block Frog
-//
-//  Created by roflmao on 2014-09-09.
-//  Copyright (c) 2014 TDDD23. All rights reserved.
-//
-
 #include "Controller.h"
 
 Controller::Controller(Game* game_) 
@@ -61,7 +53,6 @@ void Controller::checkInput() {
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
 	        sf::Vector2i position = sf::Mouse::getPosition(*game->getWindow());
             game->spawnBox(position);
-//            spawnBox(sf::Vector2i(position.x - game->getWindow()->getSize().x/2, -position.y + game->getWindow()->getSize().y/2), game->getWorld(), boxes);
         }
     }
 }

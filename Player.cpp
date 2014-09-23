@@ -1,11 +1,3 @@
-//
-//  Player.cpp
-//  Block Frog
-//
-//  Created by roflmao on 2014-09-05.
-//  Copyright (c) 2014 TDDD23. All rights reserved.
-//
-
 #include "Player.h"
 #include "Game.h"
 #include "OSHandler.h"
@@ -13,13 +5,12 @@
 
 Player::Player(Game* game_) {
     game = game_;
-    world = game->getWorld();
-    window = game->getWindow();
     
-    box = new Rectangle(world, new b2Vec2(50.0f, 50.0f), new b2Vec2(0, 0), window, true); // Size, Position, Density, Friction
-//	box->getShape()->setFillColor(sf::Color(0, 255, 0));
+    // World, Size, Position, Density, Friction, FixedRotation
+    box = new Rectangle(game, new b2Vec2(50.0f, 50.0f), new b2Vec2(0, 0), true);
+    box->getBody()->SetFixedRotation(true);
+    box->getBody()->SetGravityScale(3);
     
-//    box->getShape()->setTexture(frogTexture);
 	jumpHeight = 50;
     
     if (!frogTexture.loadFromFile(game->getOSHandler()->getResourcePath() + "frog_placeholder.png")) {
@@ -30,28 +21,29 @@ Player::Player(Game* game_) {
     frogSprite.setTextureRect(sf::IntRect(0, 0, 50, 50));
     frogSprite.setPosition(box->getBody()->GetPosition().x, box->getBody()->GetPosition().y);
     
-//    frogSprite.rotate(30);
-//    std::cout << box->getBody()->GetPosition().x << " " << box->getBody()->GetPosition().y << std::endl;
-    
-    // Foot sensor
+    // Foot sensor - this is a small shape without physics
+    // it is only used as a sensor, placed underneath the player so
+    // that we can disable the jumping capabilities while in air
     b2PolygonShape polygonShape;
     
     b2FixtureDef myFixtureDef;
     myFixtureDef.shape = &polygonShape;
     myFixtureDef.density = 1;
     
+    // Sensor: width, height, center, angle
     polygonShape.SetAsBox(0.3, 0.3, b2Vec2(0,-2), 0);
     myFixtureDef.isSensor = true;
     b2Fixture* footSensorFixture = box->getBody()->CreateFixture(&myFixtureDef);
+    
+    // This is needed so that it can hold data about the "box" object
     footSensorFixture->SetUserData( (void*)3 );
     
     contactListener = new ContactListener();
-    world->SetContactListener(contactListener);
+    game->getWorld()->SetContactListener(contactListener);
 }
 
-void Player::draw(sf::RenderWindow* window) {
-//    window->draw(*box->getShape());
-    window->draw(frogSprite);
+void Player::draw() {
+    game->getWindow()->draw(frogSprite);
     
     frogSprite.setPosition(box->getBody()->GetPosition().x, box->getBody()->GetPosition().y);
 }
@@ -100,12 +92,10 @@ void Player::updatePlayer()
     frogSprite.setRotation((-box->getBody()->GetAngle() / 3.14) * 180);
 	// Adjusting from sprite 0:0 to body 0.5:0.5
     frogSprite.setOrigin(25, 25);
-//    float adjPlacementX = (frogSprite.getLocalBounds().right - frogSprite.getLocalBounds().left) / 2
-    float adjPosX = (box->getBody()->GetPosition().x + 800 / 30.0 / 2) * 30.0;
-    float adjPosY = (-box->getBody()->GetPosition().y + 600 / 30.0 / 2) * 30.0;
+    float adjPosX = (box->getBody()->GetPosition().x + game->getWindow()->getSize().x / 30.0 / 2) * 30.0;
+    float adjPosY = (-box->getBody()->GetPosition().y + game->getWindow()->getSize().y / 30.0 / 2) * 30.0;
     
     frogSprite.setPosition(adjPosX, adjPosY); // 56824 85.230.64.105
-//    std::cout << "Number of foot contacts: " << contactListener->getNumFootContacts() << std::endl;
 	
 	b2Vec2 oldSpeed = box->getBody()->GetLinearVelocity();
     oldSpeed = b2Vec2(0, oldSpeed.y);
