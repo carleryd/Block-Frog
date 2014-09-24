@@ -38,12 +38,17 @@ Player::Player(Game* game_) {
     // This is needed so that it can hold data about the "box" object
     footSensorFixture->SetUserData( (void*)3 );
     
+	// Hookshot
+    hookTip = new Rectangle(game, new b2Vec2(10.0f, 10.0f), new b2Vec2(200, 100), true);
+    hookTip->getShape()->setFillColor(sf::Color(255, 0, 0));
+    
     contactListener = new ContactListener();
     game->getWorld()->SetContactListener(contactListener);
 }
 
 void Player::draw() {
     game->getWindow()->draw(frogSprite);
+    game->getWindow()->draw(*hookTip->getShape());
     
     frogSprite.setPosition(box->getBody()->GetPosition().x, box->getBody()->GetPosition().y);
 }
@@ -101,4 +106,5 @@ void Player::updatePlayer()
     oldSpeed = b2Vec2(0, oldSpeed.y);
 	box->update();
     box->getBody()->SetLinearVelocity(b2Vec2(leftSpeed + rightSpeed, 0) + oldSpeed);
+    hookTip->update();
 }

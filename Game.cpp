@@ -33,7 +33,7 @@ Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_, bool server, sf::Ip
     
     player = new Player(this);
 
-	riseSpeed = -0.2f;
+	riseSpeed = 0; //-0.2f;
 	killOffset = 30;
 	secPerDrops = 1;
 

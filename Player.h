@@ -24,6 +24,7 @@ public:
 	void updatePlayer();
     bool isJumping();
     Rectangle* box;
+    Rectangle* hookTip;
 private:
     Game* game;
     ContactListener* contactListener;
