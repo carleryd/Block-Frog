@@ -44,6 +44,9 @@ Player::Player(Game* game_) {
     
     contactListener = new ContactListener();
     game->getWorld()->SetContactListener(contactListener);
+
+	leftSpeed = 0;
+	rightSpeed = 0;
 }
 
 void Player::draw() {

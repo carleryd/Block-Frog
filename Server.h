@@ -10,7 +10,7 @@ struct client
 	client(sf::IpAddress address, unsigned short port, string name)
 	{
 		clientAddress = address;
-		port = clientPort;
+		clientPort = port;
 	}
 	sf::IpAddress clientAddress;
 	unsigned short clientPort;
@@ -22,7 +22,8 @@ class Server: public  UDPNetwork
 public:
 	Server(string playerName, ShapeFactory& f);
 	~Server(void);
-	void waitForPlayers();
+	void waitForPlayers(bool& allowJoin);
+	void dropPlayer(); //remove player from server either if player disconnects voluntarily or not
 	bool isServer() override;
 	void broadCast(Shape* s);
 private:

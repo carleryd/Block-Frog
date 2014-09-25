@@ -27,7 +27,7 @@ bool Client::connect()
 	send(p, serverAddress, serverPort);
 	p.clear();
 	m.clear();
-	int ret = receive(p);
+	int ret = receive(&p);
 	p >> m;
 	cout << m << endl;
 	return ret == sf::Socket::Done ? true : false;

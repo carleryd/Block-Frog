@@ -6,7 +6,7 @@
 
 using namespace std;
 
-Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_, bool server, sf::IpAddress* serverAddress, unsigned short serverPort)
+Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_, int playerType, sf::IpAddress* serverAddress, unsigned short serverPort)
 {
     window = window_;
     osHandler = osHandler_;
@@ -36,23 +36,36 @@ Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_, bool server, sf::Ip
 	riseSpeed = 0; //-0.2f;
 	killOffset = 30;
 	secPerDrops = 1;
+	allowJoin = true;
 
 	//networking
-	if(server)
+	switch (playerType)
 	{
+	case SERVER:
 		localHost = new Server("HOST", *shapeFactory);
-//		dynamic_cast<Server*>(localHost)->waitForPlayers();
-	}
-	else
-	{
+		join = new thread(&Server::waitForPlayers, dynamic_cast<Server*>(localHost), std::ref(allowJoin));
+		//dynamic_cast<Server*>(localHost)->waitForPlayers();
+		cout << "Waiting for players..." << endl;
+		window->setTitle("SERVER");
+		break;
+	case CLIENT:
 		localHost = new Client("CLIENT", *serverAddress, serverPort, *shapeFactory);
-		Client* client = dynamic_cast<Client*>(localHost);
-		if(!client->connect())
+		if(!dynamic_cast<Client*>(localHost)->connect())
 		{
-			cerr << "Failed to connect" << endl;
+			cerr << "Failed to connect to "<< serverAddress->toString() << endl;
 		}
+		network = new thread(&UDPNetwork::listen, localHost);
+		window->setTitle("CLIENT");
+		break;
+	case SINGLE_PLAYER:
+		localHost = new Server("HOST", *shapeFactory);
+		window->setTitle("SINGLE PLAYER");
+		break;
+	default:
+		break;
 	}
-	network = new thread(&UDPNetwork::listen, localHost);
+
+	
 	window->setActive(true);
 	
 	// 
@@ -70,6 +83,8 @@ Game::~Game()
 	delete player;
 	delete view;
 	delete shapeFactory;
+	network->~thread();
+	join->~thread();
 }
 
 sf::RenderWindow* Game::getWindow() {
@@ -92,13 +107,14 @@ void Game::run() {
 	//Handle data that was received since last timestep
 	localHost->handleReceivedData(this);
 
-
-	//calculate view offset;
+	handleThreads();
+	boxHandling();
 	calcViewOffset();
+
 
 	if(localHost->isServer())
 	{
-		Shape* box = boxHandling();
+		Shape* box = createBoxes();
 		dynamic_cast<Server*>(localHost)->broadCast(box);
 	}
 	//else 
@@ -169,7 +185,7 @@ void Game::calcViewOffset()
 	viewOffset.y = (int)translation.y;
 }
 
-Shape* Game::boxHandling()
+void Game::boxHandling()
 {
 	//handle boxes
 	list<Shape*> deletion;
@@ -182,7 +198,10 @@ Shape* Game::boxHandling()
         window->draw(*box->getShape());
     }
 	removeFallenBoxes(deletion);
+}
 
+Shape* Game::createBoxes()
+{
 	//random dropping of boxes
     timer = clock.getElapsedTime();
     duration = timer.asSeconds();
@@ -192,6 +211,29 @@ Shape* Game::boxHandling()
 		boxes.push_back(shapeFactory->createRandomShape(viewOffset));
 		duration = 0;
         clock.restart();
+		return boxes.back();
 	}	
-	return boxes.back();
+	else
+		return nullptr;
+}
+
+void Game::handleThreads()
+{
+	switch (localHost->isServer())
+	{
+	case true:
+		if(!allowJoin)
+		{
+			join->join();
+			network = new thread(&UDPNetwork::listen, localHost);
+			cout << "No more players allowed yo join." << endl;
+		} 
+		break;
+	case false:
+		network = new thread(&UDPNetwork::listen, localHost);
+		break;
+	default:
+		break;
+	}
+
 }

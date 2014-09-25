@@ -10,7 +10,7 @@ UDPNetwork::UDPNetwork(string PlayerName, ShapeFactory& factory):
 	else
 	{
 		cout << "My IP address: "<< myAddress.getPublicAddress().toString() << endl;
-		cout << "My port: " << mySocket.getLocalPort() << endl;
+		cout << "My port: " << mySocket.getLocalPort() << endl; 
 	}
 	playerName = PlayerName;
 	selector.add(mySocket);
@@ -26,15 +26,20 @@ int UDPNetwork::send(sf::Packet& p, sf::IpAddress& a, unsigned short& port)
 	return mySocket.send(p, a, port);
 }
 
-int UDPNetwork::receive(sf::Packet& p, sf::IpAddress& a, unsigned short& port)
+int UDPNetwork::receive(sf::Packet* p, sf::IpAddress& a, unsigned short& port)
 {
-	cout << "Packet received." << endl;
-	return mySocket.receive(p, a, port);
+	cout << "Packet received from " << a.getPublicAddress().toString() << " at port "<< port << endl;
+	int r = mySocket.receive(*p, a, port);
+	if(port == mySocket.getLocalPort() && a == sf::IpAddress::getPublicAddress())
+	{
+		cout << "FATAL ERROR: SERVER AND CLIENT USING SAME PORT" << endl;
+		cout << "Trying to recover by removing from remote connections list" << endl;
+	}
+	return r;
 }
 
-int UDPNetwork::receive(sf::Packet& p)
+int UDPNetwork::receive(sf::Packet* p)
 {
-	cout << "Packet recevied." << endl;
 	unsigned short port;
     sf::IpAddress pointlessIP;
     
@@ -43,29 +48,36 @@ int UDPNetwork::receive(sf::Packet& p)
 
 void UDPNetwork::listen()
 {
-	sf::Packet packet;
 	while(selector.wait())
 	{
-		packet = sf::Packet();
-		if(selector.isReady(mySocket))
+		if(selector.isReady(mySocket) && !packetsOccupied)
 		{
-			receive(packet);
-			packets.push_back(&packet);
+			packetsOccupied = true;
+			packets.push_front(new sf::Packet());
+			receive(packets.back());
+			cout << "Packet size: " << packets.front()->getDataSize() << endl;
+			packetsOccupied = false;
 		}
 	}
 }
 
 void UDPNetwork::handleReceivedData(Game* game)
 {
-	while(!packets.empty())
+	while(!packets.empty() && !packetsOccupied)
 	{
-		sf::Packet& packet = *packets.front();
+		packetsOccupied = true;
+		sf::Packet* packet = packets.front();
 		int type;
-		packet >> type;
+		*packet >> type;
 		switch (type)
 		{
+		case SERVER_EXIT:
+			game->getWindow()->close();
+			break;
+		case CLIENT_EXIT:
+			break;
 		case SHAPE:
-			game->boxes.push_back(packetParser.unpackageShape(packet));
+			game->boxes.push_back(packetParser.unpackageShape(*packet));
 			break;
 		default:
 			cerr << "Type " << type << " is not a recognized data type!" << endl;
@@ -73,5 +85,6 @@ void UDPNetwork::handleReceivedData(Game* game)
 		}
 
 		packets.pop_front();
+		packetsOccupied = false;
 	}
 }

@@ -24,7 +24,7 @@
 #include "OSHandler.h"
 
 
-int main(int, char const**)
+int main(int argc, char* argv[])
 {
     OSHandler* osHandler = new OSHandler();
 	#ifdef _WIN32
@@ -75,34 +75,67 @@ int main(int, char const**)
     
 	Game* game;
 
-    // Run with server
-//	string in;
-//	cout << "Server? (y/n) ";
-//	cin >> in;
-//    bool server;
-//	sf::IpAddress* a = nullptr;
-//	unsigned short p = 0;
-//	if(in == "y")
-//	{
-//		server = true;
-//		game = new Game(window, osHandler, server);
-//	}
-//	else
-//	{
-//		server = false;
-//		cout << "Enter host's IP address: ";
-//		cin >> in;
-//		cout << endl;
-//		a = new sf::IpAddress(in);
-//		cout << "Enter host's port: ";
-//		cin >> in;
-//		p = stoi(in);
-//		cout << endl;
-//		game = new Game(window, osHandler, server, a, p);
-//	}
+	//check input arguments
+	string in;
+	sf::IpAddress* a = nullptr;
+	unsigned short p = 0;
+
+	if(argc > 1)
+	{
+		if(argv[0] == "-s")
+		{
+			cout << "Starting server." << endl;
+			game = new Game(window, osHandler, SERVER);
+		}
+		else if(argv[0] = "-c")
+		{
+			cout << "Starting client." << endl;
+			cout << "Enter host's IP address: ";
+			cin >> in;
+			cout << endl;
+			a = new sf::IpAddress(in);
+			cout << "Enter host's port: ";
+			cin >> in;
+			p = stoi(in);
+			cout << endl;
+			game = new Game(window, osHandler, CLIENT, a, p);
+		}
+		else if(argv[0] = "-o")//only one player
+		{
+			cout << "Starting single player game." << endl;
+			game = new Game(window, osHandler, SINGLE_PLAYER);
+		}
+
+	}
+	else
+	{
+		//open menu for players. Right now there is only terminal menu
+		cout << "-s for server, -c for client, -o for only player" << endl;
+		// Run with server
+		cout << "Server? (y/n) ";
+		cin >> in;
+
+		if(in == "y")
+		{
+			game = new Game(window, osHandler, SERVER);
+		}
+		else
+		{
+			cout << "Enter host's IP address: ";
+			cin >> in;
+			cout << endl;
+			a = new sf::IpAddress(in);
+			cout << "Enter host's port: ";
+			cin >> in;
+			p = stoi(in);
+			cout << endl;
+			game = new Game(window, osHandler, CLIENT, a, p);
+		}
+	}
+
 
     // Run without server
-    game = new Game(window, osHandler, true);
+    //game = new Game(window, osHandler, true);
 
 
     //Game* game = new Game(window, server, a, p);
@@ -122,6 +155,7 @@ int main(int, char const**)
         // Update the window
         window->display();
     }
+
 
     return EXIT_SUCCESS;
 }

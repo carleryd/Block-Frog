@@ -30,7 +30,10 @@ void Controller::checkInput() {
                 case sf::Keyboard::Space:
                     game->getPlayer()->move(game->getPlayer()->JUMP);
                     break;
-
+				case sf::Keyboard::J:
+					game->allowJoin = false;
+					cout << "player join false" << endl;
+					break;
                 default:
 					if(event.key.alt)
 						devInput(event);

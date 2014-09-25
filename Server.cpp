@@ -22,40 +22,45 @@ bool Server::isServer()
 	return true;
 }
 
-void Server::waitForPlayers()
+void Server::waitForPlayers(bool& allowJoin)
 {
 	string m;
 	sf::Packet packet;
 	sf::IpAddress remoteAddress;
 	unsigned short remotePort;
 
-	while(selector.wait()) //waits infinitely long now...
+	while(selector.wait() && allowJoin) //waits infinitely long now...
 	{
 		if(selector.isReady(mySocket))
 		{
-			receive(packet, remoteAddress, remotePort);
+			receive(&packet, remoteAddress, remotePort);
 			if(!(packet >> m))
 				cerr <<	"ERROR" << endl; 
-			cout << m << " has joined." << endl;
 			remoteConnections.push_back(new client(remoteAddress, remotePort, m));
 			packet.clear();
+			cout << m << " has joined." << endl;
 			m = "Welcome to " + playerName + "'s server.";
 			packet << m;
 			send(packet, remoteAddress, remotePort);
 			//ask if enough players
-			break;
+			//break;
 		}
 	}
 }
 
 void Server::broadCast(Shape* s)
 {
+	if(s == nullptr)
+		return;
 	for(unsigned i = 0; i < remoteConnections.size(); i++)
 	{
         sf::Packet tempPackage = packetParser.packageShape(s);
 		send(tempPackage, remoteConnections[i]->clientAddress, remoteConnections[i]->clientPort);
+		cout << "Broadcast!" << endl;
 	}
 }
 
+void Server::dropPlayer()
+{
 
-
+};
