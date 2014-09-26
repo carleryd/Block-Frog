@@ -8,8 +8,8 @@ Player::Player(Game* game_) {
     
     // World, Size, Position, Density, Friction, FixedRotation
     box = new Rectangle(game, new b2Vec2(50.0f, 50.0f), new b2Vec2(0, 0), true);
-    box->getBody()->SetFixedRotation(true);
-    box->getBody()->SetGravityScale(3);
+//    box->getBody()->SetFixedRotation(true);
+//    box->getBody()->SetGravityScale(3);
     
 	jumpHeight = 50;
     
@@ -39,8 +39,14 @@ Player::Player(Game* game_) {
     footSensorFixture->SetUserData( (void*)3 );
     
 	// Hookshot
-    hookTip = new Rectangle(game, new b2Vec2(10.0f, 10.0f), new b2Vec2(200, 100), true);
+    hookTip = new Rectangle(game, new b2Vec2(50.0f, 50.0f), new b2Vec2(200, 100), true);
     hookTip->getShape()->setFillColor(sf::Color(255, 0, 0));
+    
+    b2DistanceJointDef* def = new b2DistanceJointDef();
+    def->Initialize(box->getBody(), hookTip->getBody(), b2Vec2(0, 0), b2Vec2(0, 0));
+    def->dampingRatio = 1;
+    def->frequencyHz = 60;
+    game->getWorld()->CreateJoint(def);
     
     contactListener = new ContactListener();
     game->getWorld()->SetContactListener(contactListener);
