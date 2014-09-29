@@ -34,6 +34,12 @@ void Controller::checkInput() {
 					game->allowJoin = false;
 					cout << "player join false" << endl;
 					break;
+                case sf::Keyboard::W:
+					game->getPlayer()->increaseHook();
+					break;
+                case sf::Keyboard::S:
+					game->getPlayer()->decreaseHook();
+					break;
                 default:
 					if(event.key.alt)
 						devInput(event);

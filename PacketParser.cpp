@@ -1,9 +1,10 @@
 #include "PacketParser.h"
-#include "Shape.h"
+//#include "Shape.h"
 #include "ShapeFactory.h"
 #include "UDPNetwork.h"
 #include <iostream>
 #include "Player.h"
+#include "Rectangle.h"
 
 PacketParser::PacketParser(ShapeFactory& f):
 	factory(f)
@@ -17,13 +18,21 @@ PacketParser::~PacketParser(void)
 
 sf::Packet PacketParser::pack(Shape* shape)
 {
-	sf::Packet packet;
-	b2Body* body = shape->getBody();
-	int type = UDPNetwork::SHAPE;
-	packet << type; //type
-	packet << body->GetPosition().x << body->GetPosition().y;
-	packet << shape->getSize()->x << shape->getSize()->y;
-	return packet;
+    Rectangle* rectangle = dynamic_cast<Rectangle*>(shape);
+    sf::Packet packet;
+    
+    if(rectangle != nullptr) {
+        b2Body* body = rectangle->getBody();
+        int type = UDPNetwork::SHAPE;
+        packet << type; //type
+        packet << body->GetPosition().x << body->GetPosition().y;
+        packet << rectangle->getSize()->x << rectangle->getSize()->y;
+        return packet;
+    }
+    else {
+     	cout << "packetShape() is not sending circles!" << endl;
+        return packet;
+    }
 }
 
 sf::Packet PacketParser::pack(player_info p)

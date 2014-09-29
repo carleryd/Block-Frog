@@ -11,7 +11,7 @@ Player::Player(Game* game_) {
     // World, Size, Position, Density, Friction, FixedRotation
     box = new Rectangle(game, new b2Vec2(50.0f, 50.0f), new b2Vec2(0, 0), true);
     box->getBody()->SetFixedRotation(true);
-    box->getBody()->SetGravityScale(3);
+//    box->getBody()->SetGravityScale(3);
     
 	jumpHeight = 50;
     
@@ -41,8 +41,24 @@ Player::Player(Game* game_) {
     footSensorFixture->SetUserData( (void*)3 );
     
 	// Hookshot
-    hookTip = new Rectangle(game, new b2Vec2(10.0f, 10.0f), new b2Vec2(200, 100), true);
+    // game object, radius, position, dynamic, density, friction
+    hookTip = new Circle(game, 5.0f, new b2Vec2(0, 0), true, 0.0, 0.0);
+//	hookTip->getBody()->GetFixtureList()->SetFriction(0.0f);
     hookTip->getShape()->setFillColor(sf::Color(255, 0, 0));
+    
+    b2DistanceJointDef* def = new b2DistanceJointDef();
+    // bodyA, bodyB, localAnchorA, localAnchorB
+    def->Initialize(box->getBody(), hookTip->getBody(), b2Vec2(0, 0), b2Vec2(0, 0));
+//    def->dampingRatio = 0.5f;
+//    def->frequencyHz = 4.0f;
+    
+    // fästet i player är långt till höger
+    
+    def->length = 3;
+    def->collideConnected = false;
+
+    
+	hook = game->getWorld()->CreateJoint(def);
     
     contactListener = new ContactListener();
     game->getWorld()->SetContactListener(contactListener);
@@ -65,6 +81,14 @@ void Player::setName(string n)
 
 void Player::setPosition(b2Vec2* newPos) {
 	box->getBody()->SetTransform(*newPos, box->getBody()->GetAngle());
+}
+
+void Player::increaseHook() {
+    cout << "increaseHook()" << endl;
+}
+
+void Player::decreaseHook() {
+    cout << "decreaseHook()" << endl;    
 }
 
 void Player::move(int dir)

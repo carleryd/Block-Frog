@@ -79,7 +79,6 @@ int main(int argc, char* argv[])
 	string in;
 	sf::IpAddress* a = nullptr;
 	unsigned short p = 0;
-
 	if(argc > 1)
 	{
 		string in = argv[1];
@@ -112,7 +111,6 @@ int main(int argc, char* argv[])
 			cout << "-s - start server\n-c - start client\n-o - start game for only one player" << endl;
 			return EXIT_FAILURE;
 		}
-
 	}
 	else
 	{
