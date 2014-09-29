@@ -57,9 +57,10 @@ void UDPNetwork::listen()
 			packetsOccupied = true;
 			packets.push_front(packetInfo());
 			
-			receive(&packets.front().packet,
+			if(receive(&packets.front().packet,
 				packets.front().senderAddress, 
-				packets.front().senderPort);
+				packets.front().senderPort) != sf::Socket::Done)
+				cerr << "Error when receiving data" << endl;
 			//packets.front()->
 			cout << "Packet size: " << packets.front().packet.getDataSize() << endl;
 			packetsOccupied = false;
@@ -114,7 +115,7 @@ void UDPNetwork::handleReceivedData(Game* game)
 				if(found != remotePlayers.end())
 				{
 					//move player
-					(*found)->move(info->movedir);
+					(*found)->move(info->movedir, false);
 					if(isServer())
 					{
 						dynamic_cast<Server*>(this)->addPlayerInfo(info);

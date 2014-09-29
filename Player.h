@@ -20,7 +20,8 @@ public:
     void setPosition(b2Vec2* newPos);
 	b2Vec2* getPosition() const{return box->getPosition();};
 	enum { LEFT, RIGHT, JUMP, LEFT_STOP, RIGHT_STOP };
-	void move(int dir);
+	//set bool to true when moving a remote player
+	void move(int dir, bool localPlayer=true);
 	/*
 	*	Pushes player in the direction
 	*/

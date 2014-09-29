@@ -91,7 +91,7 @@ void Player::decreaseHook() {
     cout << "decreaseHook()" << endl;    
 }
 
-void Player::move(int dir)
+void Player::move(int dir, bool localPlayer)
 {
 	switch (dir)
 	{
@@ -116,22 +116,26 @@ void Player::move(int dir)
 	default:
 		break;
 	}
-	//if client then tell server about movement
-	player_info p;
-	p.name = name;
-	p.movedir = dir;
-	if(game->getLocalHost()->isServer())
+	if(localPlayer)
 	{
-		Server* server = dynamic_cast<Server*>(game->getLocalHost());
-		/*server->broadCastExcept(server->getMyAddress(), server->getMyPort(),game->getPacketParser()->pack(p));*/
-		//server->broadCast(game->getPacketParser()->pack(p));
-		//dynamic_cast<Server*>(game->getLocalHost())->addPlayerInfo(new player_info(p));
-	}
-	else
-	{
-		dynamic_cast<Client*>(game->getLocalHost())->sendToServer(
-			game->getPacketParser()->pack(p)
-			);
+		//if client then tell server about movement
+		player_info p;
+		p.name = name;
+		p.movedir = dir;
+		if(game->getLocalHost()->isServer())
+		{
+			Server* server = dynamic_cast<Server*>(game->getLocalHost());
+			/*server->broadCastExcept(server->getMyAddress(), server->getMyPort(),game->getPacketParser()->pack(p));*/
+
+			server->broadCast(game->getPacketParser()->pack(p));
+			//dynamic_cast<Server*>(game->getLocalHost())->addPlayerInfo(new player_info(p));
+		}
+		else
+		{
+			dynamic_cast<Client*>(game->getLocalHost())->sendToServer(
+				game->getPacketParser()->pack(p)
+				);
+		}
 	}
 }
 
