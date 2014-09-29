@@ -131,7 +131,8 @@ void Game::run() {
 	window->setView(*view);
     
     // timeStep, velocityIterations, positionIterations
-    world->Step(1.0f/60.0f, 10, 10);
+    world->Step(1.0f/60.0f, 10, 8);
+    world->ClearForces();
 
 	//do  networking that has happened during this frame
 	//e.g. send data that player has moved a block

@@ -9,9 +9,13 @@
 class Rectangle: public Shape
 {
 public:
-	Rectangle(Game* game, b2Vec2* recSize, b2Vec2* recPosition,
-		bool recDynamic, float recDensity = 1.0f, float recFriction = 0.3f);
+	Rectangle(Game* game, b2Vec2* size, b2Vec2* position,
+		bool dynamic, float density = 1.0f, float friction = 0.3f);
 	~Rectangle();
+
+  	b2Vec2* getSize() const;
+private:
+    b2Vec2* size;
 };
 
 #endif /* defined(__Block_Frog__Square__) */

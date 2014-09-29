@@ -1,18 +1,20 @@
-#include "Rectangle.h"
+#include "Circle.h"
 
-Rectangle::Rectangle(Game* game, b2Vec2* size_, b2Vec2* position,
+Circle::Circle(Game* game, float radius_, b2Vec2* position,
 					 bool dynamic, float density, float friction):
-	Shape(game, position, dynamic, density, friction)
+Shape(game, position, dynamic, density, friction)
 {
-    size = size_;
+    radius = radius_;
     
     // Define another box shape for our dynamic body.
-    b2PolygonShape boxShape; //dynamicBox;
-    boxShape.SetAsBox((size->x/2) * pixelToMeter, (size->y/2) * pixelToMeter);
-    
+    b2CircleShape circleShape; //dynamicBox;
+    circleShape.m_radius = radius * pixelToMeter;
+
+//    boxShape.SetAsBox((size->x/2) * pixelToMeter, (size->y/2) * pixelToMeter);
+//    circleS
     // Define the dynamic body fixture.
     b2FixtureDef fixtureDef;
-    fixtureDef.shape = &boxShape;
+    fixtureDef.shape = &circleShape;
     
     // Set the box density to be non-zero, so it will be dynamic.
     fixtureDef.density = density;
@@ -23,19 +25,19 @@ Rectangle::Rectangle(Game* game, b2Vec2* size_, b2Vec2* position,
     // Add the shape to the body.
     body->CreateFixture(&fixtureDef);
     
-    shape = new sf::RectangleShape(sf::Vector2f(size->x, size->y));
+//    shape = new sf::CircleShape(radius);
+    shape = new sf::CircleShape(radius);
     
     // This makes SFML use the same origin for shapes as Box2D(middle, middle)
-    shape->setOrigin(size->x/2, size->y/2);
+    shape->setOrigin(radius, radius);
     shape->setPosition(position->x, position->y);
 }
 
-Rectangle::~Rectangle()
+Circle::~Circle()
 {
-   	delete size;
 	delete Shape::shape;
 }
 
-b2Vec2* Rectangle::getSize() const {
-    return size;
+float Circle::getRadius() {
+    return radius;
 }

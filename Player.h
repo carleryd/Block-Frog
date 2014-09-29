@@ -5,6 +5,7 @@
 #include <SFML/Graphics.hpp>
 #include <Box2D/Box2D.h>
 #include "Rectangle.h"
+#include "Circle.h"
 #include "ContactListener.h"
 class Game;
 
@@ -22,14 +23,18 @@ public:
 	void push(b2Vec2&& direction);
     void draw();
 	void updatePlayer();
+    void increaseHook();
+    void decreaseHook();
     bool isJumping();
     Rectangle* box;
-    Rectangle* hookTip;
+    Circle* hookTip;
 private:
     Game* game;
     ContactListener* contactListener;
     sf::Sprite frogSprite;
     sf::Texture frogTexture;
+    
+    b2Joint* hook;
     
 	float leftSpeed, rightSpeed;
 	float jumpHeight;
