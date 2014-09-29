@@ -25,19 +25,26 @@ Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_, int playerType, sf:
     
 	//shapefactory for creating shapes easily
 	shapeFactory = new ShapeFactory(this);
+    player = new Player(this);
     
     boxes.push_back(shapeFactory->createRectangle(new b2Vec2(750.0f, 50.0f),
                                                   new b2Vec2(0.0f, -float(window->getSize().y)/2),
                                                   false)
                     );
-    
-    player = new Player(this);
 
 	riseSpeed = 0; //-0.2f;
 	killOffset = 30;
 	secPerDrops = 1;
 	allowJoin = true;
-
+    
+    // SFML and Box2D scaling variables used for drawing
+    pixelToMeter = 1.0f/30.0f; // Box2D meter equals 50 pixels?
+    meterToPixel = 30.0;
+    // Window: 800x600(access this form game->getWorld()->getSize())
+    // Box2D coordinate system is in the middle of screen, SFML is top-left. These offsets will make SFML start off drawing in the middle
+    offSetX = window->getSize().x / meterToPixel / 2;
+    offSetY = window->getSize().y / meterToPixel / 2;
+    
 	//networking
 	switch (playerType)
 	{
@@ -91,17 +98,16 @@ sf::RenderWindow* Game::getWindow() {
     return window;
 }
 
-b2World* Game::getWorld() {
-    return world;
-}
+b2World* Game::getWorld() { return world; }
 
-Player* Game::getPlayer() {
-    return player;
-}
+Player* Game::getPlayer() { return player; }
 
-OSHandler* Game::getOSHandler() {
-    return osHandler;
-}
+OSHandler* Game::getOSHandler() { return osHandler; }
+
+float Game::getPixelToMeter() { return pixelToMeter; }
+float Game::getMeterToPixel() { return meterToPixel; }
+float Game::getOffSetX() { return offSetX; }
+float Game::getOffSetY() { return offSetY; }
 
 void Game::run() {
 	//Handle data that was received since last timestep
@@ -124,7 +130,7 @@ void Game::run() {
 
 	//player
     player->draw();
-	player->updatePlayer();
+	player->update();
 
 	//move view up/raise water level
 	view->move(0, riseSpeed);

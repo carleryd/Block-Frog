@@ -23,6 +23,7 @@ public:
 	Game(sf::RenderWindow* window, OSHandler* osHandler, int playerType, sf::IpAddress* serverip = nullptr, unsigned short serverPort = 0);
 	~Game();
     void run();
+    void init();
 
     void spawnBox(sf::Vector2i position);
     
@@ -30,6 +31,11 @@ public:
     b2World* getWorld();
     Player* getPlayer();
     OSHandler* getOSHandler();
+    
+    float getPixelToMeter();
+    float getMeterToPixel();
+    float getOffSetX();
+    float getOffSetY();
     
 private:
 	void removeFallenBoxes(std::list<Shape*>& todelete);
@@ -54,10 +60,14 @@ private:
 	UDPNetwork* localHost;
 	std::thread* network;
 	std::thread* join;
-
+    
     std::vector<Shape*> boxes;
 	double duration;
 	float riseSpeed;
+    float pixelToMeter;
+    float meterToPixel;
+    float offSetX;
+    float offSetY;
 	int secPerDrops; //time before a new block is dropped
 	int killOffset; //how far under the screen blocks will be killed
 	bool allowJoin;

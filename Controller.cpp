@@ -60,8 +60,9 @@ void Controller::checkInput() {
             }
         }
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-	        sf::Vector2i position = sf::Mouse::getPosition(*game->getWindow());
-            game->spawnBox(position);
+//	        sf::Vector2i position = sf::Mouse::getPosition(*game->getWindow());
+//            game->spawnBox(position);
+            game->getPlayer()->useHook();
         }
     }
 }

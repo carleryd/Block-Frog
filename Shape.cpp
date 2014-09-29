@@ -39,6 +39,8 @@ Shape::~Shape(void)
 
 void Shape::update()
 {
+//    cout << "mTP: " << meterToPixel << endl << "pTM: " << pixelToMeter << endl;
+//    shape->setPosition((body->GetPosition().x + game->getOffSetX()) * game->getMeterToPixel(), (-body->GetPosition().y + game->getOffSetY()) * game->getMeterToPixel());
     shape->setPosition((body->GetPosition().x + offSetX) * meterToPixel, (-body->GetPosition().y + offSetY) * meterToPixel);
     shape->setRotation((-body->GetAngle() / PI) * 180);
 }

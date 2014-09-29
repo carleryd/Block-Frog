@@ -30,6 +30,8 @@ protected:
     float density, friction;
     float angle;
     bool dynamic;
+private:
+    Game* game;
 };
 
 #endif

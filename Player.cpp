@@ -1,13 +1,13 @@
 #include "Player.h"
 #include "Game.h"
 #include "OSHandler.h"
-
+#include "Hook.h"
 
 Player::Player(Game* game_) {
     game = game_;
     
     // World, Size, Position, Density, Friction, FixedRotation
-    box = new Rectangle(game, new b2Vec2(50.0f, 50.0f), new b2Vec2(0, 0), true);
+    box = new Rectangle(game_, new b2Vec2(50.0f, 50.0f), new b2Vec2(0, 0), true);
     box->getBody()->SetFixedRotation(true);
 //    box->getBody()->SetGravityScale(3);
     
@@ -30,7 +30,8 @@ Player::Player(Game* game_) {
     myFixtureDef.shape = &polygonShape;
     myFixtureDef.density = 1;
     
-    // Sensor: width, height, center, angle
+    // ##### SENSOR #####
+    // width, height, center, angle
     polygonShape.SetAsBox(0.3, 0.3, b2Vec2(0,-2), 0);
     myFixtureDef.isSensor = true;
     b2Fixture* footSensorFixture = box->getBody()->CreateFixture(&myFixtureDef);
@@ -38,25 +39,9 @@ Player::Player(Game* game_) {
     // This is needed so that it can hold data about the "box" object
     footSensorFixture->SetUserData( (void*)3 );
     
-	// Hookshot
+	// ##### HOOKSHOT #####
     // game object, radius, position, dynamic, density, friction
-    hookTip = new Circle(game, 5.0f, new b2Vec2(0, 0), true, 0.0, 0.0);
-//	hookTip->getBody()->GetFixtureList()->SetFriction(0.0f);
-    hookTip->getShape()->setFillColor(sf::Color(255, 0, 0));
-    
-    b2DistanceJointDef* def = new b2DistanceJointDef();
-    // bodyA, bodyB, localAnchorA, localAnchorB
-    def->Initialize(box->getBody(), hookTip->getBody(), b2Vec2(0, 0), b2Vec2(0, 0));
-//    def->dampingRatio = 0.5f;
-//    def->frequencyHz = 4.0f;
-    
-    // fästet i player är långt till höger
-    
-    def->length = 3;
-    def->collideConnected = false;
-
-    
-	hook = game->getWorld()->CreateJoint(def);
+    hook = nullptr;
     
     contactListener = new ContactListener();
     game->getWorld()->SetContactListener(contactListener);
@@ -65,10 +50,15 @@ Player::Player(Game* game_) {
 	rightSpeed = 0;
 }
 
+b2Body* Player::getBody() {
+    return box->getBody();
+}
+
 void Player::draw() {
     game->getWindow()->draw(frogSprite);
-    game->getWindow()->draw(*hookTip->getShape());
-    
+    if(hook != nullptr)
+	    hook->draw();
+
     frogSprite.setPosition(box->getBody()->GetPosition().x, box->getBody()->GetPosition().y);
 }
 
@@ -76,12 +66,18 @@ void Player::setPosition(b2Vec2* newPos) {
 	box->getBody()->SetTransform(b2Vec2(newPos->x, newPos->y), box->getBody()->GetAngle());
 }
 
+void Player::useHook() {
+    hook = new Hook(game);
+}
+
 void Player::increaseHook() {
     cout << "increaseHook()" << endl;
+	hook->changeLength(0.5);
 }
 
 void Player::decreaseHook() {
-    cout << "decreaseHook()" << endl;    
+    cout << "decreaseHook()" << endl;
+	hook->changeLength(-0.5);
 }
 
 void Player::move(int dir)
@@ -119,7 +115,7 @@ void Player::push(b2Vec2&& dir)
 	box->getBody()->ApplyLinearImpulse(dir, box->getBody()->GetPosition(), true);
 }
 
-void Player::updatePlayer()
+void Player::update()
 {
     frogSprite.setRotation((-box->getBody()->GetAngle() / 3.14) * 180);
 	// Adjusting from sprite 0:0 to body 0.5:0.5
@@ -133,5 +129,7 @@ void Player::updatePlayer()
     oldSpeed = b2Vec2(0, oldSpeed.y);
 	box->update();
     box->getBody()->SetLinearVelocity(b2Vec2(leftSpeed + rightSpeed, 0) + oldSpeed);
-    hookTip->update();
+    
+    if(hook != nullptr)
+	    hook->update();
 }

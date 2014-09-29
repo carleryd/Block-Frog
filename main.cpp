@@ -141,7 +141,6 @@ int main(int argc, char* argv[])
     // Run without server
     //game = new Game(window, osHandler, true);
 
-
     //Game* game = new Game(window, server, a, p);
     Controller* controller = new Controller(game);
 	window->setFramerateLimit(60);

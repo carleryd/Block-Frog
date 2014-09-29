@@ -8,12 +8,14 @@
 #include "Circle.h"
 #include "ContactListener.h"
 class Game;
+class Hook;
 
 class Player
 {
 public:
 	Player(Game* game);
     
+    b2Body* getBody();
     void setPosition(b2Vec2* newPos);
 	enum { LEFT, RIGHT, JUMP, LEFT_STOP, RIGHT_STOP };
 	void move(int dir);
@@ -22,19 +24,19 @@ public:
 	*/
 	void push(b2Vec2&& direction);
     void draw();
-	void updatePlayer();
+	void update();
+    void useHook();
     void increaseHook();
     void decreaseHook();
     bool isJumping();
-    Rectangle* box;
-    Circle* hookTip;
+    
 private:
     Game* game;
+    Hook* hook;
+    Rectangle* box;
     ContactListener* contactListener;
     sf::Sprite frogSprite;
     sf::Texture frogTexture;
-    
-    b2Joint* hook;
     
 	float leftSpeed, rightSpeed;
 	float jumpHeight;
