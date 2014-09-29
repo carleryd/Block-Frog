@@ -29,8 +29,14 @@ public:
     sf::RenderWindow* getWindow();
     b2World* getWorld();
     Player* getPlayer();
+	sf::Vector2i& getViewOffset() {return viewOffset;};
+	list<Player*>& getRemotePlayers() {return remotePlayers;};
     OSHandler* getOSHandler();
-    
+	void addRemotePlayer(Player* rPlayer);
+	bool playersAllowedToJoined(){return allowJoin;};
+	UDPNetwork* getLocalHost(){return localHost;};
+	PacketParser* getPacketParser() const {return packetParser;};
+
 private:
 	void removeFallenBoxes(std::list<Shape*>& todelete);
 	void calcViewOffset();
@@ -40,7 +46,8 @@ private:
 	void handleThreads();
 	
     b2World* world;
-    Player* player;
+    Player* player; //this is the player that the player controlls
+	list<Player*> remotePlayers; //
     OSHandler* osHandler;
 	ShapeFactory* shapeFactory;
     
@@ -49,11 +56,11 @@ private:
 	sf::Vector2i viewOffset;
     sf::Clock clock;
     sf::Time timer;
+	PacketParser* packetParser;
 
 	//network
 	UDPNetwork* localHost;
 	std::thread* network;
-	std::thread* join;
 
     std::vector<Shape*> boxes;
 	double duration;

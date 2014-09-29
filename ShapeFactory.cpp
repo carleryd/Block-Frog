@@ -19,12 +19,7 @@ ShapeFactory::~ShapeFactory(void)
 
 }
 
-template<class T>
-b2Vec2* ShapeFactory::sfvec_to_b2vec(sf::Vector2<T> v)
-{
-    return new b2Vec2(float(v.x - game->getWindow()->getSize().x/2),
-                      float(-v.y + game->getWindow()->getSize().y/2));
-};
+
 
 Shape* ShapeFactory::createRectangle(b2Vec2* size, b2Vec2* position, bool dynamic)
 {
@@ -34,12 +29,13 @@ Shape* ShapeFactory::createRectangle(b2Vec2* size, b2Vec2* position, bool dynami
 Shape* ShapeFactory::createRandomShape(sf::Vector2i viewOffset)
 {
 	auto rand = bind(dist, mersenneGen);
-	float x = float(dist(mersenneGen) * game->getWindow()->getSize().x + viewOffset.x);
-	float y = float(-200 + viewOffset.y); //remember that positive y is up in box2d
+	float x = float(dist(mersenneGen) * game->getWindow()->getSize().x);// + viewOffset.x);
+	float y = float(-200);// + viewOffset.y); //remember that positive y is up in box2d
 
 	return new Rectangle(
 		game,
 		new b2Vec2(rand()*100 + minSize, rand()*100 + minSize), 
+		//new b2Vec2(x, y),
 		sfvec_to_b2vec(sf::Vector2f(x, y)),
 		true);
 }

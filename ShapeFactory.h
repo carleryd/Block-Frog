@@ -18,7 +18,15 @@ public:
 	Shape* createRandomShape(sf::Vector2i viewOffset);
 
 	template<class T>
-	b2Vec2* sfvec_to_b2vec(sf::Vector2<T> v);
+	b2Vec2* sfvec_to_b2vec(sf::Vector2<T>& v)
+	{
+		sf::Vector2<T> adjustVector = sf::Vector2<T>(v.x - game->getWindow()->getSize().x/2, 
+			-v.y + game->getWindow()->getSize().y/2);
+		adjustVector += sf::Vector2<T>(game->getViewOffset());
+		return new b2Vec2(float(adjustVector.x), float(adjustVector.y));
+			/*new b2Vec2(float(v.x - game->getWindow()->getSize().x/2 + game->getViewOffset().x),
+			float(-v.y + game->getWindow()->getSize().y/2 + game->getViewOffset().y));*/
+	};
 
 private:
 	//b2Vec2 convert_sf_vector(sf::Vector2i v);

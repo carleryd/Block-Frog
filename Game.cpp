@@ -25,6 +25,7 @@ Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_, int playerType, sf:
     
 	//shapefactory for creating shapes easily
 	shapeFactory = new ShapeFactory(this);
+	packetParser = new PacketParser(*shapeFactory);
     
     boxes.push_back(shapeFactory->createRectangle(new b2Vec2(750.0f, 50.0f),
                                                   new b2Vec2(0.0f, -float(window->getSize().y)/2),
@@ -38,33 +39,30 @@ Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_, int playerType, sf:
 	secPerDrops = 1;
 	allowJoin = true;
 
+
 	//networking
 	switch (playerType)
 	{
 	case SERVER:
-		localHost = new Server("HOST", *shapeFactory);
-		join = new thread(&Server::waitForPlayers, dynamic_cast<Server*>(localHost), std::ref(allowJoin));
+		localHost = new Server("HOST", *shapeFactory, this);
+		//join = new thread(&Server::waitForPlayers, dynamic_cast<Server*>(localHost), std::ref(allowJoin));
 		//dynamic_cast<Server*>(localHost)->waitForPlayers();
 		cout << "Waiting for players..." << endl;
 		window->setTitle("SERVER");
 		break;
 	case CLIENT:
 		localHost = new Client("CLIENT", *serverAddress, serverPort, *shapeFactory);
-		if(!dynamic_cast<Client*>(localHost)->connect())
-		{
-			cerr << "Failed to connect to "<< serverAddress->toString() << endl;
-		}
-		network = new thread(&UDPNetwork::listen, localHost);
+		dynamic_cast<Client*>(localHost)->connect(player->getPosition());
 		window->setTitle("CLIENT");
 		break;
 	case SINGLE_PLAYER:
-		localHost = new Server("HOST", *shapeFactory);
+		localHost = new Server("HOST", *shapeFactory, this);
 		window->setTitle("SINGLE PLAYER");
 		break;
 	default:
 		break;
 	}
-
+	network = new thread(&UDPNetwork::listen, localHost);
 	
 	window->setActive(true);
 	
@@ -84,7 +82,6 @@ Game::~Game()
 	delete view;
 	delete shapeFactory;
 	network->~thread();
-	join->~thread();
 }
 
 sf::RenderWindow* Game::getWindow() {
@@ -107,7 +104,6 @@ void Game::run() {
 	//Handle data that was received since last timestep
 	localHost->handleReceivedData(this);
 
-	handleThreads();
 	boxHandling();
 	calcViewOffset();
 
@@ -115,7 +111,8 @@ void Game::run() {
 	if(localHost->isServer())
 	{
 		Shape* box = createBoxes();
-		dynamic_cast<Server*>(localHost)->broadCast(box);
+		if(box != nullptr)
+			dynamic_cast<Server*>(localHost)->broadCast(packetParser->pack(box));
 	}
 	//else 
 	//{
@@ -125,6 +122,11 @@ void Game::run() {
 	//player
     player->draw();
 	player->updatePlayer();
+	for(list<Player*>::iterator itr = remotePlayers.begin(); itr != remotePlayers.end(); itr++)
+	{
+		(*itr)->draw();
+		(*itr)->updatePlayer();
+	}
 
 	//move view up/raise water level
 	view->move(0, riseSpeed);
@@ -140,22 +142,42 @@ void Game::run() {
 	//rebroadcast everything that server has learnt from the other clients about the game state
 	if(localHost->isServer())
 	{
-		//localHost->handleReceivedData(this);
-		//rebroadcast
+		Server* server = dynamic_cast<Server*>(localHost);
+		if(!server->getPlayerInfos().empty())
+		{
+			vector<player_info*>& playerMoves = server->getPlayerInfos();
+			for(int i = 0; i < playerMoves.size(); i++)
+			{
+				//find player that has moved
+				string name = playerMoves[i]->name;
+				vector<client*>::iterator player = std::find_if(server->getClients().begin(), server->getClients().end(), [name](client* c)
+				{
+					return name == c->name;
+				});
+				//broadcast it to every player except the player that made the move
+				//since that player already knows that.
+				server->broadCastExcept((*player)->clientAddress, (*player)->clientPort, packetParser->pack(*playerMoves[i]));
+			}
+			playerMoves.clear();
+		}
+		
 	}
 }
 
 void Game::spawnBox(sf::Vector2i position) {
 	//add view offset
-	position += viewOffset;
+	//position += viewOffset;
     // adjPos is a position adjusted to window position, also adjusted according to Box2D positions, y upwards
-    sf::Vector2i adjPos = sf::Vector2i(position.x - window->getSize().x/2,
-		-position.y + window->getSize().y/2);
+    /*sf::Vector2i adjPos = sf::Vector2i(position.x - window->getSize().x/2,
+		-position.y + window->getSize().y/2);*/
+
+	//shapeFactory->sfvec_to_b2vec(position),
 
 	boxes.push_back(
 		shapeFactory->createRectangle(
 			new b2Vec2(20.0f, 20.0f),
-			new b2Vec2(float(adjPos.x), float(adjPos.y)),
+			//new b2Vec2(float(adjPos.x), float(adjPos.y)),
+			shapeFactory->sfvec_to_b2vec(position),
 			true));
 }
 
@@ -217,23 +239,7 @@ Shape* Game::createBoxes()
 		return nullptr;
 }
 
-void Game::handleThreads()
+void Game::addRemotePlayer(Player* p)
 {
-	switch (localHost->isServer())
-	{
-	case true:
-		if(!allowJoin)
-		{
-			join->join();
-			network = new thread(&UDPNetwork::listen, localHost);
-			cout << "No more players allowed yo join." << endl;
-		} 
-		break;
-	case false:
-		network = new thread(&UDPNetwork::listen, localHost);
-		break;
-	default:
-		break;
-	}
-
+	remotePlayers.push_back(p);
 }

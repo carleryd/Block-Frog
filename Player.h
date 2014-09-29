@@ -7,13 +7,17 @@
 #include "Rectangle.h"
 #include "ContactListener.h"
 class Game;
+using namespace std;
 
 class Player
 {
 public:
 	Player(Game* game);
-    
+
+	void setName(string n);    
+	string& getName(){return name;};
     void setPosition(b2Vec2* newPos);
+	b2Vec2* getPosition() const{return box->getPosition();};
 	enum { LEFT, RIGHT, JUMP, LEFT_STOP, RIGHT_STOP };
 	void move(int dir);
 	/*
@@ -23,17 +27,19 @@ public:
     void draw();
 	void updatePlayer();
     bool isJumping();
-    Rectangle* box;
-    Rectangle* hookTip;
+
 private:
     Game* game;
     ContactListener* contactListener;
     sf::Sprite frogSprite;
     sf::Texture frogTexture;
+	Rectangle* box;
+    Rectangle* hookTip;
     
 	float leftSpeed, rightSpeed;
 	float jumpHeight;
     bool jumping;
+	string name;
 };
 
 #endif /* defined(__Block_Frog__Player__) */

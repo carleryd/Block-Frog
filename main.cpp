@@ -82,12 +82,14 @@ int main(int argc, char* argv[])
 
 	if(argc > 1)
 	{
-		if(argv[0] == "-s")
+		string in = argv[1];
+		//cout << argv[2] << endl;
+		if(in == "-s")
 		{
 			cout << "Starting server." << endl;
 			game = new Game(window, osHandler, SERVER);
 		}
-		else if(argv[0] = "-c")
+		else if(in == "-c")
 		{
 			cout << "Starting client." << endl;
 			cout << "Enter host's IP address: ";
@@ -100,10 +102,15 @@ int main(int argc, char* argv[])
 			cout << endl;
 			game = new Game(window, osHandler, CLIENT, a, p);
 		}
-		else if(argv[0] = "-o")//only one player
+		else if(in == "-o")//only one player
 		{
 			cout << "Starting single player game." << endl;
 			game = new Game(window, osHandler, SINGLE_PLAYER);
+		}
+		else
+		{
+			cout << "-s - start server\n-c - start client\n-o - start game for only one player" << endl;
+			return EXIT_FAILURE;
 		}
 
 	}

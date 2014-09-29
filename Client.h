@@ -13,7 +13,8 @@ public:
 	Client(string playerName, sf::IpAddress serverAddress, unsigned short port, ShapeFactory& f);
 	~Client(void);
 	bool isServer() override;
-	bool connect();
+	bool connect(b2Vec2* playerPosition);
+	void sendToServer(sf::Packet& packet);
 private:
 	
 	sf::IpAddress serverAddress;
