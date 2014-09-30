@@ -90,23 +90,23 @@ void Server::handleNewPlayer(packetInfo& pack)
 		
 }
 
-void Server::broadCast(sf::Packet& packet)
+void Server::broadCast(sf::Packet packet)
 {
 	for(unsigned i = 0; i < remoteConnections.size(); i++)
 	{
 		send(packet, remoteConnections[i]->clientAddress, remoteConnections[i]->clientPort);
-		cout << "Broadcast!" << endl;
+		//cout << "Broadcast!" << endl;
 	}
 }
 
-void Server::broadCastExcept(sf::IpAddress address, unsigned short port, sf::Packet& packet)
+void Server::broadCastExcept(sf::IpAddress address, unsigned short port, sf::Packet packet)
 {
 	for(unsigned i = 0; i < remoteConnections.size(); i++)
 	{
 		if(remoteConnections[i]->clientAddress != address && remoteConnections[i]->clientPort != port)
 		{
 			send(packet, remoteConnections[i]->clientAddress, remoteConnections[i]->clientPort);
-			cout << "Broadcast!" << endl;
+			//cout << "Broadcast!" << endl;
 		}
 	}
 }

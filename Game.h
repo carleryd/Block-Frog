@@ -49,7 +49,7 @@ private:
 	void calcViewOffset();
 
 	void boxHandling(); //destroy boxes. 
-	Shape* createBoxes(); //for server only. Returns pointer to last created box
+	Shape* createBoxes(); //for server only. Returns pointer to last created box, nullptr if no box was created
 	void handleThreads();
 	
     b2World* world;

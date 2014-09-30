@@ -28,9 +28,9 @@ public:
 	void dropPlayer(); //remove player from server either if player disconnects voluntarily or not
 	bool isServer() override;
 	//broadcast a packet
-	void broadCast(sf::Packet& packet);
+	void broadCast(sf::Packet packet);
 	//send packet to all players EXCEPT to the one with the address/port given as argument
-	void broadCastExcept(sf::IpAddress address, unsigned short port, sf::Packet& packet);
+	void broadCastExcept(sf::IpAddress address, unsigned short port, sf::Packet packet);
 	void addPlayerInfo(player_info* pi) 
 	{
 		playerInfos.push_back(pi);

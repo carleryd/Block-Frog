@@ -22,7 +22,7 @@ UDPNetwork::~UDPNetwork(void)
 {
 }
 
-int UDPNetwork::send(sf::Packet& p, sf::IpAddress& a, unsigned short& port)
+int UDPNetwork::send(sf::Packet p, sf::IpAddress& a, unsigned short& port)
 {
 	//cout << "Packet sent." << endl;
 	return mySocket.send(p, a, port);

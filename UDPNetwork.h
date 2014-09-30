@@ -31,7 +31,7 @@ class UDPNetwork
 {
 public:
 	~UDPNetwork();
-	int send(sf::Packet& packet, sf::IpAddress& remoteAddress, unsigned short& remotePort);
+	int send(sf::Packet packet, sf::IpAddress& remoteAddress, unsigned short& remotePort);
 	/*
 		This function is for when you want to know who the sender is
 	*/

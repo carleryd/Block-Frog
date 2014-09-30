@@ -117,9 +117,11 @@ void Game::run() {
 	if(localHost->isServer())
 	{
 		Shape* box = createBoxes();
-        sf::Packet packet = packetParser->pack(box);
 		if(box != nullptr)
+		{
+			sf::Packet packet = packetParser->pack(box);
 			dynamic_cast<Server*>(localHost)->broadCast(packet);
+		}
 	}
 	//else 
 	//{
