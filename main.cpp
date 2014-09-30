@@ -97,7 +97,7 @@ int main(int argc, char* argv[])
 			a = new sf::IpAddress(in);
 			cout << "Enter host's port: ";
 			cin >> in;
-			p = stoi(in);
+			p = atoi(in.c_str());
 			cout << endl;
 			game = new Game(window, osHandler, CLIENT, a, p);
 		}
@@ -132,7 +132,7 @@ int main(int argc, char* argv[])
 			a = new sf::IpAddress(in);
 			cout << "Enter host's port: ";
 			cin >> in;
-			p = stoi(in);
+			p = atoi(in.c_str());
 			cout << endl;
 			game = new Game(window, osHandler, CLIENT, a, p);
 		}

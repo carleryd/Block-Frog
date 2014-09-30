@@ -114,13 +114,15 @@ void Game::run() {
 	calcViewOffset();
 
 
-	if(localHost->isServer())
-	{
-		Shape* box = createBoxes();
-        sf::Packet packet = packetParser->pack(box);
-		if(box != nullptr)
-			dynamic_cast<Server*>(localHost)->broadCast(packet);
-	}
+    if(localHost->isServer())
+    {
+        Shape* box = createBoxes();
+        if(box != nullptr)
+        {
+            sf::Packet packet = packetParser->pack(box);
+            dynamic_cast<Server*>(localHost)->broadCast(packet);
+        }
+    }
 	//else 
 	//{
 	//	boxes.push_back( static_cast<Shape*>(dynamic_cast<Client*>(localHost)->listenToServer()));
