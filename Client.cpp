@@ -19,16 +19,25 @@ bool Client::isServer()
 	return false;
 }
 
-bool Client::connect()
+bool Client::connect(b2Vec2* pPos)
 {
+	//send
 	sf::Packet p;
+	p << UDPNetwork::NEW_PLAYER;
+	p << pPos->x << pPos->y;
 	string m = playerName;
 	p << m;
 	send(p, serverAddress, serverPort);
 	p.clear();
 	m.clear();
+	
+	//receive
 	int ret = receive(&p);
 	p >> m;
-	cout << m << endl;
+	cout << "Message received from host: " << m << endl;
 	return ret == sf::Socket::Done ? true : false;
+}
+void Client::sendToServer(sf::Packet& p)
+{
+	send(p, serverAddress, serverPort);
 }

@@ -2,6 +2,9 @@
 #include "Game.h"
 #include "OSHandler.h"
 #include "Hook.h"
+#include "Client.h"
+#include "Server.h"
+#include "PacketParser.h"
 
 Player::Player(Game* game_) {
     game = game_;
@@ -62,8 +65,13 @@ void Player::draw() {
     frogSprite.setPosition(box->getBody()->GetPosition().x, box->getBody()->GetPosition().y);
 }
 
+void Player::setName(string n)
+{
+	name = n;
+}
+
 void Player::setPosition(b2Vec2* newPos) {
-	box->getBody()->SetTransform(b2Vec2(newPos->x, newPos->y), box->getBody()->GetAngle());
+	box->getBody()->SetTransform(*newPos, box->getBody()->GetAngle());
 }
 
 void Player::useHook() {
@@ -80,7 +88,7 @@ void Player::decreaseHook() {
 	hook->changeLength(-0.5);
 }
 
-void Player::move(int dir)
+void Player::move(int dir, bool localPlayer)
 {
 	switch (dir)
 	{
@@ -98,10 +106,35 @@ void Player::move(int dir)
         break;
 	case JUMP:
             if(!isJumping())
+			{
 				push(b2Vec2(0, jumpHeight));
+			}
 		break;
 	default:
 		break;
+	}
+	if(localPlayer)
+	{
+		//if client then tell server about movement
+        sf::Packet packet;
+		player_info p;
+		p.name = name;
+		p.movedir = dir;
+		if(game->getLocalHost()->isServer())
+		{
+			Server* server = dynamic_cast<Server*>(game->getLocalHost());
+			/*server->broadCastExcept(server->getMyAddress(), server->getMyPort(),game->getPacketParser()->pack(p));*/
+            packet = game->getPacketParser()->pack(p);
+			server->broadCast(packet);
+			//dynamic_cast<Server*>(game->getLocalHost())->addPlayerInfo(new player_info(p));
+		}
+		else
+		{
+            packet = game->getPacketParser()->pack(p);
+			dynamic_cast<Client*>(game->getLocalHost())->sendToServer(
+				packet
+				);
+		}
 	}
 }
 

@@ -20,6 +20,13 @@ using namespace std;
 	2. let receiver handle expceted data in predetermined way.
 */
 
+struct packetInfo
+{
+	sf::Packet packet;
+	sf::IpAddress senderAddress;
+	unsigned short senderPort;
+};
+
 class UDPNetwork
 {
 public:
@@ -40,11 +47,13 @@ public:
 	void listen();
 	void handleReceivedData(Game* game);
 
-	enum typreceive{SERVER_EXIT, CLIENT_EXIT, SHAPE};
+	enum typreceive{SERVER_EXIT, CLIENT_EXIT, NEW_PLAYER,
+		SHAPE, ALL_SHAPES,
+		PLAYER_MOVE};
 protected:
 	UDPNetwork(string playerName, ShapeFactory& factory);
 
-	list<sf::Packet*> packets;
+	list<packetInfo> packets;
 
 	sf::UdpSocket mySocket;
 	sf::IpAddress myAddress;
@@ -54,5 +63,7 @@ protected:
 private:
 	std::atomic<bool> packetsOccupied;
 };
+
+
 
 #endif

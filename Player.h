@@ -7,8 +7,11 @@
 #include "Rectangle.h"
 #include "Circle.h"
 #include "ContactListener.h"
+
 class Game;
 class Hook;
+
+using namespace std;
 
 class Player
 {
@@ -16,9 +19,14 @@ public:
 	Player(Game* game);
     
     b2Body* getBody();
+
+	void setName(string n);    
+	string& getName(){return name;};
     void setPosition(b2Vec2* newPos);
+	b2Vec2* getPosition() const{return box->getPosition();};
 	enum { LEFT, RIGHT, JUMP, LEFT_STOP, RIGHT_STOP };
-	void move(int dir);
+	//set bool to true when moving a remote player
+	void move(int dir, bool localPlayer=true);
 	/*
 	*	Pushes player in the direction
 	*/
@@ -37,10 +45,12 @@ private:
     ContactListener* contactListener;
     sf::Sprite frogSprite;
     sf::Texture frogTexture;
+    Circle* hookTip;
     
 	float leftSpeed, rightSpeed;
 	float jumpHeight;
     bool jumping;
+	string name;
 };
 
 #endif /* defined(__Block_Frog__Player__) */
