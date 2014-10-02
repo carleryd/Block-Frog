@@ -24,6 +24,7 @@ public:
 	~Game();
     void run();
     void init();
+	void exitGame();
 
     void spawnBox(sf::Vector2i position);
     
@@ -32,6 +33,7 @@ public:
     Player* getPlayer();
 	sf::Vector2i& getViewOffset() {return viewOffset;};
 	list<Player*>& getRemotePlayers() {return remotePlayers;};
+	vector<Shape*>& getShapes() {return boxes;};
     OSHandler* getOSHandler();
     
     float getPixelToMeter();
@@ -40,6 +42,7 @@ public:
     float getOffSetY();
     
 	void addRemotePlayer(Player* rPlayer);
+	bool removeRemotePlayer(string name);
 	bool playersAllowedToJoined(){return allowJoin;};
 	UDPNetwork* getLocalHost(){return localHost;};
 	PacketParser* getPacketParser() const {return packetParser;};

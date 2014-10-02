@@ -46,6 +46,7 @@ public:
 	//while loop that listens for 
 	void listen();
 	void handleReceivedData(Game* game);
+	bool exit;
 
 	enum typreceive{SERVER_EXIT, CLIENT_EXIT, NEW_PLAYER,
 		SHAPE, ALL_SHAPES,

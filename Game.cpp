@@ -26,6 +26,7 @@ Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_, int playerType, sf:
 	//shapefactory for creating shapes easily
 	shapeFactory = new ShapeFactory(this);
     player = new Player(this);
+	
     
 	packetParser = new PacketParser(*shapeFactory);
     
@@ -52,6 +53,7 @@ Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_, int playerType, sf:
 	{
 	case SERVER:
 		localHost = new Server("HOST", *shapeFactory, this);
+		player->setName("HOST");
 		//join = new thread(&Server::waitForPlayers, dynamic_cast<Server*>(localHost), std::ref(allowJoin));
 		//dynamic_cast<Server*>(localHost)->waitForPlayers();
 		cout << "Waiting for players..." << endl;
@@ -59,11 +61,13 @@ Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_, int playerType, sf:
 		break;
 	case CLIENT:
 		localHost = new Client("CLIENT", *serverAddress, serverPort, *shapeFactory);
+		player->setName("CLIENT");
 		dynamic_cast<Client*>(localHost)->connect(player->getPosition());
 		window->setTitle("CLIENT");
 		break;
 	case SINGLE_PLAYER:
 		localHost = new Server("HOST", *shapeFactory, this);
+		player->setName("HOST");
 		window->setTitle("SINGLE PLAYER");
 		break;
 	default:
@@ -88,7 +92,7 @@ Game::~Game()
 	delete player;
 	delete view;
 	delete shapeFactory;
-	network->~thread();
+	//network->~thread();
 }
 
 sf::RenderWindow* Game::getWindow() {
@@ -254,4 +258,53 @@ Shape* Game::createBoxes()
 void Game::addRemotePlayer(Player* p)
 {
 	remotePlayers.push_back(p);
+}
+
+void Game::exitGame()
+{
+	cout << "Exiting game..." << endl;
+	localHost->exit = true;
+	if(localHost->isServer())
+	{
+		allowJoin = false; //prepare listen thread for shutdown
+		Server* server = dynamic_cast<Server*>(localHost);
+		sf::Packet packet;
+		packet << UDPNetwork::SERVER_EXIT;
+		packet << player->getName();
+		server->broadCast(packet);
+		cout << "Waiting for network thread to join..." << endl;
+	}
+	else
+	{
+		Client* client = dynamic_cast<Client*>(localHost);
+		sf::Packet packet;
+		packet << UDPNetwork::CLIENT_EXIT;
+		packet << player->getName();
+		client->sendToServer(packet);
+		
+	}
+	cout << "Waiting for listen thread to join..."<< endl;
+	network->join();
+	window->close();
+	cout << "Good bye!" << endl;
+}
+
+bool Game::removeRemotePlayer(string name)
+{
+	//remove remote player
+	list<Player*>::iterator i = remove_if(remotePlayers.begin(), remotePlayers.end(), [name](Player* a)
+	{
+		return a->getName() == name;
+	});
+	if(i != remotePlayers.end())
+	{
+		delete *i;
+		remotePlayers.erase(i);
+		if(!localHost->isServer())
+			return true;
+		else
+			return dynamic_cast<Server*>(localHost)->dropPlayer(name);
+	}
+	else
+		return false;
 }

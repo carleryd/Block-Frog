@@ -15,6 +15,7 @@ public:
 	bool isServer() override;
 	bool connect(b2Vec2* playerPosition);
 	void sendToServer(sf::Packet& packet);
+	void dropServer();
 private:
 	
 	sf::IpAddress serverAddress;

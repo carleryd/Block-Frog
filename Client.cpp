@@ -41,3 +41,10 @@ void Client::sendToServer(sf::Packet& p)
 {
 	send(p, serverAddress, serverPort);
 }
+
+void Client::dropServer()
+{
+	serverAddress = NULL;
+	serverPort = 0;
+	cout << "Server dropped." << endl;
+}

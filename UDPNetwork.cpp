@@ -2,10 +2,12 @@
 #include <iostream>
 #include "Game.h"
 #include "Server.h"
+#include "Client.h"
 
 UDPNetwork::UDPNetwork(string PlayerName, ShapeFactory& factory):
 	packetParser(factory)
 {
+	exit = false;
 	if(mySocket.bind(sf::Socket::AnyPort) != sf::Socket::Done)
 		cerr << "Could not bind port" << endl;
 	else
@@ -50,7 +52,7 @@ int UDPNetwork::receive(sf::Packet* p)
 
 void UDPNetwork::listen()
 {
-	while(selector.wait())
+	while(selector.wait(sf::seconds(0.05)) || !exit)
 	{
 		if(selector.isReady(mySocket) && !packetsOccupied)
 		{
@@ -61,11 +63,12 @@ void UDPNetwork::listen()
 				packets.front().senderAddress, 
 				packets.front().senderPort) != sf::Socket::Done)
 				cerr << "Error when receiving data" << endl;
-			//packets.front()->
+
 			cout << "Packet size: " << packets.front().packet.getDataSize() << endl;
 			packetsOccupied = false;
 		}
 	}
+	cout << "Listen thread joining." << endl;
 }
 
 void UDPNetwork::handleReceivedData(Game* game)
@@ -79,30 +82,58 @@ void UDPNetwork::handleReceivedData(Game* game)
 		switch (type)
 		{
 		case SERVER_EXIT:
-			//game->getWindow()->close();
+			//dynamic_cast<Client*>(this)->dropServer();  //DOESN'T WORK ATM
+			cout << "Server has disconnected." << endl;
+			game->exitGame();
 			break;
 		case CLIENT_EXIT:
+			{
+				string name;
+				*packet >> name;
+				Server* server = dynamic_cast<Server*>(this);
+				vector<client*>& clients = server->getClients();
+
+				//tell everyone else that a client has disconnected
+				if(isServer())
+				{
+					for_each(clients.begin(), clients.end(), [name, server](client* a)
+					{
+						sf::Packet p;
+						p << CLIENT_EXIT;
+						p << a->name;
+						server->broadCast(p);
+					});
+				}
+				if(game->removeRemotePlayer(name))
+					cout << name << " has disconnected." << endl;
+				else
+					cout << "failed to disconnect " << name << endl;
+			}
 			break;
 		case NEW_PLAYER:
 		{
+			
+			b2Vec2* newpos = packetParser.unpack<b2Vec2*>(*packet);
 			game->addRemotePlayer(new Player(game));
-			b2Vec2* newpos = packetParser.unpack<b2Vec2>(*packet);
 			game->remotePlayers.back()->setPosition( newpos);
+			
 			if(isServer())
 			{
 				dynamic_cast<Server*>(this)->handleNewPlayer(packets.front());
 			}
+			else
+				game->getRemotePlayers().back()->setName(packetParser.unpack<string>(*packet));
 		}
 			break;
 		case SHAPE:
-			game->boxes.push_back(packetParser.unpack<Shape>(*packet));
+			game->boxes.push_back(packetParser.unpack<Shape*>(*packet));
 			break;
 		case PLAYER_MOVE:
 			{
-				cout << "moving player" << endl;
+				//cout << "moving player" << endl;
 				typedef list<Player*> players;
 				typedef list<Player*>::iterator itr;
-				player_info* info = packetParser.unpack<player_info>(*packet);
+				player_info* info = packetParser.unpack<player_info*>(*packet);
 				string& name = info->name;
 				players remotePlayers = game->getRemotePlayers();
 				//find player that has made a move
