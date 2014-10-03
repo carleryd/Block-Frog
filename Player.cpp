@@ -8,7 +8,7 @@
 
 Player::Player(Game* game_) {
     game = game_;
-    
+	Player::name = name;
     // World, Size, Position, Density, Friction, FixedRotation
     box = new Rectangle(game_, new b2Vec2(50.0f, 50.0f), new b2Vec2(0, 0), true);
     box->getBody()->SetFixedRotation(true);

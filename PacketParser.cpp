@@ -16,6 +16,8 @@ PacketParser::~PacketParser(void)
 {
 }
 
+// ################## PACK FUNCTIONS ##########################
+
 sf::Packet PacketParser::pack(Shape* shape)
 {
     Rectangle* rectangle = dynamic_cast<Rectangle*>(shape);
@@ -44,24 +46,26 @@ sf::Packet PacketParser::pack(player_info p)
 	return packet;
 }
 
-Shape* PacketParser::unpackageShape(sf::Packet& packet)
+sf::Packet PacketParser::pack(Player* p)
 {
-	b2Vec2 pos, size;
-	if(!(packet >> pos.x >> pos.y >> size.x >> size.y))
-		std::cerr << "Error occured in received data!" << endl;
-	return factory.createRectangle(&size, &pos, true);
+	sf::Packet packet;
+	packet << UDPNetwork::NEW_PLAYER;
+	packet << p->getPosition()->x << p->getPosition()->y;
+	packet << p->getName();
+	return packet;
 }
 
+// ############# UNPACK FUNCTIONS ################
 template<>
-Shape* PacketParser::unpack<Shape>(sf::Packet& packet)
+Shape* PacketParser::unpack<Shape*>(sf::Packet& packet)
 {
 	b2Vec2 pos, size;
 	packet >> pos.x >> pos.y >> size.x >> size.y;
-	return factory.createRectangle(&size, &pos, true);
+	return factory.createRectangle(new b2Vec2(size), new b2Vec2(pos), true);
 }
 
 template<>
-b2Vec2* PacketParser::unpack<b2Vec2>(sf::Packet& packet)
+b2Vec2* PacketParser::unpack<b2Vec2*>(sf::Packet& packet)
 {
 	b2Vec2 pos;
 	packet >> pos.x >> pos.y;
@@ -69,15 +73,23 @@ b2Vec2* PacketParser::unpack<b2Vec2>(sf::Packet& packet)
 }
 
 template<>
-int* PacketParser::unpack<int>(sf::Packet& packet)
+int PacketParser::unpack<int>(sf::Packet& packet)
 {
 	int i;
 	packet >> i;
-	return &i;
+	return i;
 }
 
 template<>
-player_info* PacketParser::unpack<player_info>(sf::Packet& packet)
+string PacketParser::unpack<string>(sf::Packet& packet)
+{
+	string s;
+	packet >> s;
+	return s;
+}
+
+template<>
+player_info* PacketParser::unpack<player_info*>(sf::Packet& packet)
 {
 	player_info* info = new player_info;
 	packet >> info->name;

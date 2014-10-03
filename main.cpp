@@ -74,7 +74,6 @@ int main(int argc, char* argv[])
 //    music.play();
     
 	Game* game;
-
 	//check input arguments
 	string in;
 	sf::IpAddress* a = nullptr;

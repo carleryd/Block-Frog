@@ -19,31 +19,29 @@ public:
 	PacketParser(); //cannot unpack shapes
 	~PacketParser(void);
 	sf::Packet pack(Shape* shape);
+	//for when the player acts(moves)
 	sf::Packet pack(player_info p);
-
-	/*template<typename primitiveType>
-	sf::Packet pack(int type, primitiveType t)
-	{
-		sf::Packet packet;
-		packet << type;
-		packet << t;
-		return packet;
-	};*/
-	//sf::Packet pack(b2Vec2* vector);
-	/*template<typename T>
-	sf::Packet pack(T* object);*/
-	/*
-		This function will ONLY unpack ONE shape from the packet!
-	*/
-	Shape* unpackageShape(sf::Packet& p); 
-	b2Vec2* unpackB2Vector(sf::Packet& p);
-
+	//for when sending the NEW_PLAYER type packet
+	sf::Packet pack(Player*);
+	
 	//template function SHOULD be able to back ONE of any object
 	template<typename T>
-		T* unpack(sf::Packet& packet);
+		T unpack(sf::Packet& packet)
+		/*{
+			T variable;
+			static_assert(std::is_fundamental<T>::value, "FATAL ERROR: WRONG TEMPLATE ARGUMENT TYPE; PacketParser::unpack<T>(sf::packet& p)");
+			packet >> variable;
+			return variable;
+		}*/;
 
 private:
 	ShapeFactory& factory;
 };
+
+/*sf::Packet& operator<<(sf::Packet& appendto, const sf::Packet appendwith)
+{
+	appendto.append(appendwith.getData(), appendwith.getDataSize());
+	return appendto;
+};*/
 
 #endif

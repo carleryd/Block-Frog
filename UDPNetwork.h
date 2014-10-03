@@ -31,7 +31,7 @@ class UDPNetwork
 {
 public:
 	~UDPNetwork();
-	int send(sf::Packet& packet, sf::IpAddress& remoteAddress, unsigned short& remotePort);
+	int send(sf::Packet packet, sf::IpAddress& remoteAddress, unsigned short& remotePort);
 	/*
 		This function is for when you want to know who the sender is
 	*/
@@ -46,6 +46,7 @@ public:
 	//while loop that listens for 
 	void listen();
 	void handleReceivedData(Game* game);
+	bool exit;
 
 	enum typreceive{SERVER_EXIT, CLIENT_EXIT, NEW_PLAYER,
 		SHAPE, ALL_SHAPES,
