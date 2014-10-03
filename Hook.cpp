@@ -20,6 +20,7 @@ Hook::Hook(Game* game_) {
     cout << playerX << " " << playerY << endl;
     hookTip = new Circle(game, 5.0f, new b2Vec2(playerX * game->getMeterToPixel(), playerY * game->getMeterToPixel()), true, 0.0, 0.0);
 	hookTip->getShape()->setFillColor(sf::Color(255, 0, 0));
+    hookTip->getBody()->ApplyLinearImpulse(b2Vec2(-1, 1), hookTip->getBody()->GetPosition(), true);
     
     b2DistanceJointDef* def = new b2DistanceJointDef();
     // bodyA, bodyB, localAnchorA, localAnchorB

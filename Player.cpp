@@ -12,9 +12,10 @@ Player::Player(Game* game_) {
     // World, Size, Position, Density, Friction, FixedRotation
     box = new Rectangle(game_, new b2Vec2(50.0f, 50.0f), new b2Vec2(0, 0), true);
     box->getBody()->SetFixedRotation(true);
-//    box->getBody()->SetGravityScale(3);
+    box->getBody()->SetGravityScale(3);
     
 	jumpHeight = 50;
+    movementSpeed = 10;
     
     if (!frogTexture.loadFromFile(game->getOSHandler()->getResourcePath() + "frog_placeholder.png")) {
         std::cout << "Could not load frog image" << std::endl;
@@ -93,10 +94,10 @@ void Player::move(int dir, bool localPlayer)
 	switch (dir)
 	{
 	case LEFT:
-            leftSpeed = -10;
+            leftSpeed = -movementSpeed;
 		break;
 	case RIGHT:
-			rightSpeed = 10;
+			rightSpeed = movementSpeed;
 		break;
     case LEFT_STOP:
             leftSpeed = 0;

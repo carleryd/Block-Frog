@@ -49,6 +49,7 @@ private:
     
 	float leftSpeed, rightSpeed;
 	float jumpHeight;
+    float movementSpeed;
     bool jumping;
 	string name;
 };
