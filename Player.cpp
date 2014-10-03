@@ -58,14 +58,6 @@ b2Body* Player::getBody() {
     return box->getBody();
 }
 
-void Player::draw() {
-    game->getWindow()->draw(frogSprite);
-    if(hook != nullptr)
-	    hook->draw();
-
-    frogSprite.setPosition(box->getBody()->GetPosition().x, box->getBody()->GetPosition().y);
-}
-
 void Player::setName(string n)
 {
 	name = n;
@@ -144,13 +136,19 @@ bool Player::isJumping() {
     else return true;
 }
 
-void Player::push(b2Vec2&& dir)
-{
+void Player::push(b2Vec2&& dir) {
 	box->getBody()->ApplyLinearImpulse(dir, box->getBody()->GetPosition(), true);
 }
 
-void Player::update()
-{
+void Player::draw() {
+    game->getWindow()->draw(frogSprite);
+    if(hook != nullptr)
+	    hook->draw();
+    
+    frogSprite.setPosition(box->getBody()->GetPosition().x, box->getBody()->GetPosition().y);
+}
+
+void Player::update() {
     frogSprite.setRotation((-box->getBody()->GetAngle() / 3.14) * 180);
 	// Adjusting from sprite 0:0 to body 0.5:0.5
     frogSprite.setOrigin(25, 25);

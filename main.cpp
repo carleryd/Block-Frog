@@ -19,6 +19,8 @@
 
 // Here is a small helper for you ! Have a look.
 #include "Game.h"
+#include "Utility.h"
+#include "Player.h"
 #include "Controller.h"
 #include <Box2D/Box2D.h>
 #include "OSHandler.h"
@@ -73,7 +75,7 @@ int main(int argc, char* argv[])
     // Play the music
 //    music.play();
     
-	Game* game;
+	Game* game = new Game(window, osHandler);
 	//check input arguments
 	string in;
 	sf::IpAddress* a = nullptr;
@@ -85,7 +87,7 @@ int main(int argc, char* argv[])
 		if(in == "-s")
 		{
 			cout << "Starting server." << endl;
-			game = new Game(window, osHandler, SERVER);
+			game->init(SERVER);
 		}
 		else if(in == "-c")
 		{
@@ -98,12 +100,14 @@ int main(int argc, char* argv[])
 			cin >> in;
 			p = atoi(in.c_str());
 			cout << endl;
-			game = new Game(window, osHandler, CLIENT, a, p);
+            game->init(CLIENT, a, p);
+//			game = new Game(window, osHandler, CLIENT, a, p);
 		}
 		else if(in == "-o")//only one player
 		{
 			cout << "Starting single player game." << endl;
-			game = new Game(window, osHandler, SINGLE_PLAYER);
+            game->init(SINGLE_PLAYER);
+//			game = new Game(window, osHandler, SINGLE_PLAYER);
 		}
 		else
 		{
@@ -121,7 +125,8 @@ int main(int argc, char* argv[])
 
 		if(in == "y")
 		{
-			game = new Game(window, osHandler, SERVER);
+            game->init(SERVER);
+//			game = new Game(window, osHandler, SERVER);
 		}
 		else
 		{
@@ -133,7 +138,8 @@ int main(int argc, char* argv[])
 			cin >> in;
 			p = atoi(in.c_str());
 			cout << endl;
-			game = new Game(window, osHandler, CLIENT, a, p);
+            game->init(CLIENT, a, p);
+//			game = new Game(window, osHandler, CLIENT, a, p);
 		}
 	}
 
@@ -141,7 +147,11 @@ int main(int argc, char* argv[])
     // Run without server
     //game = new Game(window, osHandler, true);
 
-    //Game* game = new Game(window, server, a, p);
+//    //Game* game = new Game(window, server, a, p);
+//    game->setUtility(new Utility(game));
+//    
+//    game->setPlayer(new Player(game));
+    
     Controller* controller = new Controller(game);
 	window->setFramerateLimit(60);
 

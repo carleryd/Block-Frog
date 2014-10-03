@@ -1,4 +1,6 @@
 #include "Circle.h"
+#include "Game.h"
+#include "Utility.h"
 
 Circle::Circle(Game* game, float radius_, b2Vec2* position,
 					 bool dynamic, float density, float friction):
@@ -8,7 +10,7 @@ Shape(game, position, dynamic, density, friction)
     
     // Define another box shape for our dynamic body.
     b2CircleShape circleShape; //dynamicBox;
-    circleShape.m_radius = radius * pixelToMeter;
+    circleShape.m_radius = radius * game->getUtility()->getPTM();
 
 //    boxShape.SetAsBox((size->x/2) * pixelToMeter, (size->y/2) * pixelToMeter);
 //    circleS
@@ -25,7 +27,6 @@ Shape(game, position, dynamic, density, friction)
     // Add the shape to the body.
     body->CreateFixture(&fixtureDef);
     
-//    shape = new sf::CircleShape(radius);
     shape = new sf::CircleShape(radius);
     
     // This makes SFML use the same origin for shapes as Box2D(middle, middle)

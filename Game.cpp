@@ -3,10 +3,11 @@
 #include "Server.h"
 #include "Client.h"
 #include "ShapeFactory.h"
+#include "Utility.h"
 
 using namespace std;
 
-Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_, int playerType, sf::IpAddress* serverAddress, unsigned short serverPort)
+Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_)
 {
     window = window_;
     osHandler = osHandler_;
@@ -22,63 +23,6 @@ Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_, int playerType, sf:
     
     // Construct a world object, which will hold and simulate the rigid bodies.
     world = new b2World(gravity);
-    
-	//shapefactory for creating shapes easily
-	shapeFactory = new ShapeFactory(this);
-    player = new Player(this);
-	
-    
-	packetParser = new PacketParser(*shapeFactory);
-    
-    boxes.push_back(shapeFactory->createRectangle(new b2Vec2(750.0f, 50.0f),
-                                                  new b2Vec2(0.0f, -float(window->getSize().y)/2),
-                                                  false)
-                    );
-
-	riseSpeed = 0; //-0.2f;
-	killOffset = 30;
-	secPerDrops = 1;
-	allowJoin = true;
-    
-    // SFML and Box2D scaling variables used for drawing
-    pixelToMeter = 1.0f/30.0f; // Box2D meter equals 50 pixels?
-    meterToPixel = 30.0;
-    // Window: 800x600(access this form game->getWorld()->getSize())
-    // Box2D coordinate system is in the middle of screen, SFML is top-left. These offsets will make SFML start off drawing in the middle
-    offSetX = window->getSize().x / meterToPixel / 2;
-    offSetY = window->getSize().y / meterToPixel / 2;
-    
-	//networking
-	switch (playerType)
-	{
-	case SERVER:
-		localHost = new Server("HOST", *shapeFactory, this);
-		player->setName("HOST");
-		//join = new thread(&Server::waitForPlayers, dynamic_cast<Server*>(localHost), std::ref(allowJoin));
-		//dynamic_cast<Server*>(localHost)->waitForPlayers();
-		cout << "Waiting for players..." << endl;
-		window->setTitle("SERVER");
-		break;
-	case CLIENT:
-		localHost = new Client("CLIENT", *serverAddress, serverPort, *shapeFactory);
-		player->setName("CLIENT");
-		dynamic_cast<Client*>(localHost)->connect(player->getPosition());
-		window->setTitle("CLIENT");
-		break;
-	case SINGLE_PLAYER:
-		localHost = new Server("HOST", *shapeFactory, this);
-		player->setName("HOST");
-		window->setTitle("SINGLE PLAYER");
-		break;
-	default:
-		break;
-	}
-	network = new thread(&UDPNetwork::listen, localHost);
-	
-	window->setActive(true);
-	
-	// 
-	secPerDrops = 5;
 }
 
 Game::~Game()
@@ -95,20 +39,67 @@ Game::~Game()
 	//network->~thread();
 }
 
+void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short serverPort) {
+	//shapefactory for creating shapes easily
+	shapeFactory = new ShapeFactory(this);
+    utility = new Utility(this);
+	player = new Player(this);
+    
+	packetParser = new PacketParser(*shapeFactory);
+	
+    boxes.push_back(shapeFactory->createRectangle(new b2Vec2(750.0f, 50.0f),
+                                                  new b2Vec2(0.0f, -float(window->getSize().y)/2),
+                                                  false)
+                    );
+    
+	riseSpeed = 0; //-0.2f;
+	killOffset = 30;
+	secPerDrops = 1;
+	allowJoin = true;
+    
+	//networking
+	switch (playerType)
+	{
+        case SERVER:
+            localHost = new Server("HOST", *shapeFactory, this);
+            player->setName("HOST");
+            //join = new thread(&Server::waitForPlayers, dynamic_cast<Server*>(localHost), std::ref(allowJoin));
+            //dynamic_cast<Server*>(localHost)->waitForPlayers();
+            cout << "Waiting for players..." << endl;
+            window->setTitle("SERVER");
+            break;
+        case CLIENT:
+            localHost = new Client("CLIENT", *serverAddress, serverPort, *shapeFactory);
+            player->setName("CLIENT");
+            dynamic_cast<Client*>(localHost)->connect(player->getPosition());
+            window->setTitle("CLIENT");
+            break;
+        case SINGLE_PLAYER:
+            localHost = new Server("HOST", *shapeFactory, this);
+            player->setName("HOST");
+            window->setTitle("SINGLE PLAYER");
+            break;
+        default:
+            break;
+	}
+	network = new thread(&UDPNetwork::listen, localHost);
+	
+	window->setActive(true);
+	
+	secPerDrops = 5;
+}
+
 sf::RenderWindow* Game::getWindow() {
     return window;
 }
 
 b2World* Game::getWorld() { return world; }
-
 Player* Game::getPlayer() { return player; }
-
+Utility* Game::getUtility() { return utility; }
 OSHandler* Game::getOSHandler() { return osHandler; }
 
-float Game::getPixelToMeter() { return pixelToMeter; }
-float Game::getMeterToPixel() { return meterToPixel; }
-float Game::getOffSetX() { return offSetX; }
-float Game::getOffSetY() { return offSetY; }
+void Game::setUtility(Utility* utility_) { utility = utility_; }
+void Game::setPlayer(Player* player_) { player = player_; }
 
 void Game::run() {
 	//Handle data that was received since last timestep

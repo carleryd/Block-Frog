@@ -1,4 +1,6 @@
 #include "Rectangle.h"
+#include "Game.h"
+#include "Utility.h"
 
 Rectangle::Rectangle(Game* game, b2Vec2* size_, b2Vec2* position,
 					 bool dynamic, float density, float friction):
@@ -8,7 +10,7 @@ Rectangle::Rectangle(Game* game, b2Vec2* size_, b2Vec2* position,
     
     // Define another box shape for our dynamic body.
     b2PolygonShape boxShape; //dynamicBox;
-    boxShape.SetAsBox((size->x/2) * pixelToMeter, (size->y/2) * pixelToMeter);
+    boxShape.SetAsBox((size->x/2) * game->getUtility()->getPTM(), (size->y/2) * game->getUtility()->getPTM());
     
     // Define the dynamic body fixture.
     b2FixtureDef fixtureDef;

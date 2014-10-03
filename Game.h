@@ -9,6 +9,7 @@
 #include <list>
 #include <thread>
 #include <typeinfo>
+class Utility;
 class Shape;
 class ShapeFactory;
 class Controller;
@@ -20,27 +21,30 @@ enum {SERVER, CLIENT, SINGLE_PLAYER};
 class Game
 {
 public:
-	Game(sf::RenderWindow* window, OSHandler* osHandler, int playerType, sf::IpAddress* serverip = nullptr, unsigned short serverPort = 0);
+	Game(sf::RenderWindow* window, OSHandler* osHandler);
 	~Game();
+    
+    void init(int playerType, sf::IpAddress* serverip = nullptr, unsigned short serverPort = 0);
     void run();
-    void init();
 	void exitGame();
 
     void spawnBox(sf::Vector2i position);
     
+    // Getter methods
     sf::RenderWindow* getWindow();
     b2World* getWorld();
     Player* getPlayer();
+    Utility* getUtility();
 	sf::Vector2i& getViewOffset() {return viewOffset;};
 	list<Player*>& getRemotePlayers() {return remotePlayers;};
 	vector<Shape*>& getShapes() {return boxes;};
     OSHandler* getOSHandler();
     
-    float getPixelToMeter();
-    float getMeterToPixel();
-    float getOffSetX();
-    float getOffSetY();
+    // Setter methods
+    void setUtility(Utility* utility);
+    void setPlayer(Player* player);
     
+    // Network
 	void addRemotePlayer(Player* rPlayer);
 	bool removeRemotePlayer(string name);
 	bool playersAllowedToJoined(){return allowJoin;};
@@ -56,8 +60,9 @@ private:
 	void handleThreads();
 	
     b2World* world;
-    Player* player; //this is the player that the player controlls
-	list<Player*> remotePlayers; //
+    Player* player; 					// This is the player that the player controlls
+    Utility* utility;					// Access this object for certain utility functions
+	list<Player*> remotePlayers;
     OSHandler* osHandler;
 	ShapeFactory* shapeFactory;
     
@@ -76,10 +81,10 @@ private:
     std::vector<Shape*> boxes;
 	double duration;
 	float riseSpeed;
-    float pixelToMeter;
-    float meterToPixel;
-    float offSetX;
-    float offSetY;
+//    float pixelToMeter;
+//    float meterToPixel;
+//    float offSetX;
+//    float offSetY;
 	int secPerDrops; //time before a new block is dropped
 	int killOffset; //how far under the screen blocks will be killed
 	bool allowJoin;

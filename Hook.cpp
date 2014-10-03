@@ -9,6 +9,7 @@
 #include "Hook.h"
 #include "Circle.h"
 #include "Game.h"
+#include "Utility.h"
 #include <cmath>
 #include <math.h>
 
@@ -18,7 +19,14 @@ Hook::Hook(Game* game_) {
     float playerX = game->getPlayer()->getBody()->GetPosition().x;
     float playerY = game->getPlayer()->getBody()->GetPosition().y;
     cout << playerX << " " << playerY << endl;
-    hookTip = new Circle(game, 5.0f, new b2Vec2(playerX * game->getMeterToPixel(), playerY * game->getMeterToPixel()), true, 0.0, 0.0);
+    hookTip = new Circle(game,
+                         5.0f,
+                         new b2Vec2(playerX * game->getUtility()->getMTP(),
+                                    playerY * game->getUtility()->getMTP()),
+                         true,
+                         0.0,
+                         0.0);
+    
 	hookTip->getShape()->setFillColor(sf::Color(255, 0, 0));
     hookTip->getBody()->ApplyLinearImpulse(b2Vec2(-1, 1), hookTip->getBody()->GetPosition(), true);
     

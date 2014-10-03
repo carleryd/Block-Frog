@@ -1,21 +1,15 @@
 #include "Shape.h"
 #include "Game.h"
 #include <math.h>
+#include "Utility.h"
 
 const float PI = 3.14f;
 
 #include <iostream>
 
-Shape::Shape(Game* game, b2Vec2* position_, bool dynamic_, float density_, float friction_)
+Shape::Shape(Game* game_, b2Vec2* position_, bool dynamic_, float density_, float friction_)
 {
-	pixelToMeter = 1.0f/30.0f; // Box2D meter equals 50 pixels?
-    meterToPixel = 30.0;
-    // Window: 800x600(access this form game->getWorld()->getSize())
-    // Box2D coordinate system is in the middle of screen, SFML is top-left. These offsets will make SFML start off drawing in the middle
-    offSetX = game->getWindow()->getSize().x / meterToPixel / 2;
-    offSetY = game->getWindow()->getSize().y / meterToPixel / 2;
-    
-//    size = size_;
+    game = game_;
     position = position_;
     dynamic = dynamic_;
     density = density_;
@@ -23,7 +17,8 @@ Shape::Shape(Game* game, b2Vec2* position_, bool dynamic_, float density_, float
     
     // Define the dynamic body. We set its position and call the body factory.
     b2BodyDef bodyDef;
-    bodyDef.position.Set(position->x * pixelToMeter, position->y * pixelToMeter);
+    bodyDef.position.Set(position->x * game->getUtility()->getPTM(),
+                         position->y * game->getUtility()->getPTM());
     
     if(dynamic)
         bodyDef.type = b2_dynamicBody;
@@ -39,9 +34,8 @@ Shape::~Shape(void)
 
 void Shape::update()
 {
-//    cout << "mTP: " << meterToPixel << endl << "pTM: " << pixelToMeter << endl;
-//    shape->setPosition((body->GetPosition().x + game->getOffSetX()) * game->getMeterToPixel(), (-body->GetPosition().y + game->getOffSetY()) * game->getMeterToPixel());
-    shape->setPosition((body->GetPosition().x + offSetX) * meterToPixel, (-body->GetPosition().y + offSetY) * meterToPixel);
+    shape->setPosition((body->GetPosition().x + game->getUtility()->getOffSetX()) * game->getUtility()->getMTP(),
+                       (-body->GetPosition().y + game->getUtility()->getOffSetY()) * game->getUtility()->getMTP());
     shape->setRotation((-body->GetAngle() / PI) * 180);
 }
 
