@@ -11,15 +11,23 @@
 
 #include <iostream>
 #include <Box2D/Box2D.h>
+#include <SFML/Graphics.hpp>
+
 class Circle;
+class Rectangle;
 class Game;
+class Utility;
 
 class Hook
 {
 public:
     Hook(Game* game);
+//    ~Hook();
+    
     void draw();
     void update();
+    void use(sf::Vector2i mousePixelPos);
+    void aim(sf::Vector2i mousePixelPos);
     
     float getLength();
     void changeLength(float delta);
@@ -27,7 +35,13 @@ public:
 private:
     Game* game;
     Circle* hookTip;
-    b2DistanceJoint* distanceJoint;
+    Rectangle* hookBase;
+    Utility* utility;
+    b2PrismaticJoint* prismaticJoint;
+    b2RevoluteJoint* revoluteJoint;
+    b2Vec2 playerMeterPos;
+    float newMouseAngle;
+    float oldMouseAngle;
 };
 
 #endif /* defined(__Block_Frog__Hook__) */

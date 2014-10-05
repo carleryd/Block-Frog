@@ -10,7 +10,7 @@ class Circle: public Shape
 {
 public:
 	Circle(Game* game, float radius, b2Vec2* position,
-              bool dynamic, float density = 1.0f, float friction = 0.3f);
+              bool dynamic, float density = 1.0f, float friction = 0.3f, int groupIndex = 1);
 	~Circle();
     
     float getRadius();

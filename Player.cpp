@@ -9,8 +9,8 @@
 Player::Player(Game* game_) {
     game = game_;
 	Player::name = name;
-    // World, Size, Position, Density, Friction, FixedRotation
-    box = new Rectangle(game_, new b2Vec2(50.0f, 50.0f), new b2Vec2(0, 0), true);
+    // World, Size, Position, Density, Friction, Dynamic, Collision group
+    box = new Rectangle(game_, new b2Vec2(50.0f, 50.0f), new b2Vec2(0, 0), true, -1);
     box->getBody()->SetFixedRotation(true);
     box->getBody()->SetGravityScale(3);
     
@@ -45,13 +45,18 @@ Player::Player(Game* game_) {
     
 	// ##### HOOKSHOT #####
     // game object, radius, position, dynamic, density, friction
-    hook = nullptr;
+    // I need to send box here because game->getPlayer() will give BAD_ACCESS(not created)
     
     contactListener = new ContactListener();
     game->getWorld()->SetContactListener(contactListener);
 
 	leftSpeed = 0;
 	rightSpeed = 0;
+    hook = NULL;
+}
+
+void Player::init() {
+	hook = new Hook(game);
 }
 
 b2Body* Player::getBody() {
@@ -65,20 +70,6 @@ void Player::setName(string n)
 
 void Player::setPosition(b2Vec2* newPos) {
 	box->getBody()->SetTransform(*newPos, box->getBody()->GetAngle());
-}
-
-void Player::useHook() {
-    hook = new Hook(game);
-}
-
-void Player::increaseHook() {
-    cout << "increaseHook()" << endl;
-	hook->changeLength(0.5);
-}
-
-void Player::decreaseHook() {
-    cout << "decreaseHook()" << endl;
-	hook->changeLength(-0.5);
 }
 
 void Player::move(int dir, bool localPlayer)
@@ -131,19 +122,26 @@ void Player::move(int dir, bool localPlayer)
 	}
 }
 
+void Player::push(b2Vec2&& dir) {
+	box->getBody()->ApplyLinearImpulse(dir, box->getBody()->GetPosition(), true);
+}
+
+void Player::useHook(sf::Vector2i mousePos) {
+    if(hook != NULL) hook->use(mousePos);
+}
+
+void Player::aimHook(sf::Vector2i mousePos) {
+    if(hook != NULL) hook->aim(mousePos);
+}
+
 bool Player::isJumping() {
 	if(contactListener->getNumFootContacts() == 1) return false;
     else return true;
 }
 
-void Player::push(b2Vec2&& dir) {
-	box->getBody()->ApplyLinearImpulse(dir, box->getBody()->GetPosition(), true);
-}
-
 void Player::draw() {
     game->getWindow()->draw(frogSprite);
-    if(hook != nullptr)
-	    hook->draw();
+    if(hook != NULL) hook->draw();
     
     frogSprite.setPosition(box->getBody()->GetPosition().x, box->getBody()->GetPosition().y);
 }
@@ -155,13 +153,13 @@ void Player::update() {
     float adjPosX = (box->getBody()->GetPosition().x + game->getWindow()->getSize().x / 30.0 / 2) * 30.0;
     float adjPosY = (-box->getBody()->GetPosition().y + game->getWindow()->getSize().y / 30.0 / 2) * 30.0;
     
-    frogSprite.setPosition(adjPosX, adjPosY); // 56824 85.230.64.105
+    frogSprite.setPosition(adjPosX, adjPosY);
 	
 	b2Vec2 oldSpeed = box->getBody()->GetLinearVelocity();
     oldSpeed = b2Vec2(0, oldSpeed.y);
 	box->update();
     box->getBody()->SetLinearVelocity(b2Vec2(leftSpeed + rightSpeed, 0) + oldSpeed);
     
-    if(hook != nullptr)
-	    hook->update();
+    if(hook != NULL) hook->update();
 }
+

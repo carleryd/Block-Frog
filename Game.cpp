@@ -44,12 +44,15 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
 	shapeFactory = new ShapeFactory(this);
     utility = new Utility(this);
 	player = new Player(this);
+    player->init();
     
 	packetParser = new PacketParser(*shapeFactory);
 	
     boxes.push_back(shapeFactory->createRectangle(new b2Vec2(750.0f, 50.0f),
                                                   new b2Vec2(0.0f, -float(window->getSize().y)/2),
-                                                  false)
+                                                  false,
+                                                  1.0,
+                                                  1.0)
                     );
     
 	riseSpeed = 0; //-0.2f;
@@ -171,8 +174,6 @@ void Game::run() {
 }
 
 void Game::spawnBox(sf::Vector2i position) {
-	//add view offset
-	//position += viewOffset;
     // adjPos is a position adjusted to window position, also adjusted according to Box2D positions, y upwards
     sf::Vector2i adjPos = sf::Vector2i(position.x - window->getSize().x/2,
 		-position.y + window->getSize().y/2);
@@ -183,14 +184,11 @@ void Game::spawnBox(sf::Vector2i position) {
 		shapeFactory->createRectangle(
 			new b2Vec2(20.0f, 20.0f),
 			new b2Vec2(float(adjPos.x), float(adjPos.y)),
-//			shapeFactory->sfvec_to_b2vec(position),
 			true));
 }
 
 void Game::removeFallenBoxes(list<Shape*>& deletion)
 {
-	//if(!deletion.empty())
-	//	cout << deletion.size() << " shapes have fallen out of the screen and been deleted this frame." << endl;
 	while(!deletion.empty())
 	{
 		vector<Shape*>::iterator todelete = std::remove_if(boxes.begin(), boxes.end(), [&deletion](Shape* b)

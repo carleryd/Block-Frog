@@ -3,8 +3,8 @@
 #include "Utility.h"
 
 Rectangle::Rectangle(Game* game, b2Vec2* size_, b2Vec2* position,
-					 bool dynamic, float density, float friction):
-	Shape(game, position, dynamic, density, friction)
+					 bool dynamic, float density, float friction, int groupIndex):
+	Shape(game, position, dynamic, density, friction, groupIndex)
 {
     size = size_;
     
@@ -15,6 +15,9 @@ Rectangle::Rectangle(Game* game, b2Vec2* size_, b2Vec2* position,
     // Define the dynamic body fixture.
     b2FixtureDef fixtureDef;
     fixtureDef.shape = &boxShape;
+    
+    // Set collision group. Will not collide with objects of same positive group
+    fixtureDef.filter.groupIndex = groupIndex;
     
     // Set the box density to be non-zero, so it will be dynamic.
     fixtureDef.density = density;

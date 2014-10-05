@@ -7,7 +7,7 @@ const float PI = 3.14f;
 
 #include <iostream>
 
-Shape::Shape(Game* game_, b2Vec2* position_, bool dynamic_, float density_, float friction_)
+Shape::Shape(Game* game_, b2Vec2* position_, bool dynamic_, float density_, float friction_, int groupIndex)
 {
     game = game_;
     position = position_;
@@ -28,8 +28,13 @@ Shape::Shape(Game* game_, b2Vec2* position_, bool dynamic_, float density_, floa
 
 Shape::~Shape(void)
 {
-	//delete body; not access?
+    cout << "Shape::~Shape()" << endl;
+    
+    game->getWorld()->DestroyBody(body);
+    body = NULL;
 	delete position;
+    position = NULL;
+    game = NULL;
 }
 
 void Shape::update()

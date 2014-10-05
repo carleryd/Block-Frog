@@ -17,13 +17,16 @@ class Player
 {
 public:
 	Player(Game* game);
+    void init();
     
     b2Body* getBody();
 
-	void setName(string n);    
-	string& getName(){return name;};
+	void setName(string n);
     void setPosition(b2Vec2* newPos);
+    
+	string& getName(){return name;};
 	b2Vec2* getPosition() const{return box->getPosition();};
+    
 	enum { LEFT, RIGHT, JUMP, LEFT_STOP, RIGHT_STOP };
 	//set bool to true when moving a remote player
 	void move(int dir, bool localPlayer=true);
@@ -33,7 +36,8 @@ public:
 	void push(b2Vec2&& direction);
     void draw();
 	void update();
-    void useHook();
+    void useHook(sf::Vector2i mousePos);
+    void aimHook(sf::Vector2i mousePos);
     void increaseHook();
     void decreaseHook();
     bool isJumping();

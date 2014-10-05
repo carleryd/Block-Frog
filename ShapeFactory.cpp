@@ -19,9 +19,9 @@ ShapeFactory::~ShapeFactory(void)
 
 }
 
-Shape* ShapeFactory::createRectangle(b2Vec2* size, b2Vec2* position, bool dynamic)
+Shape* ShapeFactory::createRectangle(b2Vec2* size, b2Vec2* position, bool dynamic, float density, float friction)
 {
-	return new Rectangle(game, size, position, dynamic);
+	return new Rectangle(game, size, position, dynamic, density, friction);
 }
 
 template<class T>
@@ -31,8 +31,6 @@ b2Vec2* ShapeFactory::sfvec_to_b2vec(sf::Vector2<T> v)
                                                  -v.y + game->getWindow()->getSize().y/2);
     adjustVector += sf::Vector2<T>(game->getViewOffset());
     return new b2Vec2(float(adjustVector.x), float(adjustVector.y));
-    /*new b2Vec2(float(v.x - game->getWindow()->getSize().x/2 + game->getViewOffset().x),
-     float(-v.y + game->getWindow()->getSize().y/2 + game->getViewOffset().y));*/
 };
 
 Shape* ShapeFactory::createRandomShape(sf::Vector2i viewOffset)
@@ -45,9 +43,10 @@ Shape* ShapeFactory::createRandomShape(sf::Vector2i viewOffset)
     vec.x = x;
     vec.y = y;
 	return new Rectangle(
-		game,
-		new b2Vec2(rand()*100 + minSize, rand()*100 + minSize), 
-		//new b2Vec2(x, y),
-		sfvec_to_b2vec(vec),
-		true);
+                         game,
+                         new b2Vec2(rand()*100 + minSize, rand()*100 + minSize),
+                         sfvec_to_b2vec(vec),
+                         true,
+                         1.0,
+                         1.0);
 }

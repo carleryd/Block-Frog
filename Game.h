@@ -81,10 +81,6 @@ private:
     std::vector<Shape*> boxes;
 	double duration;
 	float riseSpeed;
-//    float pixelToMeter;
-//    float meterToPixel;
-//    float offSetX;
-//    float offSetY;
 	int secPerDrops; //time before a new block is dropped
 	int killOffset; //how far under the screen blocks will be killed
 	bool allowJoin;

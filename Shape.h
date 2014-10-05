@@ -18,7 +18,7 @@ public:
 	b2Vec2* getPosition() const {return position;};
 protected:
 	Shape(Game* game, b2Vec2* position,
-		bool dynamic, float density, float friction);
+		bool dynamic, float density, float friction, int groupIndex);
     
 	sf::Shape* shape;
     b2Body* body;

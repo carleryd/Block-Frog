@@ -8,6 +8,7 @@ Controller::Controller(Game* game_)
 
 void Controller::checkInput() {
 	sf::Event event;
+    sf::Vector2i position;
     while (game->getWindow()->pollEvent(event))
     {
         // Close window : exit
@@ -22,10 +23,10 @@ void Controller::checkInput() {
                 case sf::Keyboard::Escape:
                     game->getWindow()->close();
                     break;
-             	case sf::Keyboard::Left:
+             	case sf::Keyboard::A:
                     game->getPlayer()->move(game->getPlayer()->LEFT);
                     break;
-             	case sf::Keyboard::Right:
+             	case sf::Keyboard::D:
                     game->getPlayer()->move(game->getPlayer()->RIGHT);
                     break;
                 case sf::Keyboard::Space:
@@ -35,12 +36,6 @@ void Controller::checkInput() {
 					game->allowJoin = false;
 					cout << "player join false" << endl;
 					break;
-                case sf::Keyboard::W:
-					game->getPlayer()->increaseHook();
-					break;
-                case sf::Keyboard::S:
-					game->getPlayer()->decreaseHook();
-					break;
                 default:
 					if(event.key.alt)
 						devInput(event);
@@ -49,10 +44,10 @@ void Controller::checkInput() {
         }
         else if(event.type == sf::Event::KeyReleased) {
             switch(event.key.code) {
-                case sf::Keyboard::Left:
+                case sf::Keyboard::A:
                     game->getPlayer()->move(game->getPlayer()->LEFT_STOP);
                     break;
-                case sf::Keyboard::Right:
+                case sf::Keyboard::D:
                     game->getPlayer()->move(game->getPlayer()->RIGHT_STOP);
                     break;
                 default:
@@ -60,10 +55,12 @@ void Controller::checkInput() {
                     break;
             }
         }
+        position = sf::Mouse::getPosition(*game->getWindow());
+		game->getPlayer()->aimHook(position);
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-//	        sf::Vector2i position = sf::Mouse::getPosition(*game->getWindow());
+	        sf::Vector2i position = sf::Mouse::getPosition(*game->getWindow());
 //            game->spawnBox(position);
-            game->getPlayer()->useHook();
+            game->getPlayer()->useHook(position);
         }
     }
 }
