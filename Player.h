@@ -18,14 +18,14 @@ class Player
 public:
 	Player(Game* game);
     void init();
-    
-    b2Body* getBody();
 
 	void setName(string n);
     void setPosition(b2Vec2* newPos);
     
+    b2Body* getBody();
 	string& getName(){return name;};
 	b2Vec2* getPosition() const{return box->getPosition();};
+    ContactListener* getContactListener() { return contactListener; }
     
 	enum { LEFT, RIGHT, JUMP, LEFT_STOP, RIGHT_STOP };
 	//set bool to true when moving a remote player
@@ -38,6 +38,7 @@ public:
 	void update();
     void useHook(sf::Vector2i mousePos);
     void aimHook(sf::Vector2i mousePos);
+    void releaseHook();
     void increaseHook();
     void decreaseHook();
     bool isJumping();

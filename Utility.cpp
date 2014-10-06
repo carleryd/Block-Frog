@@ -26,9 +26,7 @@ float Utility::mouseAngle(sf::Vector2i mousePixelPos, b2Vec2 playerMeterPos) {
     b2Vec2 mouseMeterPos = game->getUtility()->mouseToBox2D(mousePixelPos);
     b2Vec2 relativeToPlayer = b2Vec2(mouseMeterPos.x - playerMeterPos.x,
                                      mouseMeterPos.y - playerMeterPos.y);
-    
-    cout << "relativeToPlayer: " << relativeToPlayer.x << " " << relativeToPlayer.y << endl;
-    
+	
     // The reason I have y and -x is to get 0/360 degrees to be to the right of player
     return atan2(relativeToPlayer.y, -relativeToPlayer.x) * 180 / M_PI + 180;
 }

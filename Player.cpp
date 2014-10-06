@@ -10,7 +10,13 @@ Player::Player(Game* game_) {
     game = game_;
 	Player::name = name;
     // World, Size, Position, Density, Friction, Dynamic, Collision group
-    box = new Rectangle(game_, new b2Vec2(50.0f, 50.0f), new b2Vec2(0, 0), true, -1);
+    box = new Rectangle(game_,
+                        new b2Vec2(50.0f, 50.0f),
+                        new b2Vec2(0, 0),
+                        true,
+                        1.0,
+                        0.1,
+                        -1);
     box->getBody()->SetFixedRotation(true);
     box->getBody()->SetGravityScale(3);
     
@@ -40,7 +46,7 @@ Player::Player(Game* game_) {
     myFixtureDef.isSensor = true;
     b2Fixture* footSensorFixture = box->getBody()->CreateFixture(&myFixtureDef);
     
-    // This is needed so that it can hold data about the "box" object
+    // This is needed for the ContactListener to recognize footSensor(see ContactListener.cpp)
     footSensorFixture->SetUserData( (void*)3 );
     
 	// ##### HOOKSHOT #####
@@ -127,11 +133,15 @@ void Player::push(b2Vec2&& dir) {
 }
 
 void Player::useHook(sf::Vector2i mousePos) {
-    if(hook != NULL) hook->use(mousePos);
+    if(hook != NULL && hook->getLength() < 0.7) hook->use(mousePos);
 }
 
 void Player::aimHook(sf::Vector2i mousePos) {
     if(hook != NULL) hook->aim(mousePos);
+}
+
+void Player::releaseHook() {
+    if(hook != NULL) hook->release();
 }
 
 bool Player::isJumping() {

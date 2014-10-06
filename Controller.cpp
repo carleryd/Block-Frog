@@ -62,6 +62,9 @@ void Controller::checkInput() {
 //            game->spawnBox(position);
             game->getPlayer()->useHook(position);
         }
+        if(sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
+            game->getPlayer()->releaseHook();
+        }
     }
 }
 

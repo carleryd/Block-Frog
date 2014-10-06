@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <Box2D/Box2D.h>
+#include <vector>
+using namespace std;
 
 class ContactListener : public b2ContactListener
 {
@@ -12,8 +14,11 @@ public:
     void EndContact(b2Contact* contact);
     
     int getNumFootContacts();
+    b2Body* getRecentHookContact();
+    void removeRecentHookContact();
 private:
     int numFootContacts;
+    b2Body* recentHookContact;
 };
 
 #endif /* defined(__Block_Frog__ContactListener__) */

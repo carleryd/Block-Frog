@@ -11,7 +11,7 @@ ShapeFactory::ShapeFactory(Game* game_):
 	string s("Block frog");
 	seed_seq seed(s.begin(), s.end());
 	mersenneGen.seed(seed);
-	minSize = 20;
+	minSize = 10;
 }
 
 ShapeFactory::~ShapeFactory(void)
@@ -42,11 +42,17 @@ Shape* ShapeFactory::createRandomShape(sf::Vector2i viewOffset)
     sf::Vector2f vec;
     vec.x = x;
     vec.y = y;
-	return new Rectangle(
-                         game,
-                         new b2Vec2(rand()*100 + minSize, rand()*100 + minSize),
-                         sfvec_to_b2vec(vec),
-                         true,
-                         1.0,
-                         1.0);
+    
+    // game, size, pos, dynamic, density, friction
+    Shape* newRectangle = new Rectangle(
+                                            game,
+                                            new b2Vec2(rand()*100 + minSize, (1 + rand() * 5) * minSize),
+                                            sfvec_to_b2vec(vec),
+                                            true,
+                                            1.0,
+                                            1.0);
+    
+    newRectangle->getBody()->GetFixtureList()->SetUserData( (void*)5 );
+    
+	return newRectangle;
 }
