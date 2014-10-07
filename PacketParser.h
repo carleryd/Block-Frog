@@ -6,6 +6,7 @@
 class Shape;
 class Player;
 
+
 struct player_info
 {
 	string name;
@@ -18,7 +19,7 @@ public:
 	PacketParser(ShapeFactory& factory);
 	PacketParser(); //cannot unpack shapes
 	~PacketParser(void);
-	sf::Packet pack(Shape* shape);
+	sf::Packet pack(Shape* shape, int type);
 	//for when the player acts(moves)
 	sf::Packet pack(player_info p);
 	//for when sending the NEW_PLAYER type packet

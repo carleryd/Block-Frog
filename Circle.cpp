@@ -30,7 +30,7 @@ Shape(game, position, dynamic, density, friction, groupIndex)
     // Add the shape to the body.
     body->CreateFixture(&fixtureDef);
     
-    shape = new sf::CircleShape(radius);
+	shape = new sf::CircleShape(radius);
     
     // This makes SFML use the same origin for shapes as Box2D(middle, middle)
     shape->setOrigin(radius, radius);

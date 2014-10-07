@@ -49,8 +49,8 @@ public:
 	bool exit;
 
 	enum typreceive{SERVER_EXIT, CLIENT_EXIT, NEW_PLAYER,
-		SHAPE, ALL_SHAPES,
-		PLAYER_MOVE};
+		SHAPE, ALL_SHAPES, SHAPE_SYNCH,
+		PLAYER_MOVE, PLAYER_PUSH_SHAPE};
 protected:
 	UDPNetwork(string playerName, ShapeFactory& factory);
 
@@ -63,6 +63,7 @@ protected:
 	sf::SocketSelector selector;
 private:
 	std::atomic<bool> packetsOccupied;
+	int numberOfShapes;
 };
 
 

@@ -44,7 +44,7 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
 	shapeFactory = new ShapeFactory(this);
     utility = new Utility(this);
 	player = new Player(this);
-    player->init();
+    //player->init();
     
 	packetParser = new PacketParser(*shapeFactory);
 	
@@ -108,27 +108,26 @@ void Game::run() {
 	//Handle data that was received since last timestep
 	localHost->handleReceivedData(this);
 
+	//do local calcs
 	boxHandling();
 	calcViewOffset();
 
+	//server specific box handling
     if(localHost->isServer())
     {
         Shape* box = createBoxes();
         if(box != nullptr)
         {
-            sf::Packet packet = packetParser->pack(box);
+			sf::Packet packet = packetParser->pack(box, UDPNetwork::SHAPE);
             dynamic_cast<Server*>(localHost)->broadCast(packet);
         }
     }
-	//else 
-	//{
-	//	boxes.push_back( static_cast<Shape*>(dynamic_cast<Client*>(localHost)->listenToServer()));
-	//}
 
 	//player
     player->draw();
 	player->update();
     
+	//draw and update remote players
 	for(list<Player*>::iterator itr = remotePlayers.begin(); itr != remotePlayers.end(); itr++)
 	{
 		(*itr)->draw();
@@ -142,10 +141,6 @@ void Game::run() {
     // timeStep, velocityIterations, positionIterations
     world->Step(1.0f/60.0f, 10, 8);
     world->ClearForces();
-
-	//do  networking that has happened during this frame
-	//e.g. send data that player has moved a block
-
 
 	//rebroadcast everything that server has learnt from the other clients about the game state
 	if(localHost->isServer())
@@ -170,6 +165,17 @@ void Game::run() {
 			playerMoves.clear();
 		}
 		
+		////check synch of blocks 
+		//if(server->resynchTime())
+		//{
+		//	vector<sf::Packet*> packets;
+		//	//don't add ground
+		//	for(unsigned i = 1; i < boxes.size(); ++i)
+		//	{
+		//		packets.push_back(new sf::Packet(packetParser->pack(boxes[i], UDPNetwork::SHAPE_SYNCH)));
+		//	};
+		//	server->broadCast(packets);
+		//}
 	}
 }
 
@@ -189,14 +195,13 @@ void Game::spawnBox(sf::Vector2i position) {
 
 void Game::removeFallenBoxes(list<Shape*>& deletion)
 {
+	vector<Shape*>::iterator todelete = std::remove_if(boxes.begin(), boxes.end(), [&deletion](Shape* b)
+	{
+		return deletion.front() == b;
+	});
+	boxes.erase(todelete, boxes.end());
 	while(!deletion.empty())
 	{
-		vector<Shape*>::iterator todelete = std::remove_if(boxes.begin(), boxes.end(), [&deletion](Shape* b)
-		{
-			return deletion.front() == b;
-		}
-		);
-		boxes.erase(todelete, boxes.end());
 		delete deletion.front();
 		deletion.pop_front();
 	}
@@ -223,6 +228,7 @@ void Game::boxHandling()
         box->update();
         window->draw(*box->getShape());
     }
+	if(!deletion.empty())
 	removeFallenBoxes(deletion);
 }
 

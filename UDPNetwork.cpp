@@ -18,6 +18,7 @@ UDPNetwork::UDPNetwork(string PlayerName, ShapeFactory& factory):
 	playerName = PlayerName;
 	selector.add(mySocket);
 	mySocket.setBlocking(true);
+	numberOfShapes = 0;
 }
 
 UDPNetwork::~UDPNetwork(void)
@@ -64,7 +65,7 @@ void UDPNetwork::listen()
 				packets.front().senderPort) != sf::Socket::Done)
 				cerr << "Error when receiving data" << endl;
 
-			cout << "Packet size: " << packets.front().packet.getDataSize() << endl;
+			//cout << "Packet size: " << packets.front().packet.getDataSize() << endl;
 			packetsOccupied = false;
 		}
 	}
@@ -127,6 +128,27 @@ void UDPNetwork::handleReceivedData(Game* game)
 			break;
 		case SHAPE:
 			game->boxes.push_back(packetParser.unpack<Shape*>(*packet));
+			break;
+		case SHAPE_SYNCH:
+			{
+				vector<Shape*>& shapes =  game->getShapes();
+				//don't compare ground (1st element).  
+				numberOfShapes == 0 ? ++numberOfShapes % shapes.size(): numberOfShapes;
+
+				syncStruct s;
+				b2Vec2 size;
+				*packet >> s.position.x >> s.position.y;
+				*packet >> size.x >> size.y;
+				*packet >> s.velocity.x >> s.velocity.y;
+				*packet >> s.angle >> s.angularVelocity;
+
+
+				//if NOT in synch replace old shape with serverShape
+				if(!(*shapes[numberOfShapes] == s))
+				{
+					cout << "SYNCHING" << endl;
+				}
+			}
 			break;
 		case PLAYER_MOVE:
 			{
