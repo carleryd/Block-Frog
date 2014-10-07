@@ -15,8 +15,7 @@ Player::Player(Game* game_) {
                         new b2Vec2(0, 0),
                         true,
                         1.0,
-                        0.1,
-                        -1);
+                        0.1);
     box->getBody()->SetFixedRotation(true);
     box->getBody()->SetGravityScale(3);
     

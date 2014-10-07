@@ -26,8 +26,7 @@ Hook::Hook(Game* game_) {
                                     (playerMeterPos.y + 5) * game->getUtility()->getMTP()),
                          true,
                          0.01,
-                         0.0,
-                         -1);
+                         0.0);
     // This way it will be recognized in the ContactListnener(see if statements ContactListener.cpp)
     hookTip->getBody()->GetFixtureList()->SetUserData( (void*)4 );
     
@@ -37,8 +36,7 @@ Hook::Hook(Game* game_) {
                                         (playerMeterPos.y) * game->getUtility()->getMTP()),
                              true,
                              1.0,
-                             0.3,
-                             -1);
+                             0.3);
     
     //EFTER ATT JAG IMPLEMENTERADE DETTA BUGGAR DET IBLAND
 //    b2Filter filter = hookTip->getBody()->GetFixtureList()->GetFilterData();
@@ -69,7 +67,7 @@ Hook::Hook(Game* game_) {
     b2RevoluteJointDef revDef;
     revDef.bodyA = hookBase->getBody();
     revDef.bodyB = game->getPlayer()->getBody();
-    revDef.collideConnected = false;
+//    revDef.collideConnected = false;
     revDef.localAnchorA = b2Vec2(0, 0);
     revDef.localAnchorB = b2Vec2(0, 0);
     revDef.enableLimit = true;
@@ -207,6 +205,7 @@ b2WeldJoint* Hook::grab(b2Body* box) {
     def.collideConnected = true;
     def.localAnchorA = b2Vec2(0, 0);
     def.localAnchorB = b2Vec2(0, 0);
+    def.frequencyHz = 0;
     
     return (b2WeldJoint*)game->getWorld()->CreateJoint(&def);
 }
