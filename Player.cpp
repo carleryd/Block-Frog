@@ -133,7 +133,7 @@ void Player::push(b2Vec2&& dir) {
 }
 
 void Player::useHook(sf::Vector2i mousePos) {
-    if(hook != NULL && hook->getLength() < 0.7) hook->use(mousePos);
+    if(hook != NULL && hook->getLength() < 0.7) hook->shoot(mousePos);
 }
 
 void Player::aimHook(sf::Vector2i mousePos) {
@@ -171,5 +171,7 @@ void Player::update() {
     box->getBody()->SetLinearVelocity(b2Vec2(leftSpeed + rightSpeed, 0) + oldSpeed);
     
     if(hook != NULL) hook->update();
+    
+//    cout << "player position: " << adjPosX << " " << adjPosY << endl;
 }
 

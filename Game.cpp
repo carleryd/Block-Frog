@@ -55,6 +55,8 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
                                                   1.0)
                     );
     
+    boxes.push_back(shapeFactory->createRandomShape(viewOffset));
+    
 	riseSpeed = 0; //-0.2f;
 	killOffset = 30;
 	secPerDrops = 1;
@@ -89,7 +91,7 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
 	
 	window->setActive(true);
 	
-	secPerDrops = 5;
+	secPerDrops = 10;
 }
 
 sf::RenderWindow* Game::getWindow() {

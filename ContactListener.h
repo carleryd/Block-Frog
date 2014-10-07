@@ -13,12 +13,15 @@ public:
     void BeginContact(b2Contact* contact);
     void EndContact(b2Contact* contact);
     
+    void setHookActive(bool active);
+    
     int getNumFootContacts();
     b2Body* getRecentHookContact();
     void removeRecentHookContact();
 private:
     int numFootContacts;
     b2Body* recentHookContact;
+    bool hookIsActive;
 };
 
 #endif /* defined(__Block_Frog__ContactListener__) */

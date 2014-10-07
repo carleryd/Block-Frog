@@ -28,8 +28,6 @@ Shape::Shape(Game* game_, b2Vec2* position_, bool dynamic_, float density_, floa
 
 Shape::~Shape(void)
 {
-    cout << "Shape::~Shape()" << endl;
-    
     game->getWorld()->DestroyBody(body);
     body = NULL;
 	delete position;
