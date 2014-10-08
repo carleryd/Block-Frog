@@ -28,6 +28,8 @@ private:
     float meterToPixel;
     float offSetX;
     float offSetY;
+    short int cycles;
+    float currDegrees, prevDegrees;
 };
 
 #endif /* defined(__Block_Frog__Utility__) */

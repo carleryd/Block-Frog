@@ -26,7 +26,8 @@ Hook::Hook(Game* game_) {
                                     (playerMeterPos.y + 5) * game->getUtility()->getMTP()),
                          true,
                          0.01,
-                         0.0);
+                         0.0,
+                         -1);
     // This way it will be recognized in the ContactListnener(see if statements ContactListener.cpp)
     hookTip->getBody()->GetFixtureList()->SetUserData( (void*)4 );
     
@@ -36,7 +37,8 @@ Hook::Hook(Game* game_) {
                                         (playerMeterPos.y) * game->getUtility()->getMTP()),
                              true,
                              1.0,
-                             0.3);
+                             0.3,
+                             -1);
     
     //EFTER ATT JAG IMPLEMENTERADE DETTA BUGGAR DET IBLAND
 //    b2Filter filter = hookTip->getBody()->GetFixtureList()->GetFilterData();
@@ -75,7 +77,7 @@ Hook::Hook(Game* game_) {
     revDef.lowerAngle = 0.0;
     revDef.upperAngle = 1.0;
     //    revDef.motorSpeed = 1;
-    revDef.maxMotorTorque = 1000000;
+    revDef.maxMotorTorque = 1000;
     
     revoluteJoint = (b2RevoluteJoint*)(game->getWorld()->CreateJoint(&revDef));
     
@@ -96,17 +98,19 @@ Hook::Hook(Game* game_) {
     def.lowerTranslation = 0.0f;
     def.upperTranslation = passiveLength;
     def.maxMotorForce = 10.0f;
-    def.motorSpeed = 50.0f;
+    def.motorSpeed = 30.0f;
     
 	prismaticJoint = (b2PrismaticJoint*)(game->getWorld()->CreateJoint(&def));
     
-    weldJoint = NULL;
+    grabJoint = NULL;
     
     newMouseAngle = 10;
 }
 
 void Hook::aim(sf::Vector2i mousePixelPos) {
     newMouseAngle = utility->mouseAngle(mousePixelPos, playerMeterPos);
+    cout << "Degree: " << newMouseAngle << endl;
+    cout << "Radian: " << utility->degToRad(newMouseAngle) << endl;
 	revoluteJoint->SetLimits(utility->degToRad(newMouseAngle), utility->degToRad(newMouseAngle));
 }
 
@@ -120,18 +124,37 @@ void Hook::shoot(sf::Vector2i mousePixelPos) {
     ACTION = SHOOTING;
 }
 
+b2RevoluteJoint* Hook::grab(b2Body* box) {
+    // Makes the box more easily handled by frog
+    box->GetFixtureList()->SetDensity(0.0001);
+    box->GetFixtureList()->SetFriction(0.1);
+    box->SetFixedRotation(true);
+    box->ResetMassData();
+    
+    b2RevoluteJointDef def;
+    def.bodyA = hookTip->getBody();
+    def.bodyB = box;
+    def.collideConnected = true;
+    def.localAnchorA = b2Vec2(0, 0);
+    def.localAnchorB = b2Vec2(0, 0);
+    
+    return (b2RevoluteJoint*)game->getWorld()->CreateJoint(&def);
+}
+
 void Hook::release() {
-    if(weldJoint != NULL) {
+    if(grabJoint != NULL) {
         prismaticJoint->SetLimits(0.0, passiveLength);
         // Return to original density and friction
-        weldJoint->GetBodyB()->GetFixtureList()->SetDensity(1.0);
-        weldJoint->GetBodyB()->GetFixtureList()->SetFriction(1.0);
-        weldJoint->GetBodyB()->SetFixedRotation(false);
-        weldJoint->GetBodyB()->ResetMassData();
+        grabJoint->GetBodyB()->GetFixtureList()->SetDensity(1.0);
+        grabJoint->GetBodyB()->GetFixtureList()->SetFriction(1.0);
+        grabJoint->GetBodyB()->SetFixedRotation(false);
+        grabJoint->GetBodyB()->SetLinearVelocity(b2Vec2(0, 0));
+//        weldJoint->GetBodyB()->SetFixedRotation(false);
+        grabJoint->GetBodyB()->ResetMassData();
         
         // Destroy the joint connecting hook and box
-    	game->getWorld()->DestroyJoint(weldJoint);
-    	weldJoint = NULL;
+    	game->getWorld()->DestroyJoint(grabJoint);
+    	grabJoint = NULL;
         
         // Remove the recent contact, we no longer want to grab it
         contactListener->removeRecentHookContact();
@@ -151,24 +174,19 @@ void Hook::update() {
     switch(ACTION)
     {
         case SHOOTING:
-            cout << "Shooting" << endl;
             recentBoxContact = contactListener->getRecentHookContact();
             
-			if(recentBoxContact != NULL && weldJoint == NULL) {
-                cout << "Hit!" << endl;
+			if(recentBoxContact != NULL && grabJoint == NULL) {
                 prismaticJoint->SetLimits(0.0, grabLength);
-                weldJoint = grab(recentBoxContact);
+                grabJoint = grab(recentBoxContact);
                 ACTION = PASSIVE;
             }
             else if(recentBoxContact == NULL && getLength() > (reachLength - 0.2)) {
-                cout << "Returning" << endl;
                 prismaticJoint->SetLimits(0.0, passiveLength);
                 ACTION = PASSIVE;
             }
             break;
-            
         case PASSIVE:
-            cout << "Passive - desired length: " << prismaticJoint->GetUpperLimit() << endl;
             break;
             
         default:
@@ -190,24 +208,6 @@ void Hook::update() {
 void Hook::draw() {
     game->getWindow()->draw(*hookTip->getShape());
 	game->getWindow()->draw(*hookBase->getShape());
-}
-
-b2WeldJoint* Hook::grab(b2Body* box) {
-    // Makes the box more easily handled by frog
-    box->GetFixtureList()->SetDensity(0.01);
-    box->GetFixtureList()->SetFriction(0.1);
-    box->SetFixedRotation(true);
-    box->ResetMassData();
-    
-    b2WeldJointDef def;
-    def.bodyA = hookTip->getBody();
-    def.bodyB = box;
-    def.collideConnected = true;
-    def.localAnchorA = b2Vec2(0, 0);
-    def.localAnchorB = b2Vec2(0, 0);
-    def.frequencyHz = 0;
-    
-    return (b2WeldJoint*)game->getWorld()->CreateJoint(&def);
 }
 
 float Hook::getLength() {

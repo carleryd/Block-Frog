@@ -4,6 +4,9 @@
 
 Utility::Utility(Game* game_) {
     game = game_;
+    cycles = 0;
+    currDegrees = 0;
+    prevDegrees = 0;
     pixelToMeter = 1.0/30.0;
     meterToPixel = 30.0;
     // Window: 800x600(access this form game->getWorld()->getSize())
@@ -26,9 +29,22 @@ float Utility::mouseAngle(sf::Vector2i mousePixelPos, b2Vec2 playerMeterPos) {
     b2Vec2 mouseMeterPos = game->getUtility()->mouseToBox2D(mousePixelPos);
     b2Vec2 relativeToPlayer = b2Vec2(mouseMeterPos.x - playerMeterPos.x,
                                      mouseMeterPos.y - playerMeterPos.y);
-	
+    
+    currDegrees = (atan2(relativeToPlayer.y, -relativeToPlayer.x) * 180 / M_PI + 180);
+    
+    // There is a problem where the revoluteJoint goes from 360 -> 1 degrees.
+    // This makes the joint go back counter-clockwise
+	if(currDegrees - 270 > prevDegrees)
+        cycles--;
+    else if(currDegrees + 270 < prevDegrees)
+        cycles++;
+    
+    prevDegrees = currDegrees;
+    
+    cout << "cycles: " << cycles << endl;
+    
     // The reason I have y and -x is to get 0/360 degrees to be to the right of player
-    return atan2(relativeToPlayer.y, -relativeToPlayer.x) * 180 / M_PI + 180;
+    return currDegrees + 360 * cycles;
 }
 
 float Utility::degToRad(float degrees) {
