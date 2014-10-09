@@ -145,7 +145,8 @@ void UDPNetwork::handleReceivedData(Game* game)
 				if(found != remotePlayers.end())
 				{
 					//move player
-					(*found)->move(info->movedir, false);
+					(*found)->move(info->movedir, false, info->jumped);
+					(*found)->getBody()->SetLinearVelocity(info->velocity);
 					//broadcast to other players
 					if(isServer())
 					{
@@ -177,8 +178,8 @@ void UDPNetwork::handleReceivedData(Game* game)
 		case REMOVE_SHAPE:
 			{
 				int id = packetParser.unpack<int>(*packet);
+				cout << "Shape to be removed " << id << endl;
 				game->removeShape(id);
-				cout << "Remove shape " << id << endl;
 			}
 			break;
 		default:

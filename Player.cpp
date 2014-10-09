@@ -113,7 +113,8 @@ void Player::move(int dir, bool localPlayer, bool is_jumping)
 		player_info p;
 		p.name = name;
 		p.movedir = dir;
-		p.isJumping = jumped;
+		p.jumped = jumped;
+		p.velocity = box->getBody()->GetLinearVelocity();
 		packet = game->getPacketParser()->pack(p);
 		if(game->getLocalHost()->isServer())
 		{
@@ -156,7 +157,7 @@ void Player::draw() {
 }
 
 void Player::update() {
-    frogSprite.setRotation((-box->getBody()->GetAngle() / 3.14) * 180);
+    frogSprite.setRotation( float( (-box->getBody()->GetAngle() / 3.14) * 180));
 	// Adjusting from sprite 0:0 to body 0.5:0.5
     frogSprite.setOrigin(25, 25);
     float adjPosX = (box->getBody()->GetPosition().x + game->getWindow()->getSize().x / 30.0 / 2) * 30.0;

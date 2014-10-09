@@ -10,7 +10,8 @@ struct player_info
 {
 	string name;
 	int movedir;
-	bool isJumping; 
+	bool jumped; 
+	b2Vec2 velocity;
 };
 
 struct shapeSync

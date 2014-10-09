@@ -29,6 +29,7 @@ sf::Packet PacketParser::pack(Shape* shape)
         packet << type; //type
         packet << body->GetPosition().x << body->GetPosition().y;
         packet << rectangle->getSize()->x << rectangle->getSize()->y;
+		packet << shape->getId();
         return packet;
     }
     else {
@@ -43,7 +44,8 @@ sf::Packet PacketParser::pack(player_info p)
 	packet << UDPNetwork::PLAYER_MOVE;
 	packet << p.name;
 	packet << p.movedir;
-	packet << p.isJumping;
+	packet << p.jumped;
+	packet << p.velocity.x << p.velocity.y;
 	return packet;
 }
 
@@ -84,10 +86,13 @@ sf::Packet PacketParser::pack<int>(int type, int value)
 template<>
 Shape* PacketParser::unpack<Shape*>(sf::Packet& packet)
 {
+	int id;
 	b2Vec2 pos, size;
 	packet >> pos.x >> pos.y >> size.x >> size.y;
-	Shape* s = factory.createRectangle(new b2Vec2(size), new b2Vec2(pos), true);
+	packet >> id;
+	Shape* s = factory.createRectangle(new b2Vec2(size), new b2Vec2(pos), true, id);
 	s->setPosition(&pos);
+	s->setId(id);
 	return s;
 }
 
@@ -121,7 +126,8 @@ player_info* PacketParser::unpack<player_info*>(sf::Packet& packet)
 	player_info* info = new player_info;
 	packet >> info->name;
 	packet >> info->movedir;
-	packet >> info->isJumping;
+	packet >> info->jumped;
+	packet >> info->velocity.x >> info->velocity.y;
 	return info;
 }
 

@@ -48,7 +48,7 @@ public:
 	void handleReceivedData(Game* game);
 	bool exit;
 
-	enum typreceive{SERVER_EXIT, CLIENT_EXIT, NEW_PLAYER,
+	enum typreceive{SERVER_EXIT, CLIENT_EXIT, NEW_PLAYER, GAME_STATE_SYNCH,
 		SHAPE, ALL_SHAPES, SHAPE_SYNCH, REMOVE_SHAPE,
 		PLAYER_MOVE};
 protected:

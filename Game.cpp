@@ -91,7 +91,7 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
 	
 	window->setActive(true);
 	
-	secPerDrops = 10;
+	secPerDrops = 10; 
 }
 
 sf::RenderWindow* Game::getWindow() {
@@ -208,6 +208,7 @@ void Game::removeFallenBoxes(list<Shape*>& deletion)
 		);
 		if(todelete != boxes.end())
 		{
+			cout << "Clients, remove shape " << (*todelete)->getId() << endl;
 			sf::Packet p = packetParser->pack<int>(UDPNetwork::REMOVE_SHAPE, (*todelete)->getId());
 			dynamic_cast<Server*>(localHost)->broadCast(p);
 			boxes.erase(todelete, boxes.end());
@@ -369,6 +370,12 @@ void Game::updateShapes(shapeSync* s)
 	}
 	else
 	{
+		cout << "Shapes in vector boxes: ";
+		for (Shape* shape : boxes)
+		{
+			cout << shape->getId() << " ";
+		}
+		cout << endl;
 		cout << "Shape not found for update! ID: " << s->shapeID << endl;
 		cout << "Creating new shape with ID " << s->shapeID << endl;
 		Shape* replacement = shapeFactory->createRectangle(&s->size, &s->position, true);

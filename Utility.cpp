@@ -17,8 +17,8 @@ b2Vec2 Utility::mouseToBox2D(sf::Vector2i mousePos) {
     sf::Vector2i adjPixelPos = sf::Vector2i(mousePos.x - game->getWindow()->getSize().x/2,
                                             -mousePos.y + game->getWindow()->getSize().y/2);
     
-    b2Vec2 adjMeterPos = b2Vec2(adjPixelPos.x * pixelToMeter,
-                                adjPixelPos.y * pixelToMeter);
+    b2Vec2 adjMeterPos = b2Vec2((float)adjPixelPos.x * (float)pixelToMeter,
+                                (float)adjPixelPos.y * (float)pixelToMeter);
     
     return adjMeterPos;
 }
