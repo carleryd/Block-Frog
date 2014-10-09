@@ -24,7 +24,7 @@ public:
     
     b2Body* getBody();
 	string& getName(){return name;};
-	b2Vec2* getPosition() {return box->getPosition();};
+	b2Vec2* getPosition() const{return box->getPosition();};
     ContactListener* getContactListener() { return contactListener; }
     
 	enum { LEFT, RIGHT, JUMP, LEFT_STOP, RIGHT_STOP };

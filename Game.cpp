@@ -23,6 +23,8 @@ Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_)
     
     // Construct a world object, which will hold and simulate the rigid bodies.
     world = new b2World(gravity);
+	water = new sf::RectangleShape(sf::Vector2f(float(window->getSize().x * 2), float(window->getSize().y)));
+	water->setFillColor(sf::Color(0, 0, 255, 100));	
 }
 
 Game::~Game()
@@ -44,7 +46,7 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
 	shapeFactory = new ShapeFactory(this);
     utility = new Utility(this);
 	player = new Player(this);
-    //player->init();
+    player->init();
     
 	packetParser = new PacketParser(*shapeFactory);
 	
@@ -89,7 +91,7 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
 	
 	window->setActive(true);
 	
-	secPerDrops = 5;
+	secPerDrops = 10;
 }
 
 sf::RenderWindow* Game::getWindow() {
@@ -108,26 +110,32 @@ void Game::run() {
 	//Handle data that was received since last timestep
 	localHost->handleReceivedData(this);
 
-	//do local calcs
 	boxHandling();
 	calcViewOffset();
+	playerBoxInteraction();
 
-	//server specific box handling
+	//water
+	water->setPosition(float(window->getSize().x * -0.1), float(window->getSize().y - viewOffset.y -10));
+	window->draw(*water);
+
     if(localHost->isServer())
     {
         Shape* box = createBoxes();
         if(box != nullptr)
         {
-			sf::Packet packet = packetParser->pack(box, UDPNetwork::SHAPE);
+            sf::Packet packet = packetParser->pack(box);
             dynamic_cast<Server*>(localHost)->broadCast(packet);
         }
     }
+	//else 
+	//{
+	//	boxes.push_back( static_cast<Shape*>(dynamic_cast<Client*>(localHost)->listenToServer()));
+	//}
 
 	//player
     player->draw();
 	player->update();
     
-	//draw and update remote players
 	for(list<Player*>::iterator itr = remotePlayers.begin(); itr != remotePlayers.end(); itr++)
 	{
 		(*itr)->draw();
@@ -142,6 +150,10 @@ void Game::run() {
     world->Step(1.0f/60.0f, 10, 8);
     world->ClearForces();
 
+	//do  networking that has happened during this frame
+	//e.g. send data that player has moved a block
+
+
 	//rebroadcast everything that server has learnt from the other clients about the game state
 	if(localHost->isServer())
 	{
@@ -149,7 +161,7 @@ void Game::run() {
 		if(!server->getPlayerInfos().empty())
 		{
 			vector<player_info*>& playerMoves = server->getPlayerInfos();
-			for(int i = 0; i < playerMoves.size(); i++)
+			for(unsigned i = 0; i < playerMoves.size(); i++)
 			{
 				//find player that has moved
 				string name = playerMoves[i]->name;
@@ -164,18 +176,28 @@ void Game::run() {
 			}
 			playerMoves.clear();
 		}
-		
-		////check synch of blocks 
-		//if(server->resynchTime())
-		//{
-		//	vector<sf::Packet*> packets;
-		//	//don't add ground
-		//	for(unsigned i = 1; i < boxes.size(); ++i)
-		//	{
-		//		packets.push_back(new sf::Packet(packetParser->pack(boxes[i], UDPNetwork::SHAPE_SYNCH)));
-		//	};
-		//	server->broadCast(packets);
-		//}
+
+		//broadcast shapes that server has affected
+		for (shapeSync* shapeSync : localChanges)
+		{
+			sf::Packet p = packetParser->pack(shapeSync);
+			server->broadCast(p);
+		}
+	}
+	else
+	{
+		for (shapeSync* shapeSync : localChanges)
+		{
+			sf::Packet p = packetParser->pack(shapeSync);
+			dynamic_cast<Client*>(localHost)->sendToServer(p);
+		}
+	}
+
+	//clear memory that is only valid this time step.
+	while(!localChanges.empty())
+	{
+		delete localChanges.back();
+		localChanges.pop_back();
 	}
 }
 
@@ -195,13 +217,14 @@ void Game::spawnBox(sf::Vector2i position) {
 
 void Game::removeFallenBoxes(list<Shape*>& deletion)
 {
-	vector<Shape*>::iterator todelete = std::remove_if(boxes.begin(), boxes.end(), [&deletion](Shape* b)
-	{
-		return deletion.front() == b;
-	});
-	boxes.erase(todelete, boxes.end());
 	while(!deletion.empty())
 	{
+		vector<Shape*>::iterator todelete = std::remove_if(boxes.begin(), boxes.end(), [&deletion](Shape* b)
+		{
+			return deletion.front() == b;
+		}
+		);
+		boxes.erase(todelete, boxes.end());
 		delete deletion.front();
 		deletion.pop_front();
 	}
@@ -228,7 +251,6 @@ void Game::boxHandling()
         box->update();
         window->draw(*box->getShape());
     }
-	if(!deletion.empty())
 	removeFallenBoxes(deletion);
 }
 
@@ -301,4 +323,56 @@ bool Game::removeRemotePlayer(string name)
 	}
 	else
 		return false;
+}
+
+void Game::playerBoxInteraction()
+{
+	int id;
+	b2ContactEdge* edge = player->getBody()->GetContactList();
+	for(;edge; edge = edge->next)
+	{
+		if(edge->contact->IsTouching())
+		{
+			id = ((b2BodyUserData*)edge->other->GetUserData())->id;
+
+			//id >0 means that it is not ground i.e. blocks of some kind that isn't players
+			if(id > 0)
+			{
+				//Also check if last entered element in localChanges is for the same block so that we 
+				//can save data. Overwrite last element if the same
+				bool push;
+				shapeSync* s;
+				if(!localChanges.empty() && localChanges.back()->shapeID == id)
+				{
+					s = localChanges.back();
+					push = false;
+				}
+				else
+				{
+					s = new shapeSync;
+					push = true;
+				}
+				s->shapeID = id;
+				s->angularVel = edge->other->GetAngularVelocity();
+				s->velocity = edge->other->GetLinearVelocity();
+				if(push)
+					localChanges.push_back(s);
+			}
+		}
+	}
+}
+
+void Game::updateShapes(shapeSync* s)
+{
+	int id = s->shapeID;
+	vector<Shape*>::iterator i = find_if(boxes.begin(), boxes.end(), [id](Shape* s)
+	{
+		return s->getId() == id;
+	});
+	if(i != boxes.end())
+	{
+		Shape* shape = *i;
+		shape->getBody()->SetAngularVelocity(s->angularVel);
+		shape->getBody()->SetLinearVelocity(s->velocity);
+	}
 }

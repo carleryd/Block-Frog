@@ -7,8 +7,6 @@ Server::Server(string playerName, ShapeFactory& f, Game* g):
 {
 	selector.add(mySocket);
 	playerMoved = false;
-	synchTimer.restart();
-	synchTime = sf::seconds(1);
 }
 
 
@@ -83,10 +81,9 @@ void Server::handleNewPlayer(packetInfo& pack)
 	client* newClient = remoteConnections.back();
 	PacketParser* pp = &packetParser;
 	Server* server = this;
-	//++shapes.begin() so that the ground isn't sent
 	for_each(++shapes.begin(), shapes.end(), [newClient, pp, server](Shape* shape)
 	{
-		sf::Packet packet = pp->pack(shape, UDPNetwork::SHAPE);
+		sf::Packet packet = pp->pack(shape);
 		server->send(packet, newClient->clientAddress, newClient->clientPort);
 	});
 
@@ -118,17 +115,6 @@ void Server::broadCastExcept(sf::IpAddress address, unsigned short port, sf::Pac
 	}
 }
 
-void Server::broadCast(vector<sf::Packet*>& packets)
-{
-	for(unsigned i = 0; i < remoteConnections.size(); i++)
-	{
-		for(unsigned j = 0; j < packets.size(); ++j)
-		{
-			send(*packets[j], remoteConnections[i]->clientAddress, remoteConnections[i]->clientPort);
-		}
-	}
-}
-
 bool Server::dropPlayer(string name)
 {
 	vector<client*>::iterator i = remove_if(remoteConnections.begin(), remoteConnections.end(), [name](client* a)
@@ -146,15 +132,4 @@ bool Server::dropPlayer(string name)
 		cout << name << " could not be found among remote connections." << endl;
 		return false;
 	}
-}
-
-bool Server::resynchTime()
-{
-	if(synchTimer.getElapsedTime() > synchTime)
-	{
-		synchTimer.restart();
-		return true;
-	}
-	else 
-		return false;
 }

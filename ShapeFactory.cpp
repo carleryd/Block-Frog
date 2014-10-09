@@ -12,6 +12,7 @@ ShapeFactory::ShapeFactory(Game* game_):
 	seed_seq seed(s.begin(), s.end());
 	mersenneGen.seed(seed);
 	minSize = 10;
+	id = 0;
 }
 
 ShapeFactory::~ShapeFactory(void)
@@ -21,7 +22,7 @@ ShapeFactory::~ShapeFactory(void)
 
 Shape* ShapeFactory::createRectangle(b2Vec2* size, b2Vec2* position, bool dynamic, float density, float friction)
 {
-	return new Rectangle(game, size, position, dynamic, density, friction);
+	return new Rectangle(game, size, position, dynamic, id++, density, friction);
 }
 
 template<class T>
@@ -49,9 +50,9 @@ Shape* ShapeFactory::createRandomShape(sf::Vector2i viewOffset)
                                             new b2Vec2(rand()*100 + minSize, (1 + rand() * 5) * minSize),
                                             sfvec_to_b2vec(vec),
                                             true,
+											id++,
                                             1.0,
                                             1.0);
-    
     newRectangle->getBody()->GetFixtureList()->SetUserData( (void*)5 );
     
 	return newRectangle;

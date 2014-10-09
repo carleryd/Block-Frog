@@ -13,6 +13,10 @@ b2Body* ContactListener::getRecentHookContact() {
     return recentHookContact;
 }
 
+void ContactListener::setHookActive(bool active) {
+	hookIsActive = active;
+}
+
 void ContactListener::removeRecentHookContact() {
     recentHookContact = NULL;
 }
@@ -32,7 +36,7 @@ void ContactListener::BeginContact(b2Contact* contact) {
     
     if((uintptr_t)fixtureAUserData == 3)
         numFootContacts++;
-    else if((uintptr_t)fixtureAUserData == 4) {
+    else if((uintptr_t)fixtureAUserData == 4 && hookIsActive) {
 //     	cout << "START" << endl;
         if((uintptr_t)fixtureBUserData == 5) {
 //            cout << "HIT BOX" << endl;
@@ -40,9 +44,9 @@ void ContactListener::BeginContact(b2Contact* contact) {
         }
     }
     
-    if ( (uintptr_t)fixtureBUserData == 3 )
+    if ((uintptr_t)fixtureBUserData == 3)
         numFootContacts++;
-    else if ( (uintptr_t)fixtureBUserData == 4 ) {
+    else if ((uintptr_t)fixtureBUserData == 4 && hookIsActive) {
 //     	cout << "START" << endl;
         if((uintptr_t)fixtureAUserData == 5) {
 //            cout << "HIT BOX" << endl;

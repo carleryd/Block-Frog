@@ -50,6 +50,8 @@ public:
 	bool playersAllowedToJoined(){return allowJoin;};
 	UDPNetwork* getLocalHost(){return localHost;};
 	PacketParser* getPacketParser() const {return packetParser;};
+	//synchronize shapes against servers game state
+	void updateShapes(shapeSync* s); 
 
 private:
 	void removeFallenBoxes(std::list<Shape*>& todelete);
@@ -58,6 +60,9 @@ private:
 	void boxHandling(); //destroy boxes. 
 	Shape* createBoxes(); //for server only. Returns pointer to last created box, nullptr if no box was created
 	void handleThreads();
+
+	//if local player interacts with boxes save changes to localChanges
+	void playerBoxInteraction();
 	
     b2World* world;
     Player* player; 					// This is the player that the player controlls
@@ -79,6 +84,8 @@ private:
 	std::thread* join;
     
     std::vector<Shape*> boxes;
+	std::vector<shapeSync*> localChanges;
+	sf::Shape* water;
 	double duration;
 	float riseSpeed;
 	int secPerDrops; //time before a new block is dropped

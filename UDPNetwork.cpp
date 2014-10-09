@@ -3,6 +3,7 @@
 #include "Game.h"
 #include "Server.h"
 #include "Client.h"
+#include <memory>
 
 UDPNetwork::UDPNetwork(string PlayerName, ShapeFactory& factory):
 	packetParser(factory)
@@ -18,7 +19,6 @@ UDPNetwork::UDPNetwork(string PlayerName, ShapeFactory& factory):
 	playerName = PlayerName;
 	selector.add(mySocket);
 	mySocket.setBlocking(true);
-	numberOfShapes = 0;
 }
 
 UDPNetwork::~UDPNetwork(void)
@@ -53,7 +53,7 @@ int UDPNetwork::receive(sf::Packet* p)
 
 void UDPNetwork::listen()
 {
-	while(selector.wait(sf::seconds(0.05)) || !exit)
+	while(selector.wait(sf::seconds(0.05f)) || !exit)
 	{
 		if(selector.isReady(mySocket) && !packetsOccupied)
 		{
@@ -129,27 +129,6 @@ void UDPNetwork::handleReceivedData(Game* game)
 		case SHAPE:
 			game->boxes.push_back(packetParser.unpack<Shape*>(*packet));
 			break;
-		case SHAPE_SYNCH:
-			{
-				vector<Shape*>& shapes =  game->getShapes();
-				//don't compare ground (1st element).  
-				numberOfShapes == 0 ? ++numberOfShapes % shapes.size(): numberOfShapes;
-
-				syncStruct s;
-				b2Vec2 size;
-				*packet >> s.position.x >> s.position.y;
-				*packet >> size.x >> size.y;
-				*packet >> s.velocity.x >> s.velocity.y;
-				*packet >> s.angle >> s.angularVelocity;
-
-
-				//if NOT in synch replace old shape with serverShape
-				if(!(*shapes[numberOfShapes] == s))
-				{
-					cout << "SYNCHING" << endl;
-				}
-			}
-			break;
 		case PLAYER_MOVE:
 			{
 				//cout << "moving player" << endl;
@@ -173,6 +152,21 @@ void UDPNetwork::handleReceivedData(Game* game)
 					{
 						dynamic_cast<Server*>(this)->addPlayerInfo(info);
 					}
+				}
+			}
+			break;
+		case SHAPE_SYNCH:
+			{
+				shared_ptr<shapeSync> s(packetParser.unpack<shapeSync*>(*packet));
+				game->updateShapes(s.get());
+				if(isServer())
+				{
+					sf::Packet broadcast = packetParser.pack(s.get());
+					dynamic_cast<Server*>(this)->broadCastExcept(
+						packets.front().senderAddress,
+						packets.front().senderPort,
+						broadcast
+						);
 				}
 			}
 			break;

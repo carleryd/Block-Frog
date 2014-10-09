@@ -41,6 +41,12 @@ void Controller::checkInput() {
 						devInput(event);
                     break;
             }
+        	if(event.key.code == sf::Keyboard::Q)
+ 	           game->getPlayer()->releaseHook();
+        	if(event.key.code == sf::Keyboard::E) {
+	            position = sf::Mouse::getPosition(*game->getWindow());
+    	        game->getPlayer()->useHook(position);
+            }
         }
         else if(event.type == sf::Event::KeyReleased) {
             switch(event.key.code) {
@@ -58,11 +64,10 @@ void Controller::checkInput() {
         position = sf::Mouse::getPosition(*game->getWindow());
 		game->getPlayer()->aimHook(position);
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-	        sf::Vector2i position = sf::Mouse::getPosition(*game->getWindow());
-//            game->spawnBox(position);
+	        position = sf::Mouse::getPosition(*game->getWindow());
             game->getPlayer()->useHook(position);
         }
-        if(sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
+        else if(sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
             game->getPlayer()->releaseHook();
         }
     }

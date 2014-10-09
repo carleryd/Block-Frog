@@ -1,7 +1,7 @@
 #include "Utility.h"
 #include "Game.h"
 #include <math.h>
-const float PI = 3.14;
+const float pi = 3.14;
 
 Utility::Utility(Game* game_) {
     game = game_;
@@ -29,7 +29,7 @@ float Utility::mouseAngle(sf::Vector2i mousePixelPos, b2Vec2 playerMeterPos) {
                                      mouseMeterPos.y - playerMeterPos.y);
 	
     // The reason I have y and -x is to get 0/360 degrees to be to the right of player
-    return atan2(relativeToPlayer.y, -relativeToPlayer.x) * 180 / PI + 180;
+    return atan2(relativeToPlayer.y, -relativeToPlayer.x) * 180 / pi + 180;
 }
 
 float Utility::degToRad(float degrees) {

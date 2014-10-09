@@ -18,24 +18,17 @@ PacketParser::~PacketParser(void)
 
 // ################## PACK FUNCTIONS ##########################
 
-sf::Packet PacketParser::pack(Shape* shape, int type_ = UDPNetwork::SHAPE)
+sf::Packet PacketParser::pack(Shape* shape)
 {
-	if((type_ != UDPNetwork::SHAPE) &&  (type_ != UDPNetwork::SHAPE_SYNCH))
-	{
-		cerr << "ERROR: Wrong type packeted! Type used:" << type_ << ". Should be SHAPE or SHAPE_SYNCH" << endl;
-		return sf::Packet();
-	}
     Rectangle* rectangle = dynamic_cast<Rectangle*>(shape);
     sf::Packet packet;
     
     if(rectangle != nullptr) {
         b2Body* body = rectangle->getBody();
-        int type = type_;
+        int type = UDPNetwork::SHAPE;
         packet << type; //type
         packet << body->GetPosition().x << body->GetPosition().y;
         packet << rectangle->getSize()->x << rectangle->getSize()->y;
-		packet << rectangle->getVelocity().x << rectangle->getVelocity().y;
-		packet << body->GetAngle() << body->GetAngularVelocity();
         return packet;
     }
     else {
@@ -62,21 +55,24 @@ sf::Packet PacketParser::pack(Player* p)
 	return packet;
 }
 
+sf::Packet PacketParser::pack(shapeSync* s)
+{
+	sf::Packet p;
+	p << UDPNetwork::SHAPE_SYNCH;
+	p << s->shapeID;
+	p << s->angularVel;
+	p << s->velocity.x << s->velocity.y;
+	return p;
+}
+
 // ############# UNPACK FUNCTIONS ################
 template<>
 Shape* PacketParser::unpack<Shape*>(sf::Packet& packet)
 {
-	b2Vec2 pos, size, velocity;
-	float angle, angularvelocity;
-	packet >> pos.x >> pos.y;
-	packet >> size.x >> size.y;
-	packet >> velocity.x >> velocity.y;
-	packet >> angle >> angularvelocity;
-	//cout << "pos x: " << pos.x << ", " << pos.y << endl;
-	Shape* s =  factory.createRectangle(new b2Vec2(size), new b2Vec2(pos), true);
-	s->setPosition(&pos, angle);
-	s->setVelocity(velocity);
-	s->setAngularVelocity(angularvelocity);
+	b2Vec2 pos, size;
+	packet >> pos.x >> pos.y >> size.x >> size.y;
+	Shape* s = factory.createRectangle(new b2Vec2(size), new b2Vec2(pos), true);
+	s->setPosition(&pos);
 	return s;
 }
 
@@ -113,3 +109,12 @@ player_info* PacketParser::unpack<player_info*>(sf::Packet& packet)
 	return info;
 }
 
+template<> 
+shapeSync* PacketParser::unpack<shapeSync*>(sf::Packet& p)
+{
+	shapeSync* s = new shapeSync;
+	p >> s->shapeID;
+	p >> s->angularVel;
+	p >> s->velocity.x >> s->velocity.y;
+	return s;
+}

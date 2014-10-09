@@ -1,11 +1,3 @@
-//
-//  Hook.h
-//  Block Frog
-//
-//  Created by roflmao on 2014-09-29.
-//  Copyright (c) 2014 TDDD23. All rights reserved.
-//
-
 #ifndef __Block_Frog__Hook__
 #define __Block_Frog__Hook__
 
@@ -25,9 +17,15 @@ public:
     Hook(Game* game);
 //    ~Hook();
     
+    enum Action
+    {
+        SHOOTING,
+        PASSIVE
+    };
+    
     void draw();
     void update();
-    void use(sf::Vector2i mousePixelPos);
+    void shoot(sf::Vector2i mousePixelPos);
     void aim(sf::Vector2i mousePixelPos);
     void release();
     b2WeldJoint* grab(b2Body* box);
@@ -41,16 +39,27 @@ private:
     Rectangle* hookBase;
     Utility* utility;
 	ContactListener* contactListener;
+    
+    Action ACTION;
+    
     b2PrismaticJoint* prismaticJoint;
     b2RevoluteJoint* revoluteJoint;
     b2WeldJoint* weldJoint;
+    // The most recent box we have hit with hook
+    b2Body* recentBoxContact;
     b2Vec2 playerMeterPos;
+    
     float newMouseAngle;
     float oldMouseAngle;
     // This is the length the hook is striving towards having
     float passiveLength;
+    // This is the length the hook should have when holding a box
+    float grabLength;
     // This is the length we want to strive towards when using hook
-    float useLength;
+    float reachLength;
+    // This is needed so as to not, for example, go into the if case
+    // of hook length > x several times because it has yet to adjust
+    float currentLength;
 };
 
 #endif /* defined(__Block_Frog__Hook__) */
