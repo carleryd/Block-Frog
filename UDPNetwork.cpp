@@ -3,6 +3,7 @@
 #include "Game.h"
 #include "Server.h"
 #include "Client.h"
+#include <memory>
 
 UDPNetwork::UDPNetwork(string PlayerName, ShapeFactory& factory):
 	packetParser(factory)
@@ -52,7 +53,7 @@ int UDPNetwork::receive(sf::Packet* p)
 
 void UDPNetwork::listen()
 {
-	while(selector.wait(sf::seconds(0.05)) || !exit)
+	while(selector.wait(sf::seconds(0.05f)) || !exit)
 	{
 		if(selector.isReady(mySocket) && !packetsOccupied)
 		{
@@ -64,7 +65,7 @@ void UDPNetwork::listen()
 				packets.front().senderPort) != sf::Socket::Done)
 				cerr << "Error when receiving data" << endl;
 
-			cout << "Packet size: " << packets.front().packet.getDataSize() << endl;
+			//cout << "Packet size: " << packets.front().packet.getDataSize() << endl;
 			packetsOccupied = false;
 		}
 	}
@@ -112,11 +113,9 @@ void UDPNetwork::handleReceivedData(Game* game)
 			break;
 		case NEW_PLAYER:
 		{
-			
 			b2Vec2* newpos = packetParser.unpack<b2Vec2*>(*packet);
 			game->addRemotePlayer(new Player(game));
 			game->remotePlayers.back()->setPosition( newpos);
-			
 			if(isServer())
 			{
 				dynamic_cast<Server*>(this)->handleNewPlayer(packets.front());
@@ -147,11 +146,39 @@ void UDPNetwork::handleReceivedData(Game* game)
 				{
 					//move player
 					(*found)->move(info->movedir, false);
+					//broadcast to other players
 					if(isServer())
 					{
-						dynamic_cast<Server*>(this)->addPlayerInfo(info);
+						sf::Packet p = packetParser.pack(*info);
+						dynamic_cast<Server*>(this)->broadCastExcept(
+							packets.front().senderAddress,
+							packets.front().senderPort,
+							p);
 					}
 				}
+			}
+			break;
+		case SHAPE_SYNCH:
+			{
+				shared_ptr<shapeSync> s(packetParser.unpack<shapeSync*>(*packet));
+				game->updateShapes(s.get());
+				if(isServer())
+				{
+					sf::Packet broadcast = packetParser.pack(s.get());
+					dynamic_cast<Server*>(this)->broadCastExcept(
+						packets.front().senderAddress,
+						packets.front().senderPort,
+						broadcast
+						);
+				}
+				//cout << "Synching shape " << s->shapeID << endl;
+			}
+			break;
+		case REMOVE_SHAPE:
+			{
+				int id = packetParser.unpack<int>(*packet);
+				game->removeShape(id);
+				cout << "Remove shape " << id << endl;
 			}
 			break;
 		default:

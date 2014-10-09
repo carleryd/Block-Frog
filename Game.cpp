@@ -23,6 +23,8 @@ Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_)
     
     // Construct a world object, which will hold and simulate the rigid bodies.
     world = new b2World(gravity);
+	water = new sf::RectangleShape(sf::Vector2f(float(window->getSize().x * 2), float(window->getSize().y)));
+	water->setFillColor(sf::Color(0, 0, 255, 100));	
 }
 
 Game::~Game()
@@ -54,8 +56,6 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
                                                   1.0,
                                                   1.0)
                     );
-    
-    boxes.push_back(shapeFactory->createRandomShape(viewOffset));
     
 	riseSpeed = 0; //-0.2f;
 	killOffset = 30;
@@ -109,6 +109,11 @@ void Game::run() {
 
 	boxHandling();
 	calcViewOffset();
+	playerBoxInteraction();
+
+	//water
+	water->setPosition(float(window->getSize().x * -0.1), float(window->getSize().y - viewOffset.y -10));
+	window->draw(*water);
 
     if(localHost->isServer())
     {
@@ -150,25 +155,28 @@ void Game::run() {
 	if(localHost->isServer())
 	{
 		Server* server = dynamic_cast<Server*>(localHost);
-		if(!server->getPlayerInfos().empty())
+
+		//broadcast shapes that server has affected
+		for (shapeSync* shapeSync : localChanges)
 		{
-			vector<player_info*>& playerMoves = server->getPlayerInfos();
-			for(int i = 0; i < playerMoves.size(); i++)
-			{
-				//find player that has moved
-				string name = playerMoves[i]->name;
-				vector<client*>::iterator player = std::find_if(server->getClients().begin(), server->getClients().end(), [name](client* c)
-				{
-					return name == c->name;
-				});
-				//broadcast it to every player except the player that made the move
-				//since that player already knows that.
-                sf::Packet packet = packetParser->pack(*playerMoves[i]);
-				server->broadCastExcept((*player)->clientAddress, (*player)->clientPort, packet);
-			}
-			playerMoves.clear();
+			sf::Packet p = packetParser->pack(shapeSync);
+			server->broadCast(p);
 		}
-		
+	}
+	else
+	{
+		for (shapeSync* shapeSync : localChanges)
+		{
+			sf::Packet p = packetParser->pack(shapeSync);
+			dynamic_cast<Client*>(localHost)->sendToServer(p);
+		}
+	}
+
+	//clear memory that is only valid this time step.
+	while(!localChanges.empty())
+	{
+		delete localChanges.back();
+		localChanges.pop_back();
 	}
 }
 
@@ -195,9 +203,14 @@ void Game::removeFallenBoxes(list<Shape*>& deletion)
 			return deletion.front() == b;
 		}
 		);
-		boxes.erase(todelete, boxes.end());
-		delete deletion.front();
-		deletion.pop_front();
+		if(todelete != boxes.end())
+		{
+			sf::Packet p = packetParser->pack<int>(UDPNetwork::REMOVE_SHAPE, (*todelete)->getId());
+			dynamic_cast<Server*>(localHost)->broadCast(p);
+			boxes.erase(todelete, boxes.end());
+			delete deletion.front();
+			deletion.pop_front();
+		}
 	}
 	deletion.clear();
 }
@@ -213,16 +226,16 @@ void Game::calcViewOffset()
 void Game::boxHandling()
 {
 	//handle boxes
-	list<Shape*> deletion;
     for(Shape* box : boxes) 
 	{
-		//check if box has fallen "outside"
-		if(box->getShape()->getPosition().y > window->getSize().y - viewOffset.y + killOffset)
-			deletion.push_back(box);
         box->update();
         window->draw(*box->getShape());
+		//check if box has fallen "outside"
+		if(localHost->isServer() && box->getShape()->getPosition().y > window->getSize().y - viewOffset.y + killOffset)
+			deletion.push_back(box);
     }
-	removeFallenBoxes(deletion);
+	if(localHost->isServer())
+		removeFallenBoxes(deletion);
 }
 
 Shape* Game::createBoxes()
@@ -294,4 +307,87 @@ bool Game::removeRemotePlayer(string name)
 	}
 	else
 		return false;
+}
+
+void Game::playerBoxInteraction()
+{
+	int id;
+	b2ContactEdge* edge = player->getBody()->GetContactList();
+	for(;edge; edge = edge->next)
+	{
+		if(edge->contact->IsTouching())
+		{
+			id = ((b2BodyUserData*)edge->other->GetUserData())->id;
+
+			//id >0 means that it is not ground i.e. blocks of some kind that isn't players
+			if(id > 0)
+			{
+				//Also check if last entered element in localChanges is for the same block so that we 
+				//can save data. Overwrite last element if the same
+				bool push;
+				shapeSync* s;
+				if(!localChanges.empty() && localChanges.back()->shapeID == id)
+				{
+					s = localChanges.back();
+					push = false;
+				}
+				else
+				{
+					s = new shapeSync;
+					push = true;
+				}
+				s->shapeID = id;
+				s->angularVel = edge->other->GetAngularVelocity();
+				s->velocity = edge->other->GetLinearVelocity();
+				s->position = edge->other->GetPosition();
+				s->angle = edge->other->GetAngle();
+				Rectangle* rect = dynamic_cast<Rectangle*>(((b2BodyUserData*)edge->other->GetUserData())->parent);
+				s->size = *rect->getSize();
+				if(push)
+					localChanges.push_back(s);
+			}
+		}
+	}
+}
+
+void Game::updateShapes(shapeSync* s)
+{
+	int id = s->shapeID;
+	vector<Shape*>::iterator i = find_if(boxes.begin(), boxes.end(), [id](Shape* s)
+	{
+		return s->getId() == id;
+	});
+	if(i != boxes.end())
+	{
+		Shape* shape = *i;
+		shape->getBody()->SetAngularVelocity(s->angularVel);
+		shape->getBody()->SetLinearVelocity(s->velocity);
+		shape->setPosition(&s->position, s->angle);
+	}
+	else
+	{
+		cout << "Shape not found for update! ID: " << s->shapeID << endl;
+		cout << "Creating new shape with ID " << s->shapeID << endl;
+		Shape* replacement = shapeFactory->createRectangle(&s->size, &s->position, true);
+		replacement->setId(s->shapeID);
+		replacement->setPosition(&s->position, s->angle);
+		replacement->getBody()->SetAngularVelocity(s->angularVel);
+		replacement->getBody()->SetLinearVelocity(s->velocity);
+		boxes.push_back(replacement);
+	}
+}
+
+void Game::removeShape(int id)
+{
+	vector<Shape*>::iterator del = find_if(boxes.begin(), boxes.end(), [id](Shape* s)
+	{
+		return s->getId() == id;
+	});
+	if(del != boxes.end())
+	{
+		delete *del;
+		boxes.erase(del);
+	}
+	else
+		cout << "Shape to be removed not found! ID: "<< id << endl;
 }

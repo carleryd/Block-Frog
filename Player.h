@@ -29,7 +29,7 @@ public:
     
 	enum { LEFT, RIGHT, JUMP, LEFT_STOP, RIGHT_STOP };
 	//set bool to true when moving a remote player
-	void move(int dir, bool localPlayer=true);
+	void move(int dir, bool localPlayer=true, bool is_jumping = true);
 	/*
 	*	Pushes player in the direction
 	*/

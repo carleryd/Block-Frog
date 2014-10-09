@@ -49,7 +49,7 @@ public:
 	bool exit;
 
 	enum typreceive{SERVER_EXIT, CLIENT_EXIT, NEW_PLAYER,
-		SHAPE, ALL_SHAPES,
+		SHAPE, ALL_SHAPES, SHAPE_SYNCH, REMOVE_SHAPE,
 		PLAYER_MOVE};
 protected:
 	UDPNetwork(string playerName, ShapeFactory& factory);

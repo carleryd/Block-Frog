@@ -34,6 +34,7 @@ bool Client::connect(b2Vec2* pPos)
 	//receive
 	int ret = receive(&p);
 	p >> m;
+	
 	cout << "Message received from host: " << m << endl;
 	return ret == sf::Socket::Done ? true : false;
 }

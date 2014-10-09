@@ -32,14 +32,6 @@ public:
 	void broadCast(sf::Packet packet);
 	//send packet to all players EXCEPT to the one with the address/port given as argument
 	void broadCastExcept(sf::IpAddress address, unsigned short port, sf::Packet packet);
-	void addPlayerInfo(player_info* pi) 
-	{
-		playerInfos.push_back(pi);
-	}
-	vector<player_info*>& getPlayerInfos() 
-	{
-		return playerInfos;
-	};
 	vector<client*>& getClients()
 	{
 		return remoteConnections;
@@ -48,7 +40,6 @@ private:
 	bool playerMoved;
 	sf::SocketSelector selector;
 	vector<client*> remoteConnections;
-	vector<player_info*> playerInfos;
 	Game* game;
 };
 

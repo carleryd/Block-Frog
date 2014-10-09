@@ -7,7 +7,7 @@ const float PI = 3.14f;
 
 #include <iostream>
 
-Shape::Shape(Game* game_, b2Vec2* position_, bool dynamic_, float density_, float friction_, int groupIndex)
+Shape::Shape(Game* game_, b2Vec2* position_, bool dynamic_, float density_, float friction_, int groupIndex, int id)
 {
     game = game_;
     position = position_;
@@ -24,15 +24,17 @@ Shape::Shape(Game* game_, b2Vec2* position_, bool dynamic_, float density_, floa
         bodyDef.type = b2_dynamicBody;
     
     body = game->getWorld()->CreateBody(&bodyDef);
+
+	userData.id = id;
+	userData.parent = this;
+	body->SetUserData((void*)&userData);
+	ajour = true;
 }
 
 Shape::~Shape(void)
 {
     game->getWorld()->DestroyBody(body);
-    body = NULL;
-	delete position;
-    position = NULL;
-    game = NULL;
+	//delete position; //<- causes client to crash
 }
 
 void Shape::update()

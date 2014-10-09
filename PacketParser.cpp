@@ -43,6 +43,7 @@ sf::Packet PacketParser::pack(player_info p)
 	packet << UDPNetwork::PLAYER_MOVE;
 	packet << p.name;
 	packet << p.movedir;
+	packet << p.isJumping;
 	return packet;
 }
 
@@ -55,13 +56,39 @@ sf::Packet PacketParser::pack(Player* p)
 	return packet;
 }
 
+sf::Packet PacketParser::pack(shapeSync* s)
+{
+	sf::Packet p;
+	p << UDPNetwork::SHAPE_SYNCH;
+	p << s->shapeID;
+	p << s->angularVel;
+	p << s->velocity.x << s->velocity.y;
+	p << s->position.x << s->position.y;
+	p << s->angle;
+	p << s->size.x << s->size.y;
+	return p;
+}
+
+template<>
+sf::Packet PacketParser::pack<int>(int type, int value)
+{
+	sf::Packet p;
+	p << type;
+	p << value;
+	return p;
+}
+
+//sf::Packet PacketParser::pack
+
 // ############# UNPACK FUNCTIONS ################
 template<>
 Shape* PacketParser::unpack<Shape*>(sf::Packet& packet)
 {
 	b2Vec2 pos, size;
 	packet >> pos.x >> pos.y >> size.x >> size.y;
-	return factory.createRectangle(new b2Vec2(size), new b2Vec2(pos), true);
+	Shape* s = factory.createRectangle(new b2Vec2(size), new b2Vec2(pos), true);
+	s->setPosition(&pos);
+	return s;
 }
 
 template<>
@@ -94,5 +121,19 @@ player_info* PacketParser::unpack<player_info*>(sf::Packet& packet)
 	player_info* info = new player_info;
 	packet >> info->name;
 	packet >> info->movedir;
+	packet >> info->isJumping;
 	return info;
+}
+
+template<> 
+shapeSync* PacketParser::unpack<shapeSync*>(sf::Packet& p)
+{
+	shapeSync* s = new shapeSync;
+	p >> s->shapeID;
+	p >> s->angularVel;
+	p >> s->velocity.x >> s->velocity.y;
+	p >> s->position.x >> s->position.y;
+	p >> s->angle;
+	p >> s->size.x >> s->size.y;
+	return s;
 }

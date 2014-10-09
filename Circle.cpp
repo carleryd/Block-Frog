@@ -3,14 +3,14 @@
 #include "Utility.h"
 
 Circle::Circle(Game* game, float radius_, b2Vec2* position,
-					 bool dynamic, float density, float friction, int groupIndex):
-Shape(game, position, dynamic, density, friction, groupIndex)
+					 bool dynamic, int id, float density, float friction, int groupIndex):
+Shape(game, position, dynamic, density, friction, groupIndex, id)
 {
     radius = radius_;
     
     // Define another box shape for our dynamic body.
     b2CircleShape circleShape; //dynamicBox;
-    circleShape.m_radius = radius * game->getUtility()->getPTM();
+    circleShape.m_radius = radius * (float)game->getUtility()->getPTM();
 
 //    boxShape.SetAsBox((size->x/2) * pixelToMeter, (size->y/2) * pixelToMeter);
 //    circleS

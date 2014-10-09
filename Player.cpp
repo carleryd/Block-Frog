@@ -14,6 +14,7 @@ Player::Player(Game* game_) {
                         new b2Vec2(50.0f, 50.0f),
                         new b2Vec2(0, 0),
                         true,
+						-1,
                         1.0,
                         0.1);
     box->getBody()->SetFixedRotation(true);
@@ -74,11 +75,13 @@ void Player::setName(string n)
 }
 
 void Player::setPosition(b2Vec2* newPos) {
-	box->getBody()->SetTransform(*newPos, box->getBody()->GetAngle());
+	//box->getBody()->SetTransform(*newPos, box->getBody()->GetAngle());
+	box->setPosition(newPos);
 }
 
-void Player::move(int dir, bool localPlayer)
+void Player::move(int dir, bool localPlayer, bool is_jumping)
 {
+	bool jumped = false;
 	switch (dir)
 	{
 	case LEFT:
@@ -94,9 +97,10 @@ void Player::move(int dir, bool localPlayer)
             rightSpeed = 0;
         break;
 	case JUMP:
-            if(!isJumping())
+            if(!isJumping() || (!localPlayer && is_jumping)) 
 			{
 				push(b2Vec2(0, jumpHeight));
+				jumped = true;
 			}
 		break;
 	default:
@@ -109,20 +113,16 @@ void Player::move(int dir, bool localPlayer)
 		player_info p;
 		p.name = name;
 		p.movedir = dir;
+		p.isJumping = jumped;
+		packet = game->getPacketParser()->pack(p);
 		if(game->getLocalHost()->isServer())
 		{
 			Server* server = dynamic_cast<Server*>(game->getLocalHost());
-			/*server->broadCastExcept(server->getMyAddress(), server->getMyPort(),game->getPacketParser()->pack(p));*/
-            packet = game->getPacketParser()->pack(p);
 			server->broadCast(packet);
-			//dynamic_cast<Server*>(game->getLocalHost())->addPlayerInfo(new player_info(p));
 		}
 		else
 		{
-            packet = game->getPacketParser()->pack(p);
-			dynamic_cast<Client*>(game->getLocalHost())->sendToServer(
-				packet
-				);
+			dynamic_cast<Client*>(game->getLocalHost())->sendToServer(packet);
 		}
 	}
 }

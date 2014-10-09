@@ -25,6 +25,7 @@ Hook::Hook(Game* game_) {
                          new b2Vec2(playerMeterPos.x * game->getUtility()->getMTP(),
                                     (playerMeterPos.y + 5) * game->getUtility()->getMTP()),
                          true,
+						 -1,
                          0.01,
                          0.0);
     
@@ -36,6 +37,7 @@ Hook::Hook(Game* game_) {
                              new b2Vec2(playerMeterPos.x * game->getUtility()->getMTP(),
                                         (playerMeterPos.y) * game->getUtility()->getMTP()),
                              true,
+							 -1,
                              1.0,
                              0.3);
     

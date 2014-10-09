@@ -1,6 +1,7 @@
 #include "Utility.h"
 #include "Game.h"
 #include <math.h>
+const float pi = 3.14;
 
 Utility::Utility(Game* game_) {
     game = game_;

@@ -26,5 +26,6 @@ private:
 	mt19937 mersenneGen;
 	uniform_real_distribution<float> dist;
 	int minSize;
+	int id;
 };
 #endif

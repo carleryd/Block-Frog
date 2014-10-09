@@ -133,6 +133,8 @@ int main(int argc, char* argv[])
 			cout << "Enter host's IP address: ";
 			cin >> in;
 			cout << endl;
+			if(in == "l")
+				in = "localhost";
 			a = new sf::IpAddress(in);
 			cout << "Enter host's port: ";
 			cin >> in;
