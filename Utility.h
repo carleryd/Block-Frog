@@ -13,7 +13,10 @@ public:
     Utility(Game* game);
     
     b2Vec2 mouseToBox2D(sf::Vector2i mousePos);
+    float angleBetweenPoints(b2Vec2 meterPosA, b2Vec2 meterPosB);
+    float angleBetweenPoints(sf::Vector2i meterPosA, sf::Vector2i meterPosB);
     float mouseAngle(sf::Vector2i mousePixelPos, b2Vec2 playerMeterPos);
+    
     float degToRad(float degrees);
     float radToDeg(float radians);
     

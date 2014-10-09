@@ -26,8 +26,8 @@ Hook::Hook(Game* game_) {
                                     (playerMeterPos.y + 5) * game->getUtility()->getMTP()),
                          true,
                          0.01,
-                         0.0,
-                         -1);
+                         0.0);
+    
     // This way it will be recognized in the ContactListnener(see if statements ContactListener.cpp)
     hookTip->getBody()->GetFixtureList()->SetUserData( (void*)4 );
     
@@ -37,8 +37,7 @@ Hook::Hook(Game* game_) {
                                         (playerMeterPos.y) * game->getUtility()->getMTP()),
                              true,
                              1.0,
-                             0.3,
-                             -1);
+                             0.3);
     
     //EFTER ATT JAG IMPLEMENTERADE DETTA BUGGAR DET IBLAND
 //    b2Filter filter = hookTip->getBody()->GetFixtureList()->GetFilterData();
@@ -109,9 +108,8 @@ Hook::Hook(Game* game_) {
 
 void Hook::aim(sf::Vector2i mousePixelPos) {
     newMouseAngle = utility->mouseAngle(mousePixelPos, playerMeterPos);
-    cout << "Degree: " << newMouseAngle << endl;
-    cout << "Radian: " << utility->degToRad(newMouseAngle) << endl;
 	revoluteJoint->SetLimits(utility->degToRad(newMouseAngle), utility->degToRad(newMouseAngle));
+//    cout << utility->angleBetweenPoints(hookBase->getBody()->GetPosition(), hookTip->getBody()->GetPosition()) << endl;
 }
 
 void Hook::shoot(sf::Vector2i mousePixelPos) {
@@ -126,7 +124,7 @@ void Hook::shoot(sf::Vector2i mousePixelPos) {
 
 b2RevoluteJoint* Hook::grab(b2Body* box) {
     // Makes the box more easily handled by frog
-    box->GetFixtureList()->SetDensity(0.0001);
+    box->GetFixtureList()->SetDensity(0.001);
     box->GetFixtureList()->SetFriction(0.1);
     box->SetFixedRotation(true);
     box->ResetMassData();
@@ -149,7 +147,6 @@ void Hook::release() {
         grabJoint->GetBodyB()->GetFixtureList()->SetFriction(1.0);
         grabJoint->GetBodyB()->SetFixedRotation(false);
         grabJoint->GetBodyB()->SetLinearVelocity(b2Vec2(0, 0));
-//        weldJoint->GetBodyB()->SetFixedRotation(false);
         grabJoint->GetBodyB()->ResetMassData();
         
         // Destroy the joint connecting hook and box

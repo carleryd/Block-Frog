@@ -10,7 +10,8 @@ Utility::Utility(Game* game_) {
     pixelToMeter = 1.0/30.0;
     meterToPixel = 30.0;
     // Window: 800x600(access this form game->getWorld()->getSize())
-    // Box2D coordinate system is in the middle of screen, SFML is top-left. These offsets will make SFML start off drawing in the middle
+    // Box2D coordinate system is in the middle of screen, SFML is top-left.
+    // These offsets will make SFML start off drawing in the middle
     offSetX = game->getWindow()->getSize().x / meterToPixel / 2.0;
     offSetY = game->getWindow()->getSize().y / meterToPixel / 2.0;
 }
@@ -25,12 +26,17 @@ b2Vec2 Utility::mouseToBox2D(sf::Vector2i mousePos) {
     return adjMeterPos;
 }
 
-float Utility::mouseAngle(sf::Vector2i mousePixelPos, b2Vec2 playerMeterPos) {
-    b2Vec2 mouseMeterPos = game->getUtility()->mouseToBox2D(mousePixelPos);
-    b2Vec2 relativeToPlayer = b2Vec2(mouseMeterPos.x - playerMeterPos.x,
-                                     mouseMeterPos.y - playerMeterPos.y);
+float Utility::angleBetweenPoints(sf::Vector2i pixelPosA, sf::Vector2i pixelPosB) {
+    b2Vec2 convertedA = b2Vec2(pixelPosA.x * pixelToMeter, pixelPosA.y * pixelToMeter);
+    b2Vec2 convertedB = b2Vec2(pixelPosB.x * pixelToMeter, pixelPosB.y * pixelToMeter);
     
-    currDegrees = (atan2(relativeToPlayer.y, -relativeToPlayer.x) * 180 / M_PI + 180);
+    return angleBetweenPoints(convertedA, convertedB);
+}
+
+float Utility::angleBetweenPoints(b2Vec2 meterPosA, b2Vec2 meterPosB) {
+    b2Vec2 vector = b2Vec2(meterPosA.x - meterPosB.x, meterPosA.y - meterPosB.y);
+    
+    currDegrees = (atan2(vector.y, -vector.x) * 180 / M_PI + 180);
     
     // There is a problem where the revoluteJoint goes from 360 -> 1 degrees.
     // This makes the joint go back counter-clockwise
@@ -45,6 +51,12 @@ float Utility::mouseAngle(sf::Vector2i mousePixelPos, b2Vec2 playerMeterPos) {
     
     // The reason I have y and -x is to get 0/360 degrees to be to the right of player
     return currDegrees + 360 * cycles;
+}
+
+float Utility::mouseAngle(sf::Vector2i mousePixelPos, b2Vec2 playerMeterPos) {
+    b2Vec2 mouseMeterPos = game->getUtility()->mouseToBox2D(mousePixelPos);
+    
+    return angleBetweenPoints(mouseMeterPos, playerMeterPos);
 }
 
 float Utility::degToRad(float degrees) {
