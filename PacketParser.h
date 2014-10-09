@@ -10,6 +10,7 @@ struct player_info
 {
 	string name;
 	int movedir;
+	bool isJumping; 
 };
 
 struct shapeSync
@@ -17,6 +18,9 @@ struct shapeSync
 	int shapeID;
 	float angularVel;
 	b2Vec2 velocity;
+	b2Vec2 position;
+	float angle;
+	b2Vec2 size;
 };
 
 class PacketParser
@@ -32,16 +36,18 @@ public:
 	sf::Packet pack(Player*);
 	//pack necesary data to sync shapes
 	sf::Packet pack(shapeSync* s);
-	
-	//template function SHOULD be able to back ONE of any object
+
+	//for packing primitive types
 	template<typename T>
-		T unpack(sf::Packet& packet)
-		/*{
-			T variable;
-			static_assert(std::is_fundamental<T>::value, "FATAL ERROR: WRONG TEMPLATE ARGUMENT TYPE; PacketParser::unpack<T>(sf::packet& p)");
-			packet >> variable;
-			return variable;
-		}*/;
+	sf::Packet pack(int type, T primitiveType);
+	
+
+
+
+	//template function SHOULD be able to unpack ONE of any object
+	//define template for new T if it does not exist, as they must be explicitly defined
+	template<typename T>
+	T unpack(sf::Packet& packet);
 
 private:
 	ShapeFactory& factory;

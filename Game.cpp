@@ -158,24 +158,6 @@ void Game::run() {
 	if(localHost->isServer())
 	{
 		Server* server = dynamic_cast<Server*>(localHost);
-		if(!server->getPlayerInfos().empty())
-		{
-			vector<player_info*>& playerMoves = server->getPlayerInfos();
-			for(unsigned i = 0; i < playerMoves.size(); i++)
-			{
-				//find player that has moved
-				string name = playerMoves[i]->name;
-				vector<client*>::iterator player = std::find_if(server->getClients().begin(), server->getClients().end(), [name](client* c)
-				{
-					return name == c->name;
-				});
-				//broadcast it to every player except the player that made the move
-				//since that player already knows that.
-                sf::Packet packet = packetParser->pack(*playerMoves[i]);
-				server->broadCastExcept((*player)->clientAddress, (*player)->clientPort, packet);
-			}
-			playerMoves.clear();
-		}
 
 		//broadcast shapes that server has affected
 		for (shapeSync* shapeSync : localChanges)
@@ -224,9 +206,14 @@ void Game::removeFallenBoxes(list<Shape*>& deletion)
 			return deletion.front() == b;
 		}
 		);
-		boxes.erase(todelete, boxes.end());
-		delete deletion.front();
-		deletion.pop_front();
+		if(todelete != boxes.end())
+		{
+			sf::Packet p = packetParser->pack<int>(UDPNetwork::REMOVE_SHAPE, (*todelete)->getId());
+			dynamic_cast<Server*>(localHost)->broadCast(p);
+			boxes.erase(todelete, boxes.end());
+			delete deletion.front();
+			deletion.pop_front();
+		}
 	}
 	deletion.clear();
 }
@@ -242,16 +229,16 @@ void Game::calcViewOffset()
 void Game::boxHandling()
 {
 	//handle boxes
-	list<Shape*> deletion;
     for(Shape* box : boxes) 
 	{
-		//check if box has fallen "outside"
-		if(box->getShape()->getPosition().y > window->getSize().y - viewOffset.y + killOffset)
-			deletion.push_back(box);
         box->update();
         window->draw(*box->getShape());
+		//check if box has fallen "outside"
+		if(localHost->isServer() && box->getShape()->getPosition().y > window->getSize().y - viewOffset.y + killOffset)
+			deletion.push_back(box);
     }
-	removeFallenBoxes(deletion);
+	if(localHost->isServer())
+		removeFallenBoxes(deletion);
 }
 
 Shape* Game::createBoxes()
@@ -355,6 +342,10 @@ void Game::playerBoxInteraction()
 				s->shapeID = id;
 				s->angularVel = edge->other->GetAngularVelocity();
 				s->velocity = edge->other->GetLinearVelocity();
+				s->position = edge->other->GetPosition();
+				s->angle = edge->other->GetAngle();
+				Rectangle* rect = dynamic_cast<Rectangle*>(((b2BodyUserData*)edge->other->GetUserData())->parent);
+				s->size = *rect->getSize();
 				if(push)
 					localChanges.push_back(s);
 			}
@@ -374,5 +365,32 @@ void Game::updateShapes(shapeSync* s)
 		Shape* shape = *i;
 		shape->getBody()->SetAngularVelocity(s->angularVel);
 		shape->getBody()->SetLinearVelocity(s->velocity);
+		shape->setPosition(&s->position, s->angle);
 	}
+	else
+	{
+		cout << "Shape not found for update! ID: " << s->shapeID << endl;
+		cout << "Creating new shape with ID " << s->shapeID << endl;
+		Shape* replacement = shapeFactory->createRectangle(&s->size, &s->position, true);
+		replacement->setId(s->shapeID);
+		replacement->setPosition(&s->position, s->angle);
+		replacement->getBody()->SetAngularVelocity(s->angularVel);
+		replacement->getBody()->SetLinearVelocity(s->velocity);
+		boxes.push_back(replacement);
+	}
+}
+
+void Game::removeShape(int id)
+{
+	vector<Shape*>::iterator del = find_if(boxes.begin(), boxes.end(), [id](Shape* s)
+	{
+		return s->getId() == id;
+	});
+	if(del != boxes.end())
+	{
+		delete *del;
+		boxes.erase(del);
+	}
+	else
+		cout << "Shape to be removed not found! ID: "<< id << endl;
 }

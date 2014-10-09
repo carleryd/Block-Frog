@@ -26,7 +26,9 @@ Shape::Shape(Game* game_, b2Vec2* position_, bool dynamic_, float density_, floa
     body = game->getWorld()->CreateBody(&bodyDef);
 
 	userData.id = id;
+	userData.parent = this;
 	body->SetUserData((void*)&userData);
+	ajour = true;
 }
 
 Shape::~Shape(void)

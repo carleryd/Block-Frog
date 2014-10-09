@@ -52,6 +52,7 @@ public:
 	PacketParser* getPacketParser() const {return packetParser;};
 	//synchronize shapes against servers game state
 	void updateShapes(shapeSync* s); 
+	void removeShape(int id);
 
 private:
 	void removeFallenBoxes(std::list<Shape*>& todelete);
@@ -84,6 +85,7 @@ private:
 	std::thread* join;
     
     std::vector<Shape*> boxes;
+	list<Shape*> deletion;
 	std::vector<shapeSync*> localChanges;
 	sf::Shape* water;
 	double duration;

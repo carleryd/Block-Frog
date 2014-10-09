@@ -113,11 +113,9 @@ void UDPNetwork::handleReceivedData(Game* game)
 			break;
 		case NEW_PLAYER:
 		{
-			
 			b2Vec2* newpos = packetParser.unpack<b2Vec2*>(*packet);
 			game->addRemotePlayer(new Player(game));
 			game->remotePlayers.back()->setPosition( newpos);
-			
 			if(isServer())
 			{
 				dynamic_cast<Server*>(this)->handleNewPlayer(packets.front());
@@ -148,9 +146,14 @@ void UDPNetwork::handleReceivedData(Game* game)
 				{
 					//move player
 					(*found)->move(info->movedir, false);
+					//broadcast to other players
 					if(isServer())
 					{
-						dynamic_cast<Server*>(this)->addPlayerInfo(info);
+						sf::Packet p = packetParser.pack(*info);
+						dynamic_cast<Server*>(this)->broadCastExcept(
+							packets.front().senderAddress,
+							packets.front().senderPort,
+							p);
 					}
 				}
 			}
@@ -168,6 +171,14 @@ void UDPNetwork::handleReceivedData(Game* game)
 						broadcast
 						);
 				}
+				//cout << "Synching shape " << s->shapeID << endl;
+			}
+			break;
+		case REMOVE_SHAPE:
+			{
+				int id = packetParser.unpack<int>(*packet);
+				game->removeShape(id);
+				cout << "Remove shape " << id << endl;
 			}
 			break;
 		default:
