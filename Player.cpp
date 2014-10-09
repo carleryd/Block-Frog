@@ -145,7 +145,7 @@ void Player::releaseHook() {
 }
 
 bool Player::isJumping() {
-	if(contactListener->getNumFootContacts() == 1) return false;
+	if(contactListener->getNumFootContacts() > 0) return false;
     else return true;
 }
 

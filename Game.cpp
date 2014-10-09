@@ -94,10 +94,7 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
 	secPerDrops = 10; 
 }
 
-sf::RenderWindow* Game::getWindow() {
-    return window;
-}
-
+sf::RenderWindow* Game::getWindow() { return window; }
 b2World* Game::getWorld() { return world; }
 Player* Game::getPlayer() { return player; }
 Utility* Game::getUtility() { return utility; }

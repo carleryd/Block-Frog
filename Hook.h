@@ -28,7 +28,7 @@ public:
     void shoot(sf::Vector2i mousePixelPos);
     void aim(sf::Vector2i mousePixelPos);
     void release();
-    b2WeldJoint* grab(b2Body* box);
+    b2RevoluteJoint* grab(b2Body* box);
     
     float getLength();
     void changeLength(float delta);
@@ -44,7 +44,7 @@ private:
     
     b2PrismaticJoint* prismaticJoint;
     b2RevoluteJoint* revoluteJoint;
-    b2WeldJoint* weldJoint;
+    b2RevoluteJoint* grabJoint;
     // The most recent box we have hit with hook
     b2Body* recentBoxContact;
     b2Vec2 playerMeterPos;
