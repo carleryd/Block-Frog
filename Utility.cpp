@@ -37,7 +37,7 @@ float Utility::angleBetweenPoints(sf::Vector2i pixelPosA, sf::Vector2i pixelPosB
 float Utility::angleBetweenPoints(b2Vec2 meterPosA, b2Vec2 meterPosB) {
     b2Vec2 vector = b2Vec2(meterPosA.x - meterPosB.x, meterPosA.y - meterPosB.y);
     
-    currDegrees = (atan2(vector.y, -vector.x) * 180 / M_PI + 180);
+    currDegrees = (atan2(vector.y, -vector.x) * 180 / pi + 180);
     
     // There is a problem where the revoluteJoint goes from 360 -> 1 degrees.
     // This makes the joint go back counter-clockwise
@@ -48,7 +48,7 @@ float Utility::angleBetweenPoints(b2Vec2 meterPosA, b2Vec2 meterPosB) {
     
     prevDegrees = currDegrees;
     
-    cout << "cycles: " << cycles << endl;
+    //cout << "cycles: " << cycles << endl;
     
     // The reason I have y and -x is to get 0/360 degrees to be to the right of player
     return currDegrees + 360 * cycles;

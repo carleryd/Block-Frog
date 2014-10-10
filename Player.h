@@ -26,6 +26,7 @@ public:
 	string& getName(){return name;};
 	b2Vec2* getPosition() const{return box->getPosition();};
     ContactListener* getContactListener() { return contactListener; }
+	Shape* getBox() {return box;};
     
 	enum { LEFT, RIGHT, JUMP, LEFT_STOP, RIGHT_STOP };
 	//set bool to true when moving a remote player

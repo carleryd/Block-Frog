@@ -4,6 +4,7 @@
 #include "Client.h"
 #include "ShapeFactory.h"
 #include "Utility.h"
+#include "Textor.h"
 
 using namespace std;
 
@@ -25,6 +26,7 @@ Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_)
     world = new b2World(gravity);
 	water = new sf::RectangleShape(sf::Vector2f(float(window->getSize().x * 2), float(window->getSize().y)));
 	water->setFillColor(sf::Color(0, 0, 255, 100));	
+	textor = new Textor(osHandler_);
 }
 
 Game::~Game()
@@ -130,14 +132,7 @@ void Game::run() {
 	//}
 
 	//player
-    player->draw();
-	player->update();
-    
-	for(list<Player*>::iterator itr = remotePlayers.begin(); itr != remotePlayers.end(); itr++)
-	{
-		(*itr)->draw();
-		(*itr)->update();
-	}
+	playerHandling();
 
 	//move view up/raise water level
 	view->move(0, riseSpeed);
@@ -198,7 +193,7 @@ void Game::removeFallenBoxes(list<Shape*>& deletion)
 {
 	while(!deletion.empty())
 	{
-		vector<Shape*>::iterator todelete = std::remove_if(boxes.begin(), boxes.end(), [&deletion](Shape* b)
+		vector<Shape*>::iterator todelete = std::find_if(boxes.begin(), boxes.end(), [&deletion](Shape* b)
 		{
 			return deletion.front() == b;
 		}
@@ -208,7 +203,7 @@ void Game::removeFallenBoxes(list<Shape*>& deletion)
 			cout << "Clients, remove shape " << (*todelete)->getId() << endl;
 			sf::Packet p = packetParser->pack<int>(UDPNetwork::REMOVE_SHAPE, (*todelete)->getId());
 			dynamic_cast<Server*>(localHost)->broadCast(p);
-			boxes.erase(todelete, boxes.end());
+			boxes.erase(todelete);
 			delete deletion.front();
 			deletion.pop_front();
 		}
@@ -231,6 +226,8 @@ void Game::boxHandling()
 	{
         box->update();
         window->draw(*box->getShape());
+		/*string s = "ID: " +  to_string(box->getId());
+		window->draw(textor->write(s, box->getShape()->getPosition()));*/
 		//check if box has fallen "outside"
 		if(localHost->isServer() && box->getShape()->getPosition().y > window->getSize().y - viewOffset.y + killOffset)
 			deletion.push_back(box);
@@ -397,4 +394,19 @@ void Game::removeShape(int id)
 	}
 	else
 		cout << "Shape to be removed not found! ID: "<< id << endl;
+}
+
+void Game::playerHandling()
+{
+	player->draw();
+	player->update();
+	window->draw(textor->write(player->getName(), player->getBox()->getShape()->getPosition()));
+    
+	for(list<Player*>::iterator itr = remotePlayers.begin(); itr != remotePlayers.end(); itr++)
+	{
+		Player* remotePlayer = *itr;
+		remotePlayer->draw();
+		remotePlayer->update();
+		window->draw(textor->write(remotePlayer->getName(), remotePlayer->getBox()->getShape()->getPosition()));
+	}
 }

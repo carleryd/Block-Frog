@@ -15,6 +15,7 @@ class ShapeFactory;
 class Controller;
 class OSHandler;
 class UDPNetwork;
+class Textor;
 
 enum {SERVER, CLIENT, SINGLE_PLAYER};
 
@@ -61,6 +62,7 @@ private:
 	void boxHandling(); //destroy boxes. 
 	Shape* createBoxes(); //for server only. Returns pointer to last created box, nullptr if no box was created
 	void handleThreads();
+	void playerHandling();
 
 	//if local player interacts with boxes save changes to localChanges
 	void playerBoxInteraction();
@@ -78,6 +80,7 @@ private:
     sf::Clock clock;
     sf::Time timer;
 	PacketParser* packetParser;
+	Textor* textor;
 
 	//network
 	UDPNetwork* localHost;

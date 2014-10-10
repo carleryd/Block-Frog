@@ -46,6 +46,7 @@ int main(int argc, char* argv[])
     sf::Image icon;
     
     if (!icon.loadFromFile(osHandler->getResourcePath() + "frog_placeholder.png")) {
+		cerr << "Could not load frog!" << endl;
         return EXIT_FAILURE;
     }
     
@@ -57,14 +58,6 @@ int main(int argc, char* argv[])
 //        return EXIT_FAILURE;
 //    }
 //    sf::Sprite sprite(texture);
-
-    // Create a graphical text to display
-//    sf::Font font;
-//    if (!font.loadFromFile(resourcePath() + "sansation.ttf")) {
-//        return EXIT_FAILURE;
-//    }
-//    sf::Text text("Hello SFML", font, 50);
-//    text.setColor(sf::Color::Black);
 
     // Load a music to play
 //    sf::Music music;

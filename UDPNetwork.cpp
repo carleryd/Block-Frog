@@ -113,7 +113,7 @@ void UDPNetwork::handleReceivedData(Game* game)
 			break;
 		case NEW_PLAYER:
 		{
-			b2Vec2* newpos = packetParser.unpack<b2Vec2*>(*packet);
+			b2Vec2* newpos = packetParser.unpack<b2Vec2*>(*packet);  
 			game->addRemotePlayer(new Player(game));
 			game->remotePlayers.back()->setPosition( newpos);
 			if(isServer())
