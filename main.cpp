@@ -163,7 +163,7 @@ int main(int argc, char* argv[])
         // Update the window
         window->display();
     }
-
-
+	if(!game->exitCalled)
+		game->exitGame();
     return EXIT_SUCCESS;
 }

@@ -178,8 +178,26 @@ void UDPNetwork::handleReceivedData(Game* game)
 		case REMOVE_SHAPE:
 			{
 				int id = packetParser.unpack<int>(*packet);
-				cout << "Shape to be removed " << id << endl;
 				game->removeShape(id);
+			}
+			break;
+		case SHAPE_SYNCH_REQUEST:
+			{
+				int id = packetParser.unpack<int>(*packet);
+				Shape* shape = game->getShape(id);
+				if(shape != nullptr)
+				{
+					cout << "Shape requested: " << id << endl;
+					cout << "Shape sent to client: " << shape->getId() << endl;
+					
+					shapeSync* sync = new shapeSync(*shape);
+					cout << "shape "<< sync->position.x << ", " << sync->position.y << endl;
+
+					sf::Packet p = packetParser.pack(sync);
+					dynamic_cast<Server*>(this)->broadCast(p);
+				}
+				else
+					cout << "Error: could not find Shape with ID: "<< id << endl;
 			}
 			break;
 		default:

@@ -67,7 +67,6 @@ sf::Packet PacketParser::pack(shapeSync* s)
 	p << s->velocity.x << s->velocity.y;
 	p << s->position.x << s->position.y;
 	p << s->angle;
-	p << s->size.x << s->size.y;
 	return p;
 }
 
@@ -140,6 +139,5 @@ shapeSync* PacketParser::unpack<shapeSync*>(sf::Packet& p)
 	p >> s->velocity.x >> s->velocity.y;
 	p >> s->position.x >> s->position.y;
 	p >> s->angle;
-	p >> s->size.x >> s->size.y;
 	return s;
 }

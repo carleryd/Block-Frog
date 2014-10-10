@@ -39,6 +39,7 @@ public:
 	sf::Vector2i& getViewOffset() {return viewOffset;};
 	list<Player*>& getRemotePlayers() {return remotePlayers;};
 	vector<Shape*>& getShapes() {return boxes;};
+	Shape* getShape(int id);
     OSHandler* getOSHandler();
     
     // Setter methods
@@ -54,6 +55,7 @@ public:
 	//synchronize shapes against servers game state
 	void updateShapes(shapeSync* s); 
 	void removeShape(int id);
+	bool exitCalled;
 
 private:
 	void removeFallenBoxes(std::list<Shape*>& todelete);
@@ -63,6 +65,7 @@ private:
 	Shape* createBoxes(); //for server only. Returns pointer to last created box, nullptr if no box was created
 	void handleThreads();
 	void playerHandling();
+	void requstUpdates();
 
 	//if local player interacts with boxes save changes to localChanges
 	void playerBoxInteraction();

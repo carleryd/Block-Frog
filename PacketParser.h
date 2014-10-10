@@ -16,12 +16,20 @@ struct player_info
 
 struct shapeSync
 {
+	shapeSync(){};
+	shapeSync(Shape& shape)
+	{
+		shapeID = shape.getId();
+		angularVel = shape.getBody()->GetAngularVelocity();
+		velocity = shape.getBody()->GetLinearVelocity();
+		position = shape.getBody()->GetPosition();
+		angle = shape.getBody()->GetAngle();
+	};
 	int shapeID;
 	float angularVel;
 	b2Vec2 velocity;
 	b2Vec2 position;
 	float angle;
-	b2Vec2 size;
 };
 
 class PacketParser

@@ -27,6 +27,7 @@ Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_)
 	water = new sf::RectangleShape(sf::Vector2f(float(window->getSize().x * 2), float(window->getSize().y)));
 	water->setFillColor(sf::Color(0, 0, 255, 100));	
 	textor = new Textor(osHandler_);
+	exitCalled = false;
 }
 
 Game::~Game()
@@ -160,11 +161,14 @@ void Game::run() {
 	}
 	else
 	{
+		//send local changes to server
 		for (shapeSync* shapeSync : localChanges)
 		{
 			sf::Packet p = packetParser->pack(shapeSync);
 			dynamic_cast<Client*>(localHost)->sendToServer(p);
 		}
+		//request server update on shapes
+		requstUpdates();
 	}
 
 	//clear memory that is only valid this time step.
@@ -200,7 +204,6 @@ void Game::removeFallenBoxes(list<Shape*>& deletion)
 		);
 		if(todelete != boxes.end())
 		{
-			cout << "Clients, remove shape " << (*todelete)->getId() << endl;
 			sf::Packet p = packetParser->pack<int>(UDPNetwork::REMOVE_SHAPE, (*todelete)->getId());
 			dynamic_cast<Server*>(localHost)->broadCast(p);
 			boxes.erase(todelete);
@@ -284,6 +287,7 @@ void Game::exitGame()
 	cout << "Waiting for listen thread to join..."<< endl;
 	network->join();
 	window->close();
+	exitCalled = true;
 	cout << "Good bye!" << endl;
 }
 
@@ -339,8 +343,8 @@ void Game::playerBoxInteraction()
 				s->velocity = edge->other->GetLinearVelocity();
 				s->position = edge->other->GetPosition();
 				s->angle = edge->other->GetAngle();
-				Rectangle* rect = dynamic_cast<Rectangle*>(((b2BodyUserData*)edge->other->GetUserData())->parent);
-				s->size = *rect->getSize();
+				/*Rectangle* rect = dynamic_cast<Rectangle*>(((b2BodyUserData*)edge->other->GetUserData())->parent);
+				s->size = *rect->getSize();*/
 				if(push)
 					localChanges.push_back(s);
 			}
@@ -361,6 +365,7 @@ void Game::updateShapes(shapeSync* s)
 		shape->getBody()->SetAngularVelocity(s->angularVel);
 		shape->getBody()->SetLinearVelocity(s->velocity);
 		shape->setPosition(&s->position, s->angle);
+		shape->resetUpdateClock();
 	}
 	else
 	{
@@ -371,13 +376,13 @@ void Game::updateShapes(shapeSync* s)
 		}
 		cout << endl;
 		cout << "Shape not found for update! ID: " << s->shapeID << endl;
-		cout << "Creating new shape with ID " << s->shapeID << endl;
+		/*cout << "Creating new shape with ID " << s->shapeID << endl;
 		Shape* replacement = shapeFactory->createRectangle(&s->size, &s->position, true);
 		replacement->setId(s->shapeID);
 		replacement->setPosition(&s->position, s->angle);
 		replacement->getBody()->SetAngularVelocity(s->angularVel);
 		replacement->getBody()->SetLinearVelocity(s->velocity);
-		boxes.push_back(replacement);
+		boxes.push_back(replacement);*/
 	}
 }
 
@@ -409,4 +414,31 @@ void Game::playerHandling()
 		remotePlayer->update();
 		window->draw(textor->write(remotePlayer->getName(), remotePlayer->getBox()->getShape()->getPosition()));
 	}
+}
+
+void Game::requstUpdates()
+{
+	vector<Shape*>::iterator i = boxes.begin()+1;
+	for(;i != boxes.end(); ++i)
+	{
+		Shape* s = *i;
+		if(s != nullptr && s->timeSinceUpdate().asSeconds() > 10)
+		{
+			cout << "requesting synch data for shape "<< s->getId() << endl;
+			sf::Packet request = packetParser->pack<int>(UDPNetwork::SHAPE_SYNCH_REQUEST, s->getId());
+			dynamic_cast<Client*>(localHost)->sendToServer(request);
+		}
+	}
+}
+
+Shape* Game::getShape(int id)
+{
+	vector<Shape*>::iterator found = find_if(boxes.begin(), boxes.end(), [id](Shape* s)
+	{
+		return id == s->getId();
+	});
+	if(found != boxes.end())
+		return *found;
+	else
+		return nullptr;
 }

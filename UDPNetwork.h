@@ -48,9 +48,9 @@ public:
 	void handleReceivedData(Game* game);
 	bool exit;
 
-	enum typreceive{SERVER_EXIT, CLIENT_EXIT, NEW_PLAYER, GAME_STATE_SYNCH,
-		SHAPE, ALL_SHAPES, SHAPE_SYNCH, REMOVE_SHAPE,
-		PLAYER_MOVE};
+	enum typreceive{SERVER_EXIT, CLIENT_EXIT, NEW_PLAYER, 
+		SHAPE, ALL_SHAPES, SHAPE_SYNCH, REMOVE_SHAPE, SHAPE_SYNCH_REQUEST,
+		PLAYER_MOVE, PLAYER_SYNCH_REQUEST};
 protected:
 	UDPNetwork(string playerName, ShapeFactory& factory);
 

@@ -28,6 +28,7 @@ Shape::Shape(Game* game_, b2Vec2* position_, bool dynamic_, float density_, floa
 	userData.id = id;
 	userData.parent = this;
 	body->SetUserData((void*)&userData);
+	updateClock.restart();
 	ajour = true;
 }
 
@@ -52,4 +53,14 @@ sf::Shape* Shape::getShape()
 b2Body* Shape::getBody()
 {
 	return body;
+}
+
+sf::Time Shape::timeSinceUpdate() const
+{
+	return updateClock.getElapsedTime();
+}
+
+void Shape::resetUpdateClock()
+{
+	updateClock.restart();
 }
