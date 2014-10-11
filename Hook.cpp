@@ -11,6 +11,7 @@
 Hook::Hook(Game* game_, Player* player) {
     cout << "Hook()" << endl;
     game = game_;
+	owner = player;
     utility = game->getUtility();
     //contactListener = game->getPlayer()->getContactListener();
 	contactListener = player->getContactListener();
@@ -171,8 +172,11 @@ void Hook::release() {
 void Hook::update() {
     hookTip->update();
     hookBase->update();
-    playerMeterPos = b2Vec2(game->getPlayer()->getBody()->GetPosition().x,
-                            game->getPlayer()->getBody()->GetPosition().y);
+    /*playerMeterPos = b2Vec2(game->getPlayer()->getBody()->GetPosition().x,
+                            game->getPlayer()->getBody()->GetPosition().y);*/
+
+	playerMeterPos = b2Vec2(owner->getBody()->GetPosition().x,
+                            owner->getBody()->GetPosition().y);
     
     switch(ACTION)
     {

@@ -40,6 +40,7 @@ private:
     Rectangle* hookBase;
     Utility* utility;
 	ContactListener* contactListener;
+	Player* owner;
     
     Action ACTION;
     
