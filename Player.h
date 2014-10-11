@@ -17,7 +17,7 @@ class Player
 {
 public:
 	Player(Game* game);
-    void init();
+    void init(Player* player);
 
 	void setName(string n);
     void setPosition(b2Vec2* newPos);

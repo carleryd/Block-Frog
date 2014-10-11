@@ -49,7 +49,7 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
 	shapeFactory = new ShapeFactory(this);
     utility = new Utility(this);
 	player = new Player(this);
-    player->init();
+    player->init(player);
     
 	packetParser = new PacketParser(*shapeFactory);
 	
@@ -259,6 +259,7 @@ Shape* Game::createBoxes()
 void Game::addRemotePlayer(Player* p)
 {
 	remotePlayers.push_back(p);
+	p->init(p);
 }
 
 void Game::exitGame()
@@ -368,13 +369,13 @@ void Game::updateShapes(shapeSync* s)
 	}
 	else
 	{
-		cout << "Shapes in vector boxes: ";
+		/*cout << "Shapes in vector boxes: ";
 		for (Shape* shape : boxes)
 		{
 			cout << shape->getId() << " ";
 		}
 		cout << endl;
-		cout << "Shape not found for update! ID: " << s->shapeID << endl;
+		cout << "Shape not found for update! ID: " << s->shapeID << endl;*/
 		/*cout << "Creating new shape with ID " << s->shapeID << endl;
 		Shape* replacement = shapeFactory->createRectangle(&s->size, &s->position, true);
 		replacement->setId(s->shapeID);
@@ -395,8 +396,8 @@ void Game::updatePlayer(player_info* p)
 		player->getBody()->SetLinearVelocity(p->velocity);
 		player->getBox()->resetUpdateClock();
 	}
-	else
-		cerr << "Could not find player \"" << p->name << "\"" << endl;
+	/*else
+		cerr << "Could not find player \'" << p->name << "\'" << endl;*/
 }
 
 void Game::removeShape(int id)

@@ -55,9 +55,9 @@ void UDPNetwork::listen()
 {
 	while(selector.wait(sf::seconds(0.05f)) || !exit)
 	{
-		if(selector.isReady(mySocket) && !packetsOccupied)
+		if(selector.isReady(mySocket))
 		{
-			packetsOccupied = true;
+			packetsMutex.lock();
 			packets.push_front(packetInfo());
 			
 			if(receive(&packets.front().packet,
@@ -66,7 +66,7 @@ void UDPNetwork::listen()
 				cerr << "Error when receiving data" << endl;
 
 			//cout << "Packet size: " << packets.front().packet.getDataSize() << endl;
-			packetsOccupied = false;
+			packetsMutex.unlock();
 		}
 	}
 	cout << "Listen thread joining." << endl;
@@ -74,9 +74,9 @@ void UDPNetwork::listen()
 
 void UDPNetwork::handleReceivedData(Game* game)
 {
-	while(!packets.empty() && !packetsOccupied)
+	while(!packets.empty())
 	{
-		packetsOccupied = true;
+		packetsMutex.lock();
 		sf::Packet* packet = &packets.front().packet;
 		sf::IpAddress senderAddress = packets.front().senderAddress;
 		unsigned short senderPort = packets.front().senderPort;
@@ -224,6 +224,6 @@ void UDPNetwork::handleReceivedData(Game* game)
 			break;
 		}
 		packets.pop_front();
-		packetsOccupied = false;
+		packetsMutex.unlock();
 	}
 }

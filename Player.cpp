@@ -61,8 +61,8 @@ Player::Player(Game* game_) {
     hook = NULL;
 }
 
-void Player::init() {
-	hook = new Hook(game);
+void Player::init(Player* player) {
+	hook = new Hook(game, player);
 }
 
 b2Body* Player::getBody() {

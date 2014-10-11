@@ -5,7 +5,7 @@
 #include "ShapeFactory.h"
 #include "PacketParser.h"
 #include <list>
-#include <atomic>
+#include <mutex>
 class Game;
 using namespace std;
 
@@ -62,7 +62,7 @@ protected:
 	PacketParser packetParser;
 	sf::SocketSelector selector;
 private:
-	std::atomic<bool> packetsOccupied;
+	mutex packetsMutex;
 };
 
 
