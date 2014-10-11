@@ -4,6 +4,8 @@
 #include <SFML/Graphics.hpp>
 #include <Box2D/Box2D.h>
 #include <ctime>
+#include <iostream>
+using namespace std;
 
 class Game;
 class Shape;

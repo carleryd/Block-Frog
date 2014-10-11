@@ -168,9 +168,9 @@ void Game::run() {
 			dynamic_cast<Client*>(localHost)->sendToServer(p);
 		}
 		//request server update on shapes
-		requstUpdates();
+		requestShapeUpdates();
 	}
-
+	requestPlayerUpdates();
 	//clear memory that is only valid this time step.
 	while(!localChanges.empty())
 	{
@@ -343,8 +343,7 @@ void Game::playerBoxInteraction()
 				s->velocity = edge->other->GetLinearVelocity();
 				s->position = edge->other->GetPosition();
 				s->angle = edge->other->GetAngle();
-				/*Rectangle* rect = dynamic_cast<Rectangle*>(((b2BodyUserData*)edge->other->GetUserData())->parent);
-				s->size = *rect->getSize();*/
+				getShape(id)->resetUpdateClock();
 				if(push)
 					localChanges.push_back(s);
 			}
@@ -386,6 +385,20 @@ void Game::updateShapes(shapeSync* s)
 	}
 }
 
+void Game::updatePlayer(player_info* p)
+{
+	Player* player = getRemotePlayer(p->name);
+	if(player != nullptr)
+	{
+		//cout << "Updating player " << player->getName() << endl;
+		player->setPosition(&p->position);
+		player->getBody()->SetLinearVelocity(p->velocity);
+		player->getBox()->resetUpdateClock();
+	}
+	else
+		cerr << "Could not find player \"" << p->name << "\"" << endl;
+}
+
 void Game::removeShape(int id)
 {
 	vector<Shape*>::iterator del = find_if(boxes.begin(), boxes.end(), [id](Shape* s)
@@ -416,17 +429,44 @@ void Game::playerHandling()
 	}
 }
 
-void Game::requstUpdates()
+void Game::requestShapeUpdates()
 {
+	//shapes
 	vector<Shape*>::iterator i = boxes.begin()+1;
 	for(;i != boxes.end(); ++i)
 	{
 		Shape* s = *i;
-		if(s != nullptr && s->timeSinceUpdate().asSeconds() > 10)
+		if(s != nullptr && s->timeSinceUpdate().asSeconds() > 1)
 		{
-			cout << "requesting synch data for shape "<< s->getId() << endl;
+			//cout << "requesting synch data for shape "<< s->getId() << endl;
 			sf::Packet request = packetParser->pack<int>(UDPNetwork::SHAPE_SYNCH_REQUEST, s->getId());
 			dynamic_cast<Client*>(localHost)->sendToServer(request);
+		}
+	}
+}
+
+void Game::requestPlayerUpdates()
+{
+	//remote players
+	list<Player*>::iterator listItr = remotePlayers.begin();
+	for(; listItr != remotePlayers.end(); ++listItr)
+	{
+		Player* p = *listItr;
+		if(p != nullptr && p->getBox()->timeSinceUpdate().asSeconds() > 1)
+		{
+			//cout << "Request update for player: " << p->getName() << endl;
+			sf::Packet request = packetParser->pack<string>(UDPNetwork::PLAYER_SYNCH_REQUEST, p->getName());
+			if(localHost->isServer())
+			{
+				Server* server = dynamic_cast<Server*>(localHost);
+				client* receiver = server->getClient(p->getName());
+				localHost->send(request, receiver->clientAddress, receiver->clientPort);
+				
+			}
+			else
+			{
+				dynamic_cast<Client*>(localHost)->sendToServer(request);
+			}
 		}
 	}
 }
@@ -441,4 +481,24 @@ Shape* Game::getShape(int id)
 		return *found;
 	else
 		return nullptr;
+}
+
+Player* Game::getRemotePlayer(string name)
+{
+	list<Player*>::iterator found = find_if(remotePlayers.begin(), remotePlayers.end(), [name](Player* player)
+	{
+		return name == player->getName();
+	});
+	if(found != remotePlayers.end())
+		return *found;
+	else
+		return nullptr;
+}
+
+Player* Game::getPlayer(string name)
+{
+	if(player->getName() == name)
+		return player;
+	else
+		return getRemotePlayer(name);
 }

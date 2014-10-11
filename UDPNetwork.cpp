@@ -78,6 +78,8 @@ void UDPNetwork::handleReceivedData(Game* game)
 	{
 		packetsOccupied = true;
 		sf::Packet* packet = &packets.front().packet;
+		sf::IpAddress senderAddress = packets.front().senderAddress;
+		unsigned short senderPort = packets.front().senderPort;
 		int type;
 		*packet >> type;
 		switch (type)
@@ -147,16 +149,37 @@ void UDPNetwork::handleReceivedData(Game* game)
 					//move player
 					(*found)->move(info->movedir, false, info->jumped);
 					(*found)->getBody()->SetLinearVelocity(info->velocity);
+					(*found)->getBox()->resetUpdateClock();
 					//broadcast to other players
 					if(isServer())
 					{
-						sf::Packet p = packetParser.pack(*info);
+						sf::Packet p = packetParser.pack<player_info*>(PLAYER_MOVE, info);
 						dynamic_cast<Server*>(this)->broadCastExcept(
 							packets.front().senderAddress,
 							packets.front().senderPort,
 							p);
 					}
 				}
+			}
+			break;
+		case PLAYER_SYNCH:
+			{
+				player_info* pSynch = packetParser.unpack<player_info*>(*packet);
+				game->updatePlayer(pSynch);
+			}
+			break;
+		case PLAYER_SYNCH_REQUEST:
+			{
+				string name = packetParser.unpack<string>(*packet);
+				Player* player = game->getPlayer(name);
+				if(player != nullptr)
+				{
+					player_info* pi = new player_info(*player);
+					sf::Packet p = packetParser.pack<player_info*>(PLAYER_SYNCH, pi);
+					send(p, senderAddress, senderPort);
+				}
+				else
+					cout << "Player " << name << " not fond; sync not sent." << endl;
 			}
 			break;
 		case SHAPE_SYNCH:
@@ -186,12 +209,8 @@ void UDPNetwork::handleReceivedData(Game* game)
 				int id = packetParser.unpack<int>(*packet);
 				Shape* shape = game->getShape(id);
 				if(shape != nullptr)
-				{
-					cout << "Shape requested: " << id << endl;
-					cout << "Shape sent to client: " << shape->getId() << endl;
-					
+				{					
 					shapeSync* sync = new shapeSync(*shape);
-					cout << "shape "<< sync->position.x << ", " << sync->position.y << endl;
 
 					sf::Packet p = packetParser.pack(sync);
 					dynamic_cast<Server*>(this)->broadCast(p);

@@ -3,15 +3,26 @@
 
 #include <SFML/Network.hpp>
 #include "ShapeFactory.h"
+#include "Player.h"
 class Shape;
 class Player;
 
 struct player_info
 {
+	player_info(){};
+	player_info(Player& p)
+	{
+		name = p.getName();
+		movedir = -1; // illegal is set in player::move
+		jumped = false;  // illegal is set in player::move
+		velocity = p.getBody()->GetLinearVelocity();
+		position = p.getBody()->GetPosition();
+	}
 	string name;
 	int movedir;
 	bool jumped; 
 	b2Vec2 velocity;
+	b2Vec2 position;
 };
 
 struct shapeSync
@@ -39,11 +50,22 @@ public:
 	PacketParser(); //cannot unpack shapes
 	~PacketParser(void);
 	sf::Packet pack(Shape* shape);
-	//for when the player acts(moves)
-	sf::Packet pack(player_info p);
+	/*
+		for when the player acts(moves)
+		- use PLAYER_MOVE for only communicating movement
+			+ position not necessary for this type
+		- user PLAYER_SYNCH for synchronize all of the player
+			+ movedir and jumped not necessary for this type
+	*/
+	//USE pack<T>(int, T);
+	/*template<class T>
+		sf::Packet pack(int type, T player_info);*/
+
 	//for when sending the NEW_PLAYER type packet
 	sf::Packet pack(Player*);
-	//pack necesary data to sync shapes
+	/*
+		pack necesary data to sync shapes
+	*/
 	sf::Packet pack(shapeSync* s);
 
 	//for packing primitive types

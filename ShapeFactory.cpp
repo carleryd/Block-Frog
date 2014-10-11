@@ -2,14 +2,18 @@
 #include "Rectangle.h"
 #include "Game.h"
 #include <functional>
+#include <chrono>
+#include <ctime>
 
 
 ShapeFactory::ShapeFactory(Game* game_):
     dist(0.0, 1.0)
 {
     game = game_;
-	string s("Block frog");
-	seed_seq seed(s.begin(), s.end());
+	chrono::system_clock::time_point t = chrono::system_clock::now();
+	time_t tt = chrono::system_clock::to_time_t(t);
+	string s = ctime(&tt);
+	seed_seq seed(s.begin(), s.end()); 
 	mersenneGen.seed(seed);
 	minSize = 10;
 	id = 0;

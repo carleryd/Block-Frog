@@ -38,14 +38,16 @@ sf::Packet PacketParser::pack(Shape* shape)
     }
 }
 
-sf::Packet PacketParser::pack(player_info p)
+template<>
+sf::Packet PacketParser::pack<player_info*>(int type, player_info* p)
 {
 	sf::Packet packet;
-	packet << UDPNetwork::PLAYER_MOVE;
-	packet << p.name;
-	packet << p.movedir;
-	packet << p.jumped;
-	packet << p.velocity.x << p.velocity.y;
+	packet << type;
+	packet << p->name;
+	packet << p->movedir;
+	packet << p->jumped;
+	packet << p->velocity.x << p->velocity.y;
+	packet << p->position.x << p->position.y;
 	return packet;
 }
 
@@ -53,7 +55,7 @@ sf::Packet PacketParser::pack(Player* p)
 {
 	sf::Packet packet;
 	packet << UDPNetwork::NEW_PLAYER;
-	packet << p->getPosition()->x << p->getPosition()->y;
+	packet << p->getBody()->GetPosition().x << p->getBody()->GetPosition().y;
 	packet << p->getName();
 	return packet;
 }
@@ -79,6 +81,14 @@ sf::Packet PacketParser::pack<int>(int type, int value)
 	return p;
 }
 
+template<>
+sf::Packet PacketParser::pack<string>(int type, string s)
+{
+	sf::Packet p;
+	p << type;
+	p << s;
+	return p;
+}
 //sf::Packet PacketParser::pack
 
 // ############# UNPACK FUNCTIONS ################
@@ -127,6 +137,7 @@ player_info* PacketParser::unpack<player_info*>(sf::Packet& packet)
 	packet >> info->movedir;
 	packet >> info->jumped;
 	packet >> info->velocity.x >> info->velocity.y;
+	packet >> info->position.x >> info->position.y;
 	return info;
 }
 

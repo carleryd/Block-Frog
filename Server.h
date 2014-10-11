@@ -36,6 +36,8 @@ public:
 	{
 		return remoteConnections;
 	}
+	//returns nullptr if client not found
+	client* getClient(string name);
 private:
 	bool playerMoved;
 	sf::SocketSelector selector;
