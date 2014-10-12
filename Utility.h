@@ -4,6 +4,7 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 #include <Box2D/Box2D.h>
+using namespace std;
 
 class Game;
 
@@ -34,5 +35,10 @@ private:
     short int cycles;
     float currDegrees, prevDegrees;
 };
+
+/*ostream& operator<<(ostream& o, b2Vec2* v)
+{
+	return o << "position (" << v->x << ", " << v->y << ")";
+}*/
 
 #endif /* defined(__Block_Frog__Utility__) */

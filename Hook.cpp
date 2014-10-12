@@ -8,17 +8,21 @@
 #include <iomanip>
 
 
-Hook::Hook(Game* game_) {
+Hook::Hook(Game* game_, Player* player) {
     cout << "Hook()" << endl;
     game = game_;
+	owner = player;
     utility = game->getUtility();
-    contactListener = game->getPlayer()->getContactListener();
+    //contactListener = game->getPlayer()->getContactListener();
+	contactListener = player->getContactListener();
     recentBoxContact = contactListener->getRecentHookContact();
     
     ACTION = PASSIVE;
     
-    playerMeterPos = b2Vec2(game->getPlayer()->getBody()->GetPosition().x,
-                            game->getPlayer()->getBody()->GetPosition().y);
+    /*playerMeterPos = b2Vec2(game->getPlayer()->getBody()->GetPosition().x,
+                            game->getPlayer()->getBody()->GetPosition().y);*/
+	playerMeterPos = b2Vec2(player->getBody()->GetPosition().x,
+                            player->getBody()->GetPosition().y);
     
     hookTip = new Circle(game,
                          5.0f,
@@ -69,7 +73,8 @@ Hook::Hook(Game* game_) {
     //game->getBody()->getBody();
     b2RevoluteJointDef revDef;
     revDef.bodyA = hookBase->getBody();
-    revDef.bodyB = game->getPlayer()->getBody();
+    //revDef.bodyB = game->getPlayer()->getBody();
+	revDef.bodyB = player->getBody();
 //    revDef.collideConnected = false;
     revDef.localAnchorA = b2Vec2(0, 0);
     revDef.localAnchorB = b2Vec2(0, 0);
@@ -114,7 +119,7 @@ void Hook::aim(sf::Vector2i mousePixelPos) {
     newMouseAngle = utility->mouseAngle(mousePixelPos, playerMeterPos, hookDegrees);
 	revoluteJoint->SetLimits(utility->degToRad(newMouseAngle), utility->degToRad(newMouseAngle));
     
-    cout << "hookDegrees: " << hookDegrees << "    mouseAngle: " << newMouseAngle << endl;
+//    cout << "hookDegrees: " << hookDegrees << "    mouseAngle: " << newMouseAngle << endl;
 }
 
 void Hook::shoot(sf::Vector2i mousePixelPos) {
@@ -170,8 +175,11 @@ void Hook::release() {
 void Hook::update() {
     hookTip->update();
     hookBase->update();
-    playerMeterPos = b2Vec2(game->getPlayer()->getBody()->GetPosition().x,
-                            game->getPlayer()->getBody()->GetPosition().y);
+    /*playerMeterPos = b2Vec2(game->getPlayer()->getBody()->GetPosition().x,
+                            game->getPlayer()->getBody()->GetPosition().y);*/
+
+	playerMeterPos = b2Vec2(owner->getBody()->GetPosition().x,
+                            owner->getBody()->GetPosition().y);
     
     switch(ACTION)
     {

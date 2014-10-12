@@ -21,8 +21,8 @@ b2Vec2 Utility::mouseToBox2D(sf::Vector2i mousePos) {
     sf::Vector2i adjPixelPos = sf::Vector2i(mousePos.x - game->getWindow()->getSize().x/2,
                                             -mousePos.y + game->getWindow()->getSize().y/2);
     
-    b2Vec2 adjMeterPos = b2Vec2(adjPixelPos.x * pixelToMeter,
-                                adjPixelPos.y * pixelToMeter);
+    b2Vec2 adjMeterPos = b2Vec2((float)adjPixelPos.x * (float)pixelToMeter,
+                                (float)adjPixelPos.y * (float)pixelToMeter);
     
     return adjMeterPos;
 }
@@ -54,12 +54,8 @@ float Utility::mouseAngle(sf::Vector2i mousePixelPos, b2Vec2 playerMeterPos, flo
         cycles--;
     else if(currDegrees + 180 < prevDegrees)
         cycles++;
-    
-//    cout << "cycles: " << cycles << " hookDegrees: " << hookDegrees << " currDegrees: " << currDegrees << endl;
-//    if(currDegrees > hookDegrees + 180 && currDegrees < hookDegrees + 300)
-//        cycles--;
-//    else if(currDegrees < hookDegrees - 180 && currDegrees > hookDegrees - 300)
-//        cycles++;
+
+    prevDegrees = currDegrees;
     
     prevDegrees = currDegrees;
     return currDegrees + 360 * cycles;

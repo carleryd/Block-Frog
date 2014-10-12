@@ -55,9 +55,9 @@ void UDPNetwork::listen()
 {
 	while(selector.wait(sf::seconds(0.05f)) || !exit)
 	{
-		if(selector.isReady(mySocket) && !packetsOccupied)
+		if(selector.isReady(mySocket))
 		{
-			packetsOccupied = true;
+			packetsMutex.lock();
 			packets.push_front(packetInfo());
 			
 			if(receive(&packets.front().packet,
@@ -66,7 +66,7 @@ void UDPNetwork::listen()
 				cerr << "Error when receiving data" << endl;
 
 			//cout << "Packet size: " << packets.front().packet.getDataSize() << endl;
-			packetsOccupied = false;
+			packetsMutex.unlock();
 		}
 	}
 	cout << "Listen thread joining." << endl;
@@ -74,10 +74,12 @@ void UDPNetwork::listen()
 
 void UDPNetwork::handleReceivedData(Game* game)
 {
-	while(!packets.empty() && !packetsOccupied)
+	while(!packets.empty())
 	{
-		packetsOccupied = true;
+		packetsMutex.lock();
 		sf::Packet* packet = &packets.front().packet;
+		sf::IpAddress senderAddress = packets.front().senderAddress;
+		unsigned short senderPort = packets.front().senderPort;
 		int type;
 		*packet >> type;
 		switch (type)
@@ -113,7 +115,7 @@ void UDPNetwork::handleReceivedData(Game* game)
 			break;
 		case NEW_PLAYER:
 		{
-			b2Vec2* newpos = packetParser.unpack<b2Vec2*>(*packet);
+			b2Vec2* newpos = packetParser.unpack<b2Vec2*>(*packet);  
 			game->addRemotePlayer(new Player(game));
 			game->remotePlayers.back()->setPosition( newpos);
 			if(isServer())
@@ -145,17 +147,39 @@ void UDPNetwork::handleReceivedData(Game* game)
 				if(found != remotePlayers.end())
 				{
 					//move player
-					(*found)->move(info->movedir, false);
+					(*found)->move(info->movedir, false, info->jumped);
+					(*found)->getBody()->SetLinearVelocity(info->velocity);
+					(*found)->getBox()->resetUpdateClock();
 					//broadcast to other players
 					if(isServer())
 					{
-						sf::Packet p = packetParser.pack(*info);
+						sf::Packet p = packetParser.pack<player_info*>(PLAYER_MOVE, info);
 						dynamic_cast<Server*>(this)->broadCastExcept(
 							packets.front().senderAddress,
 							packets.front().senderPort,
 							p);
 					}
 				}
+			}
+			break;
+		case PLAYER_SYNCH:
+			{
+				player_info* pSynch = packetParser.unpack<player_info*>(*packet);
+				game->updatePlayer(pSynch);
+			}
+			break;
+		case PLAYER_SYNCH_REQUEST:
+			{
+				string name = packetParser.unpack<string>(*packet);
+				Player* player = game->getPlayer(name);
+				if(player != nullptr)
+				{
+					player_info* pi = new player_info(*player);
+					sf::Packet p = packetParser.pack<player_info*>(PLAYER_SYNCH, pi);
+					send(p, senderAddress, senderPort);
+				}
+				else
+					cout << "Player " << name << " not fond; sync not sent." << endl;
 			}
 			break;
 		case SHAPE_SYNCH:
@@ -178,7 +202,21 @@ void UDPNetwork::handleReceivedData(Game* game)
 			{
 				int id = packetParser.unpack<int>(*packet);
 				game->removeShape(id);
-				cout << "Remove shape " << id << endl;
+			}
+			break;
+		case SHAPE_SYNCH_REQUEST:
+			{
+				int id = packetParser.unpack<int>(*packet);
+				Shape* shape = game->getShape(id);
+				if(shape != nullptr)
+				{					
+					shapeSync* sync = new shapeSync(*shape);
+
+					sf::Packet p = packetParser.pack(sync);
+					dynamic_cast<Server*>(this)->broadCast(p);
+				}
+				else
+					cout << "Error: could not find Shape with ID: "<< id << endl;
 			}
 			break;
 		default:
@@ -186,6 +224,6 @@ void UDPNetwork::handleReceivedData(Game* game)
 			break;
 		}
 		packets.pop_front();
-		packetsOccupied = false;
+		packetsMutex.unlock();
 	}
 }

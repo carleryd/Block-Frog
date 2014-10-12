@@ -5,7 +5,7 @@
 #include "ShapeFactory.h"
 #include "PacketParser.h"
 #include <list>
-#include <atomic>
+#include <mutex>
 class Game;
 using namespace std;
 
@@ -48,9 +48,9 @@ public:
 	void handleReceivedData(Game* game);
 	bool exit;
 
-	enum typreceive{SERVER_EXIT, CLIENT_EXIT, NEW_PLAYER,
-		SHAPE, ALL_SHAPES, SHAPE_SYNCH, REMOVE_SHAPE,
-		PLAYER_MOVE};
+	enum typreceive{SERVER_EXIT, CLIENT_EXIT, NEW_PLAYER, 
+		SHAPE, ALL_SHAPES, SHAPE_SYNCH, REMOVE_SHAPE, SHAPE_SYNCH_REQUEST,
+		PLAYER_MOVE, PLAYER_SYNCH, PLAYER_SYNCH_REQUEST};
 protected:
 	UDPNetwork(string playerName, ShapeFactory& factory);
 
@@ -62,7 +62,7 @@ protected:
 	PacketParser packetParser;
 	sf::SocketSelector selector;
 private:
-	std::atomic<bool> packetsOccupied;
+	mutex packetsMutex;
 };
 
 

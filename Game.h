@@ -15,6 +15,7 @@ class ShapeFactory;
 class Controller;
 class OSHandler;
 class UDPNetwork;
+class Textor;
 
 enum {SERVER, CLIENT, SINGLE_PLAYER};
 
@@ -34,10 +35,19 @@ public:
     sf::RenderWindow* getWindow();
     b2World* getWorld();
     Player* getPlayer();
+	/*
+		get any one player, remote or local
+		returns nullptr if not found
+	*/
+	Player* getPlayer(string name);
     Utility* getUtility();
 	sf::Vector2i& getViewOffset() {return viewOffset;};
 	list<Player*>& getRemotePlayers() {return remotePlayers;};
+	//returns nullptr if not found
+	Player* getRemotePlayer(string name);
 	vector<Shape*>& getShapes() {return boxes;};
+	//returns nullptr if not found
+	Shape* getShape(int id);
     OSHandler* getOSHandler();
     
     // Setter methods
@@ -52,7 +62,9 @@ public:
 	PacketParser* getPacketParser() const {return packetParser;};
 	//synchronize shapes against servers game state
 	void updateShapes(shapeSync* s); 
+	void updatePlayer(player_info* p);
 	void removeShape(int id);
+	bool exitCalled;
 
 private:
 	void removeFallenBoxes(std::list<Shape*>& todelete);
@@ -61,6 +73,9 @@ private:
 	void boxHandling(); //destroy boxes. 
 	Shape* createBoxes(); //for server only. Returns pointer to last created box, nullptr if no box was created
 	void handleThreads();
+	void playerHandling();
+	void requestShapeUpdates();
+	void requestPlayerUpdates();
 
 	//if local player interacts with boxes save changes to localChanges
 	void playerBoxInteraction();
@@ -78,6 +93,7 @@ private:
     sf::Clock clock;
     sf::Time timer;
 	PacketParser* packetParser;
+	Textor* textor;
 
 	//network
 	UDPNetwork* localHost;

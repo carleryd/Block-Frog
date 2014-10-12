@@ -61,8 +61,8 @@ Player::Player(Game* game_) {
     hook = NULL;
 }
 
-void Player::init() {
-	hook = new Hook(game);
+void Player::init(Player* player) {
+	hook = new Hook(game, player);
 }
 
 b2Body* Player::getBody() {
@@ -75,8 +75,13 @@ void Player::setName(string n)
 }
 
 void Player::setPosition(b2Vec2* newPos) {
-	//box->getBody()->SetTransform(*newPos, box->getBody()->GetAngle());
-	box->setPosition(newPos);
+	/*cout << "player pos " << getPosition()->x << ", " << getPosition()->y << endl;
+	//newPos->x += 10;
+	cout << "new pos " << newPos->x << ", " << newPos->y << endl;*/
+	box->getBody()->SetTransform(*newPos, box->getBody()->GetAngle());
+	//cout << "player pos " << getPosition()->x << ", " << getPosition()->y << endl;
+	//box->setPosition(newPos);
+	
 }
 
 void Player::move(int dir, bool localPlayer, bool is_jumping)
@@ -113,8 +118,9 @@ void Player::move(int dir, bool localPlayer, bool is_jumping)
 		player_info p;
 		p.name = name;
 		p.movedir = dir;
-		p.isJumping = jumped;
-		packet = game->getPacketParser()->pack(p);
+		p.jumped = jumped;
+		p.velocity = box->getBody()->GetLinearVelocity();
+		packet = game->getPacketParser()->pack<player_info*>(UDPNetwork::PLAYER_MOVE, &p);
 		if(game->getLocalHost()->isServer())
 		{
 			Server* server = dynamic_cast<Server*>(game->getLocalHost());
@@ -156,7 +162,7 @@ void Player::draw() {
 }
 
 void Player::update() {
-    frogSprite.setRotation((-box->getBody()->GetAngle() / 3.14) * 180);
+    frogSprite.setRotation( float( (-box->getBody()->GetAngle() / 3.14) * 180));
 	// Adjusting from sprite 0:0 to body 0.5:0.5
     frogSprite.setOrigin(25, 25);
     float adjPosX = (box->getBody()->GetPosition().x + game->getWindow()->getSize().x / 30.0 / 2) * 30.0;

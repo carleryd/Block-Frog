@@ -10,11 +10,12 @@ class Rectangle;
 class Game;
 class Utility;
 class ContactListener;
+class Player;
 
 class Hook
 {
 public:
-    Hook(Game* game);
+	Hook(Game* game, Player* player);
 //    ~Hook();
     
     enum Action
@@ -39,6 +40,7 @@ private:
     Rectangle* hookBase;
     Utility* utility;
 	ContactListener* contactListener;
+	Player* owner;
     
     Action ACTION;
     

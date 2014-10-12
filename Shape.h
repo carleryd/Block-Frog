@@ -4,6 +4,8 @@
 #include <SFML/Graphics.hpp>
 #include <Box2D/Box2D.h>
 #include <ctime>
+#include <iostream>
+using namespace std;
 
 class Game;
 class Shape;
@@ -33,8 +35,10 @@ public:
 		body->SetTransform(*pos, angle);
 	};
 	void setId(int id) { userData.id = id; };
-
 	int getId() const {return userData.id;};
+	sf::Time timeSinceUpdate() const;
+	//reset the update clock
+	void resetUpdateClock();
 	
 	bool ajour; 
 
@@ -46,6 +50,7 @@ protected:
     b2Body* body;
     b2Vec2* position;
 	b2BodyUserData userData;
+	sf::Clock updateClock;
     
 	std::clock_t clock;
     float density, friction;

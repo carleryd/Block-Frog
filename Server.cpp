@@ -133,3 +133,15 @@ bool Server::dropPlayer(string name)
 		return false;
 	}
 }
+
+client* Server::getClient(string name)
+{
+	vector<client*>::iterator found = find_if(remoteConnections.begin(), remoteConnections.end(), [name](client* c)
+	{
+		return name == c->name;
+	});
+	if(found != remoteConnections.end())
+		return *found;
+	else
+		return nullptr;	
+}

@@ -17,7 +17,7 @@ class Player
 {
 public:
 	Player(Game* game);
-    void init();
+    void init(Player* player);
 
 	void setName(string n);
     void setPosition(b2Vec2* newPos);
@@ -26,6 +26,7 @@ public:
 	string& getName(){return name;};
 	b2Vec2* getPosition() const{return box->getPosition();};
     ContactListener* getContactListener() { return contactListener; }
+	Shape* getBox() {return box;};
     
 	enum { LEFT, RIGHT, JUMP, LEFT_STOP, RIGHT_STOP };
 	//set bool to true when moving a remote player
