@@ -16,6 +16,7 @@ class Controller;
 class OSHandler;
 class UDPNetwork;
 class Textor;
+class ContactListener;
 
 enum {SERVER, CLIENT, SINGLE_PLAYER};
 
@@ -49,6 +50,7 @@ public:
 	//returns nullptr if not found
 	Shape* getShape(int id);
     OSHandler* getOSHandler();
+    ContactListener* getContactListener() { return contactListener; }
     
     // Setter methods
     void setUtility(Utility* utility);
@@ -86,6 +88,7 @@ private:
 	list<Player*> remotePlayers;
     OSHandler* osHandler;
 	ShapeFactory* shapeFactory;
+    ContactListener* contactListener;
     
     sf::RenderWindow* window;
 	sf::View* view;
@@ -94,6 +97,9 @@ private:
     sf::Time timer;
 	PacketParser* packetParser;
 	Textor* textor;
+    
+    // Keep track of amount of players. This will affect the userData set for each player
+    int playerAmount;
 
 	//network
 	UDPNetwork* localHost;

@@ -17,7 +17,7 @@ struct shapeSync
 		velocity = shape.getBody()->GetLinearVelocity();
 		position = shape.getBody()->GetPosition();
 		angle = shape.getBody()->GetAngle();
-		hookUserData = (int)shape.getBody()->GetFixtureList()->GetUserData();
+		hookUserData = (uintptr_t)shape.getBody()->GetFixtureList()->GetUserData();
 	};
 	int shapeID;
 	float angularVel;

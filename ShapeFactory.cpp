@@ -61,12 +61,13 @@ Shape* ShapeFactory::createRandomShape(sf::Vector2i viewOffset)
 
     // game, size, pos, dynamic, density, friction
     Shape* newRectangle = new Rectangle(
-                                            game,
-                                            new b2Vec2(rand()*100 + minSize, (1 + rand() * 5) * minSize),
-                                            sfvec_to_b2vec(vec),
-                                            true,
-											i);
-    newRectangle->getBody()->GetFixtureList()->SetUserData( (void*)5 );
+                                        game,
+                                        new b2Vec2(rand()*100 + minSize, (1 + rand() * 5) * minSize),
+                                        sfvec_to_b2vec(vec),
+                                        true,
+                                        i);
+    
+    newRectangle->getBody()->GetFixtureList()->SetUserData( (void*)99 );
     
 	return newRectangle;
 }

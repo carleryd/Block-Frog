@@ -4,7 +4,7 @@
 
 Rectangle::Rectangle(Game* game, b2Vec2* size_, b2Vec2* position,
 					 bool dynamic, int id, float density, float friction, int groupIndex):
-	Shape(game, position, dynamic, density, friction, groupIndex, id)
+	Shape(game, position, dynamic, id, density, friction, groupIndex)
 {
     size = size_;
     

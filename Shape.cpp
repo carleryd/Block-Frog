@@ -7,7 +7,7 @@ const float PI = 3.14f;
 
 #include <iostream>
 
-Shape::Shape(Game* game_, b2Vec2* position_, bool dynamic_, float density_, float friction_, int groupIndex, int id)
+Shape::Shape(Game* game_, b2Vec2* position_, bool dynamic_, int id, float density_, float friction_, int groupIndex)
 {
     game = game_;
     position = position_;

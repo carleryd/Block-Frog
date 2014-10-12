@@ -44,7 +44,7 @@ public:
 
 protected:
 	Shape(Game* game, b2Vec2* position,
-		bool dynamic, float density, float friction, int groupIndex, int id);
+		bool dynamic, int id, float density, float friction, int groupIndex);
     
 	sf::Shape* shape;
     b2Body* body;

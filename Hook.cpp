@@ -15,7 +15,7 @@ Hook::Hook(Game* game_, Player* player) {
     utility = game->getUtility();
     //contactListener = game->getPlayer()->getContactListener();
 	contactListener = player->getContactListener();
-    recentBoxContact = contactListener->getRecentHookContact();
+    recentBoxContact = contactListener->getRecentHookContact(player->getBirthNumber());
     
     ACTION = PASSIVE;
     
@@ -34,7 +34,7 @@ Hook::Hook(Game* game_, Player* player) {
                          0.0);
     
     // This way it will be recognized in the ContactListnener(see if statements ContactListener.cpp)
-    hookTip->getBody()->GetFixtureList()->SetUserData( (void*)4 );
+    hookTip->getBody()->GetFixtureList()->SetUserData( (void*)(player->getBirthNumber()+10));
     
     hookBase = new Rectangle(game,
                              new b2Vec2(10.0, 10.0),
@@ -123,7 +123,6 @@ void Hook::aim(sf::Vector2i mousePixelPos) {
 }
 
 void Hook::shoot(sf::Vector2i mousePixelPos) {
-    cout << "use()" << endl;
     newMouseAngle = utility->mouseAngle(mousePixelPos, playerMeterPos, hookDegrees);
     prismaticJoint->SetLimits(0.0, reachLength);
 
@@ -164,7 +163,7 @@ void Hook::release() {
     	grabJoint = NULL;
         
         // Remove the recent contact, we no longer want to grab it
-        contactListener->removeRecentHookContact();
+        contactListener->removeRecentHookContact(game->getPlayer()->getBirthNumber());
         
         // Make it so that we dont grab boxes while hook is returning to us
     	contactListener->setHookActive(false);
@@ -184,7 +183,7 @@ void Hook::update() {
     switch(ACTION)
     {
         case SHOOTING:
-            recentBoxContact = contactListener->getRecentHookContact();
+            recentBoxContact = contactListener->getRecentHookContact(game->getPlayer()->getBirthNumber());
             
 			if(recentBoxContact != NULL && grabJoint == NULL) {
                 prismaticJoint->SetLimits(0.0, grabLength);

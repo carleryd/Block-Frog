@@ -5,6 +5,7 @@
 #include "ShapeFactory.h"
 #include "Utility.h"
 #include "Textor.h"
+#include "ContactListener.h"
 
 using namespace std;
 
@@ -54,8 +55,13 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
 	//shapefactory for creating shapes easily
 	shapeFactory = new ShapeFactory(this);
     utility = new Utility(this);
+    
+    contactListener = new ContactListener();
+    world->SetContactListener(contactListener);
+    
 	player = new Player(this);
     player->init(player);
+	playerAmount = 1;
     
 	packetParser = new PacketParser(*shapeFactory);
 	
@@ -264,6 +270,8 @@ Shape* Game::createBoxes()
 
 void Game::addRemotePlayer(Player* p)
 {
+	playerAmount++;
+    p->setBirthNumber(playerAmount);
 	remotePlayers.push_back(p);
 	p->init(p);
 }
@@ -350,7 +358,7 @@ void Game::playerBoxInteraction()
 				s->velocity = edge->other->GetLinearVelocity();
 				s->position = edge->other->GetPosition();
 				s->angle = edge->other->GetAngle();
-				s->hookUserData = (int)edge->other->GetFixtureList()->GetUserData();
+				s->hookUserData = (uintptr_t)edge->other->GetFixtureList()->GetUserData();
 				getShape(id)->resetUpdateClock();
 				if(push)
 					localChanges.push_back(s);

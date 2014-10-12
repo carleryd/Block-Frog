@@ -15,12 +15,13 @@ public:
     
     void setHookActive(bool active);
     
-    int getNumFootContacts();
-    b2Body* getRecentHookContact();
-    void removeRecentHookContact();
+    int getNumFootContacts(int birthNumber);
+    b2Body* getRecentHookContact(int birthNumber);
+    void removeRecentHookContact(int birthNumber);
 private:
-    int numFootContacts;
-    b2Body* recentHookContact;
+    int numFootContacts[10];
+    b2Body* recentHookContacts[10];
+    // So that it wont hook with stuff when it shouldnt(released hook)
     bool hookIsActive;
 };
 
