@@ -109,6 +109,7 @@ private:
 	int secPerDrops; //time before a new block is dropped
 	int killOffset; //how far under the screen blocks will be killed
 	bool allowJoin;
+	float updateTime;
 	friend Controller;
 	friend UDPNetwork;
 };

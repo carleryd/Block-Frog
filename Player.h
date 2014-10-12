@@ -7,7 +7,7 @@
 #include "Rectangle.h"
 #include "Circle.h"
 #include "ContactListener.h"
-
+#include "Hook.h"
 class Game;
 class Hook;
 
@@ -27,6 +27,9 @@ public:
 	b2Vec2* getPosition() const{return box->getPosition();};
     ContactListener* getContactListener() { return contactListener; }
 	Shape* getBox() {return box;};
+	Circle* getHookTip() {return hook->getHookTip();};
+	Rectangle* getHookBase() {return hook->getHookBase();};
+
     
 	enum { LEFT, RIGHT, JUMP, LEFT_STOP, RIGHT_STOP };
 	//set bool to true when moving a remote player

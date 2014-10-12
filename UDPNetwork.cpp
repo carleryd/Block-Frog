@@ -114,17 +114,17 @@ void UDPNetwork::handleReceivedData(Game* game)
 			}
 			break;
 		case NEW_PLAYER:
-		{
-			b2Vec2* newpos = packetParser.unpack<b2Vec2*>(*packet);  
-			game->addRemotePlayer(new Player(game));
-			game->remotePlayers.back()->setPosition( newpos);
-			if(isServer())
 			{
-				dynamic_cast<Server*>(this)->handleNewPlayer(packets.front());
+				b2Vec2* newpos = packetParser.unpack<b2Vec2*>(*packet);  
+				game->addRemotePlayer(new Player(game));
+				game->remotePlayers.back()->setPosition( newpos);
+				if(isServer())
+				{
+					dynamic_cast<Server*>(this)->handleNewPlayer(packets.front());
+				}
+				else
+					game->getRemotePlayers().back()->setName(packetParser.unpack<string>(*packet));
 			}
-			else
-				game->getRemotePlayers().back()->setName(packetParser.unpack<string>(*packet));
-		}
 			break;
 		case SHAPE:
 			game->boxes.push_back(packetParser.unpack<Shape*>(*packet));

@@ -24,32 +24,6 @@ bool Server::isServer()
 	return true;
 }
 
-void Server::waitForPlayers(bool& allowJoin)
-{
-	string m;
-	sf::Packet packet;
-	sf::IpAddress remoteAddress;
-	unsigned short remotePort;
-
-	while(selector.wait() && allowJoin) //waits infinitely long now...
-	{
-		if(selector.isReady(mySocket))
-		{
-			receive(&packet, remoteAddress, remotePort);
-			if(!(packet >> m))
-				cerr <<	"ERROR" << endl; 
-			remoteConnections.push_back(new client(remoteAddress, remotePort, m));
-			packet.clear();
-			cout << m << " has joined." << endl;
-			m = "Welcome to " + playerName + "'s server.";
-			packet << m;
-			send(packet, remoteAddress, remotePort);
-			//ask if enough players
-			//break;
-		}
-	}
-}
-
 void Server::handleNewPlayer(packetInfo& pack)
 {
 	string m;
@@ -89,9 +63,7 @@ void Server::handleNewPlayer(packetInfo& pack)
 
 	//send connected player's Frog to other players
 	sf::Packet broadcastPack = packetParser.pack(game->getRemotePlayers().back());
-	broadCastExcept(pack.senderAddress, pack.senderPort, broadcastPack);
-
-		
+	broadCastExcept(pack.senderAddress, pack.senderPort, broadcastPack);	
 }
 
 void Server::broadCast(sf::Packet packet)
