@@ -77,8 +77,6 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
         case SERVER:
             localHost = new Server("HOST", *shapeFactory, this);
             player->setName("HOST");
-            //join = new thread(&Server::waitForPlayers, dynamic_cast<Server*>(localHost), std::ref(allowJoin));
-            //dynamic_cast<Server*>(localHost)->waitForPlayers();
             cout << "Waiting for players..." << endl;
             window->setTitle("SERVER");
             break;
@@ -121,7 +119,7 @@ void Game::run() {
 	playerBoxInteraction();
 
 	//water
-	water->setPosition(float(window->getSize().x * -0.1), float(window->getSize().y - viewOffset.y -10));
+	water->setPosition(float(window->getSize().x * -0.1), float( viewOffset.y + water->getLocalBounds().height - 10));
 	window->draw(*water);
 
     if(localHost->isServer())
@@ -164,6 +162,10 @@ void Game::run() {
 			sf::Packet p = packetParser->pack(shapeSync);
 			server->broadCast(p);
 		}
+
+		//broadcast water level:
+		sf::Packet p = packetParser->pack<int>(UDPNetwork::WATER_LEVEL, viewOffset.y);
+		server->broadCast(p);
 	}
 	else
 	{

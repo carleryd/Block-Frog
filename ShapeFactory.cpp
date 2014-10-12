@@ -21,7 +21,6 @@ ShapeFactory::ShapeFactory(Game* game_):
 
 ShapeFactory::~ShapeFactory(void)
 {
-
 }
 
 Shape* ShapeFactory::createRectangle(b2Vec2* size, b2Vec2* position, bool dynamic, int _id)

@@ -219,6 +219,9 @@ void UDPNetwork::handleReceivedData(Game* game)
 					cout << "Error: could not find Shape with ID: "<< id << endl;
 			}
 			break;
+		case WATER_LEVEL:
+			game->viewOffset.y = packetParser.unpack<int>(*packet);
+			break;
 		default:
 			cerr << "Type " << type << " is not a recognized data type!" << endl;
 			break;

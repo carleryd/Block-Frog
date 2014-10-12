@@ -55,6 +55,7 @@ Player::Player(Game* game_) {
     
     contactListener = new ContactListener();
     game->getWorld()->SetContactListener(contactListener);
+	
 
 	leftSpeed = 0;
 	rightSpeed = 0;
@@ -102,7 +103,7 @@ void Player::move(int dir, bool localPlayer, bool is_jumping)
             rightSpeed = 0;
         break;
 	case JUMP:
-            if(!isJumping() || (!localPlayer && is_jumping)) 
+            if(!isJumping() /*|| (!localPlayer && is_jumping)*/) 
 			{
 				push(b2Vec2(0, jumpHeight));
 				jumped = true;

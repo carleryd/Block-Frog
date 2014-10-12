@@ -98,7 +98,6 @@ private:
 	//network
 	UDPNetwork* localHost;
 	std::thread* network;
-	std::thread* join;
     
     std::vector<Shape*> boxes;
 	list<Shape*> deletion;
