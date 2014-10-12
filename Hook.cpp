@@ -109,14 +109,17 @@ Hook::Hook(Game* game_) {
 }
 
 void Hook::aim(sf::Vector2i mousePixelPos) {
-    newMouseAngle = utility->mouseAngle(mousePixelPos, playerMeterPos);
+    hookDegrees = utility->angleBetweenPoints(hookTip->getBody()->GetPosition(),
+                                              hookBase->getBody()->GetPosition());
+    newMouseAngle = utility->mouseAngle(mousePixelPos, playerMeterPos, hookDegrees);
 	revoluteJoint->SetLimits(utility->degToRad(newMouseAngle), utility->degToRad(newMouseAngle));
-//    cout << utility->angleBetweenPoints(hookBase->getBody()->GetPosition(), hookTip->getBody()->GetPosition()) << endl;
+    
+    cout << "hookDegrees: " << hookDegrees << "    mouseAngle: " << newMouseAngle << endl;
 }
 
 void Hook::shoot(sf::Vector2i mousePixelPos) {
     cout << "use()" << endl;
-    newMouseAngle = utility->mouseAngle(mousePixelPos, playerMeterPos);
+    newMouseAngle = utility->mouseAngle(mousePixelPos, playerMeterPos, hookDegrees);
     prismaticJoint->SetLimits(0.0, reachLength);
 
     // We want too look for objects to grab
@@ -126,8 +129,8 @@ void Hook::shoot(sf::Vector2i mousePixelPos) {
 
 b2RevoluteJoint* Hook::grab(b2Body* box) {
     // Makes the box more easily handled by frog
-    box->GetFixtureList()->SetDensity(0.001);
-    box->GetFixtureList()->SetFriction(0.1);
+    box->GetFixtureList()->SetDensity(0.0001);
+//    box->GetFixtureList()->SetFriction(0.1);
     box->SetFixedRotation(true);
     box->ResetMassData();
     

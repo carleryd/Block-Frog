@@ -60,6 +60,9 @@ private:
     // This is needed so as to not, for example, go into the if case
     // of hook length > x several times because it has yet to adjust
     float currentLength;
+    // This is only needed for comparison in calculating what degree
+    // set the revolute joint at. See Utility::mouseAngle
+    float hookDegrees;
 };
 
 #endif /* defined(__Block_Frog__Hook__) */

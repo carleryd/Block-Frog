@@ -91,7 +91,7 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
 	
 	window->setActive(true);
 	
-	secPerDrops = 10;
+	secPerDrops = 5;
 }
 
 sf::RenderWindow* Game::getWindow() { return window; }
