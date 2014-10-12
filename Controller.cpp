@@ -3,7 +3,7 @@
 Controller::Controller(Game* game_) 
 {
     game = game_;
-	game->window->setKeyRepeatEnabled(false); 
+	game->window->setKeyRepeatEnabled(false);
 }
 
 void Controller::checkInput() {

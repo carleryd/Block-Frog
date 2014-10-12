@@ -17,13 +17,13 @@
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 
-// Here is a small helper for you ! Have a look.
 #include "Game.h"
 #include "Utility.h"
 #include "Player.h"
 #include "Controller.h"
 #include <Box2D/Box2D.h>
 #include "OSHandler.h"
+#include "Menu.h"
 
 
 int main(int argc, char* argv[])
@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
 	#elif __APPLE__
 	    osHandler->mac();
 	#else
-	    std::cout << "LAKSMLKSEMFL" << std::endl;
+	    std::cout << "Not WIN32 or APPLE" << std::endl;
 	#endif
     
     
@@ -68,76 +68,77 @@ int main(int argc, char* argv[])
     // Play the music
 //    music.play();
     
-	Game* game = new Game(window, osHandler);
-	//check input arguments
-	string in;
-	sf::IpAddress* a = nullptr;
-	unsigned short p = 0;
-	if(argc > 1)
-	{
-		string in = argv[1];
-		//cout << argv[2] << endl;
-		if(in == "-s")
-		{
-			cout << "Starting server." << endl;
-			game->init(SERVER);
-		}
-		else if(in == "-c")
-		{
-			cout << "Starting client." << endl;
-			cout << "Enter host's IP address: ";
-			cin >> in;
-			cout << endl;
-			a = new sf::IpAddress(in);
-			cout << "Enter host's port: ";
-			cin >> in;
-			p = atoi(in.c_str());
-			cout << endl;
-            game->init(CLIENT, a, p);
-//			game = new Game(window, osHandler, CLIENT, a, p);
-		}
-		else if(in == "-o")//only one player
-		{
-			cout << "Starting single player game." << endl;
-            game->init(SINGLE_PLAYER);
-//			game = new Game(window, osHandler, SINGLE_PLAYER);
-		}
-		else
-		{
-			cout << "-s - start server\n-c - start client\n-o - start game for only one player" << endl;
-			return EXIT_FAILURE;
-		}
-	}
-	else
-	{
-		//open menu for players. Right now there is only terminal menu
-		cout << "-s for server, -c for client, -o for only player" << endl;
-		// Run with server
-		cout << "Server? (y/n) ";
-		cin >> in;
-
-		if(in == "y")
-		{
-            game->init(SERVER);
-//			game = new Game(window, osHandler, SERVER);
-		}
-		else
-		{
-			cout << "Enter host's IP address: ";
-			cin >> in;
-			cout << endl;
-			if(in == "l")
-				in = "localhost";
-			a = new sf::IpAddress(in);
-			cout << "Enter host's port: ";
-			cin >> in;
-			p = atoi(in.c_str());
-			cout << endl;
-            game->init(CLIENT, a, p);
-//			game = new Game(window, osHandler, CLIENT, a, p);
-		}
-	}
-
+    Menu* menu = new Menu(window, osHandler);
+//	Game* game = new Game(window, osHandler);
+//	//check input arguments
+//	string in;
+//	sf::IpAddress* a = nullptr;
+//	unsigned short p = 0;
+//	if(argc > 1)
+//	{
+//		string in = argv[1];
+//		//cout << argv[2] << endl;
+//		if(in == "-s")
+//		{
+//			cout << "Starting server." << endl;
+//			game->init(SERVER);
+//		}
+//		else if(in == "-c")
+//		{
+//			cout << "Starting client." << endl;
+//			cout << "Enter host's IP address: ";
+//			cin >> in;
+//			cout << endl;
+//			a = new sf::IpAddress(in);
+//			cout << "Enter host's port: ";
+//			cin >> in;
+//			p = atoi(in.c_str());
+//			cout << endl;
+//            game->init(CLIENT, a, p);
+////			game = new Game(window, osHandler, CLIENT, a, p);
+//		}
+//		else if(in == "-o")//only one player
+//		{
+//			cout << "Starting single player game." << endl;
+//            game->init(SINGLE_PLAYER);
+////			game = new Game(window, osHandler, SINGLE_PLAYER);
+//		}
+//		else
+//		{
+//			cout << "-s - start server\n-c - start client\n-o - start game for only one player" << endl;
+//			return EXIT_FAILURE;
+//		}
+//	}
+//	else
+//	{
+//		//open menu for players. Right now there is only terminal menu
+//		cout << "-s for server, -c for client, -o for only player" << endl;
+//		// Run with server
+//		cout << "Server? (y/n) ";
+//		cin >> in;
+//
+//		if(in == "y")
+//		{
+//            game->init(SERVER);
+////			game = new Game(window, osHandler, SERVER);
+//		}
+//		else
+//		{
+//			cout << "Enter host's IP address: ";
+//			cin >> in;
+//			cout << endl;
+//			if(in == "l")
+//				in = "localhost";
+//			a = new sf::IpAddress(in);
+//			cout << "Enter host's port: ";
+//			cin >> in;
+//			p = atoi(in.c_str());
+//			cout << endl;
+//            game->init(CLIENT, a, p);
+////			game = new Game(window, osHandler, CLIENT, a, p);
+//		}
+//	}
+//
 
     // Run without server
     //game = new Game(window, osHandler, true);
@@ -147,7 +148,7 @@ int main(int argc, char* argv[])
 //    
 //    game->setPlayer(new Player(game));
     
-    Controller* controller = new Controller(game);
+//    Controller* controller = new Controller(game);
 	window->setFramerateLimit(60);
 
     // Start the game loop
@@ -156,14 +157,15 @@ int main(int argc, char* argv[])
         // Clear screen
         window->clear();
         
-        game->run();
+        menu->run();
+//        game->run();
         
-        controller->checkInput();
+//        controller->checkInput();
 
         // Update the window
         window->display();
     }
-	if(!game->exitCalled)
-		game->exitGame();
+//	if(!game->exitCalled)
+//		game->exitGame();
     return EXIT_SUCCESS;
 }
