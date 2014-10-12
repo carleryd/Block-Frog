@@ -38,6 +38,11 @@ Game::~Game()
 		delete boxes.back();
 		boxes.pop_back();
 	}
+	while(!remotePlayers.empty())
+	{
+		delete remotePlayers.back();
+		remotePlayers.pop_back();
+	}
 	delete world;
 	delete player;
 	delete view;
