@@ -24,7 +24,6 @@ class Server: public  UDPNetwork
 public:
 	Server(string playerName, ShapeFactory& f, Game* game);
 	~Server(void);
-	void waitForPlayers(bool& allowJoin);
 	void handleNewPlayer(packetInfo& pack);
 	bool dropPlayer(string name); //remove player from server either if player disconnects voluntarily or not
 	bool isServer() override;

@@ -7,24 +7,6 @@
 class Shape;
 class Player;
 
-struct player_info
-{
-	player_info(){};
-	player_info(Player& p)
-	{
-		name = p.getName();
-		movedir = -1; // illegal is set in player::move
-		jumped = false;  // illegal is set in player::move
-		velocity = p.getBody()->GetLinearVelocity();
-		position = p.getBody()->GetPosition();
-	}
-	string name;
-	int movedir;
-	bool jumped; 
-	b2Vec2 velocity;
-	b2Vec2 position;
-};
-
 struct shapeSync
 {
 	shapeSync(){};
@@ -35,12 +17,37 @@ struct shapeSync
 		velocity = shape.getBody()->GetLinearVelocity();
 		position = shape.getBody()->GetPosition();
 		angle = shape.getBody()->GetAngle();
+		hookUserData = (int)shape.getBody()->GetFixtureList()->GetUserData();
 	};
 	int shapeID;
 	float angularVel;
 	b2Vec2 velocity;
 	b2Vec2 position;
 	float angle;
+	int hookUserData;
+};
+
+struct player_info
+{
+	player_info(){};
+	player_info(Player& p)
+	{
+		name = p.getName();
+		movedir = -1; // illegal is set in player::move
+		jumped = false;  // illegal is set in player::move
+		velocity = p.getBody()->GetLinearVelocity();
+		position = p.getBody()->GetPosition();
+		hookTip = shapeSync(*p.getHookTip());
+		hookBase = shapeSync(*p.getHookBase());
+		
+	}
+	string name;
+	int movedir;
+	bool jumped; 
+	b2Vec2 velocity;
+	b2Vec2 position;
+	shapeSync hookTip;
+	shapeSync hookBase;
 };
 
 class PacketParser
@@ -65,14 +72,16 @@ public:
 	sf::Packet pack(Player*);
 	/*
 		pack necesary data to sync shapes
+		appendee determines if the packet is to be appended to another packet or not
+		appendee = false sets a type to the packet so that it can be handled by the receiver
 	*/
-	sf::Packet pack(shapeSync* s);
+	sf::Packet pack(shapeSync* s, bool appendee = false);
 
 	//for packing primitive types
 	template<typename T>
 	sf::Packet pack(int type, T primitiveType);
 	
-
+	
 
 
 	//template function SHOULD be able to unpack ONE of any object

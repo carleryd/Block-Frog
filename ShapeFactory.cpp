@@ -32,8 +32,9 @@ Shape* ShapeFactory::createRectangle(b2Vec2* size, b2Vec2* position, bool dynami
 
 Shape* ShapeFactory::createRectangle(b2Vec2* size, b2Vec2* position, bool dynamic, float density, float friction)
 {
-
-	return new Rectangle(game, size, position, dynamic, id++, density, friction);
+	Shape* newrec = new Rectangle(game, size, position, dynamic, id++, density, friction);
+	newrec->getBody()->GetFixtureList()->SetUserData( (void*)5 );
+	return newrec;
 }
 
 template<class T>
