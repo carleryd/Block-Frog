@@ -86,9 +86,12 @@ void Player::setBirthNumber(int number) {
 void Player::setPosition(b2Vec2* newPos) {
 	box->getBody()->SetTransform(*newPos, box->getBody()->GetAngle());
 	b2Vec2 pos = box->getBody()->GetPosition();
-	hook->getHookBase()->setPosition(&pos);
-	pos.y += 5;
-	hook->getHookTip()->setPosition(&pos);
+	if(hook != NULL)
+	{
+		hook->getHookBase()->setPosition(&pos);
+		pos.y += 5;
+		hook->getHookTip()->setPosition(&pos);
+	}
 }
 
 void Player::move(int dir, bool localPlayer, bool is_jumping)
