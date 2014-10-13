@@ -74,7 +74,7 @@ void Controller::checkInput() {
                 else if(menu->joinState == menu->PORT)
                     menu->portAddress = menu->portAddress.substr(0, menu->portAddress.size()-1);
             }
-            else if(event.text.unicode == 10) {
+			else if(event.text.unicode == 10 || event.text.unicode == 13) {
                 if(menu->joinState == menu->IP)
                     menu->joinState = menu->PORT;
                 else if(menu->joinState == menu->PORT)
@@ -87,6 +87,7 @@ void Controller::checkInput() {
                     menu->portAddress += static_cast<char>(event.text.unicode);
             }
         }
+		cout << "unicode " << event.text.unicode << endl;
         
         position = sf::Mouse::getPosition(*game->getWindow());
 		game->getPlayer()->aimHook(position + game->viewOffset);
