@@ -113,7 +113,7 @@ void Game::init() {
 	shapeFactory = new ShapeFactory(this);
     utility = new Utility(this);
     
-    contactListener = new ContactListener();
+    contactListener = new ContactListener(this);
     world->SetContactListener(contactListener);
     
     player = new Player(this);
@@ -346,7 +346,7 @@ void Game::addRemotePlayer(Player* p)
 	playerAmount++;
     p->setBirthNumber(playerAmount);
 	remotePlayers.push_back(p);
-	p->init(p);
+//	p->init(p);
 }
 
 void Game::exitGame()
@@ -427,11 +427,11 @@ void Game::playerBoxInteraction()
 					push = true;
 				}
 				s->shapeID = id;
-				s->angularVel = edge->other->GetAngularVelocity();
-				s->velocity = edge->other->GetLinearVelocity();
+//				s->angularVel = edge->other->GetAngularVelocity();
+//				s->velocity = edge->other->GetLinearVelocity();
 				s->position = edge->other->GetPosition();
 				s->angle = edge->other->GetAngle();
-				s->hookUserData = (uintptr_t)edge->other->GetFixtureList()->GetUserData();
+//				s->hookUserData = (uintptr_t)edge->other->GetFixtureList()->GetUserData();
 				getShape(id)->resetUpdateClock();
 				if(push)
 					localChanges.push_back(s);
@@ -450,10 +450,10 @@ void Game::updateShapes(shapeSync* s)
 	if(i != boxes.end())
 	{
 		Shape* shape = *i;
-		shape->getBody()->SetAngularVelocity(s->angularVel);
-		shape->getBody()->SetLinearVelocity(s->velocity);
+//		shape->getBody()->SetAngularVelocity(s->angularVel);
+//		shape->getBody()->SetLinearVelocity(s->velocity);
 		shape->setPosition(&s->position, s->angle);
-		shape->getBody()->GetFixtureList()->SetUserData((void*)(uintptr_t)s->hookUserData);
+//		shape->getBody()->GetFixtureList()->SetUserData((void*)(uintptr_t)s->hookUserData);
 		shape->resetUpdateClock();
 	}
 	else
@@ -484,12 +484,12 @@ void Game::updatePlayer(player_info* p)
 		player->setPosition(&p->position);
 		player->getBody()->SetLinearVelocity(p->velocity);
 		//update player hook
-		Circle * hookTip = player->getHookTip();
-		hookTip->setPosition(&p->hookTip.position, p->hookTip.angle);
+//		Circle * hookTip = player->getHookTip();
+//		hookTip->setPosition(&p->hookTip.position, p->hookTip.angle);
 		/*hookTip->getBody()->SetLinearVelocity(p->hookTip.velocity);
 		hookTip->getBody()->SetAngularVelocity(p->hookTip.angularVel);*/
-		Rectangle* hookbase = player->getHookBase();
-		hookbase->setPosition(&p->hookBase.position, p->hookBase.angle);
+//		Rectangle* hookbase = player->getHookBase();
+//		hookbase->setPosition(&p->hookBase.position, p->hookBase.angle);
 		player->getBox()->resetUpdateClock();
 	}
 	/*else
@@ -533,7 +533,7 @@ void Game::requestShapeUpdates()
 	for(;i != boxes.end(); ++i)
 	{
 		Shape* s = *i;
-		if(s != nullptr && s->timeSinceUpdate().asSeconds() > updateTime)
+		if(s != nullptr)// && s->timeSinceUpdate().asSeconds() > updateTime)
 		{
 			//cout << "requesting synch data for shape "<< s->getId() << endl;
 			sf::Packet request = packetParser->pack<int>(UDPNetwork::SHAPE_SYNCH_REQUEST, s->getId());
@@ -549,7 +549,7 @@ void Game::requestPlayerUpdates()
 	for(; listItr != remotePlayers.end(); ++listItr)
 	{
 		Player* p = *listItr;
-		if(p != nullptr && p->getBox()->timeSinceUpdate().asSeconds() > updateTime)
+		if(p != nullptr)// && p->getBox()->timeSinceUpdate().asSeconds() > updateTime)
 		{
 			//cout << "Request update for player: " << p->getName() << endl;
 			sf::Packet request = packetParser->pack<string>(UDPNetwork::PLAYER_SYNCH_REQUEST, p->getName());

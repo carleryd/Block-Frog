@@ -114,7 +114,7 @@ private:
     
 	//network
 	UDPNetwork* localHost;
-    std::clock_t start;	std::thread* network;
+	std::thread* network;
 	std::thread* join;
     
     std::vector<Shape*> boxes;

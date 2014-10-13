@@ -6,10 +6,12 @@
 #include <vector>
 using namespace std;
 
+class Game;
+
 class ContactListener : public b2ContactListener
 {
 public:
-    ContactListener();
+    ContactListener(Game* game);
     void BeginContact(b2Contact* contact);
     void EndContact(b2Contact* contact);
     
@@ -23,6 +25,8 @@ public:
     
     void removeRecentHookContact(int birthNumber);
 private:
+    Game* game;
+    
     int numFootContacts[10];
     b2Body* recentHookContacts[10];
     // So that it wont hook with stuff when it shouldnt(released hook)

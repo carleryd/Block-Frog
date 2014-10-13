@@ -5,16 +5,19 @@
 #include <SFML/Graphics.hpp>
 #include "Game.h"
 
+class Menu;
+
 class Controller
 {
 public:
-    Controller(Game* game);
+    Controller(Game* game, Menu* menu);
     void checkInput();
 private:
     void spawnBox(sf::Vector2i position, b2World* world, std::vector<Rectangle*>& boxes);
 	void devInput(sf::Event& e);
     
     Game* game;
+    Menu* menu;
 	bool pressedLastFrame;
 };
 

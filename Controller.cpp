@@ -1,8 +1,10 @@
 #include "Controller.h"
+#include "Menu.h"
 
-Controller::Controller(Game* game_) 
+Controller::Controller(Game* game_, Menu* menu_)
 {
     game = game_;
+    menu = menu_;
 	game->window->setKeyRepeatEnabled(false);
 }
 
@@ -61,6 +63,32 @@ void Controller::checkInput() {
                     break;
             }
         }
+        
+        // Checks for Menu.cpp
+        if (event.type == sf::Event::TextEntered) {
+            // 8 is backspace | 10 is enter
+            if(event.text.unicode == 8) {
+                if(menu->joinState == menu->IP)
+                    menu->ipAddress = menu->ipAddress.substr(0, menu->ipAddress.size()-1);
+                else if(menu->joinState == menu->PORT)
+                    menu->portAddress = menu->portAddress.substr(0, menu->portAddress.size()-1);
+            }
+            else if(event.text.unicode > 47 && event.text.unicode < 123) {
+                if(menu->joinState == menu->IP)
+                    menu->ipAddress += static_cast<char>(event.text.unicode);
+                else if(menu->joinState == menu->PORT)
+                    menu->portAddress += static_cast<char>(event.text.unicode);
+            }
+            else if(event.text.unicode == 10) {
+                if(menu->joinState == menu->IP)
+                    menu->joinState = menu->PORT;
+                else if(menu->joinState == menu->PORT)
+                    menu->gameStarted = true;
+            }
+            else
+                cout << "Invalid input: " << event.text.unicode << " Only checking for numbers and backspace" << endl;
+        }
+        
         position = sf::Mouse::getPosition(*game->getWindow());
 		game->getPlayer()->aimHook(position);
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {

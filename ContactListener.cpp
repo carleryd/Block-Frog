@@ -1,6 +1,8 @@
 #include "ContactListener.h"
+#include "Game.h"
 
-ContactListener::ContactListener() {
+ContactListener::ContactListener(Game* game_) {
+    game = game_;
 	for(int i = 0; i < 10; i++) {
         numFootContacts[i] = 0;
         recentHookContacts[i] = NULL;
@@ -29,9 +31,10 @@ void ContactListener::removeRecentHookContact(int birthNumber) {
 // Fixtures can be registered with a user data of a certain size.
 // EXAMPLE: footSensorFixture->SetUserData( (void*)3 );
 // REGISTERED FIXTURES:
-// 3: Foot sensor
-// 4: The tip of the hook
-// 5: Dynamic box in world
+// 1-10 	foot sensors for players
+// 11-20	hook collision for players
+// 80-81	hostGame and joinGame objects
+// 99		randomly spawned rectangles(createRandomShape(...))
 
 // Checking if contact between bodies has started
 void ContactListener::BeginContact(b2Contact* contact) {
@@ -62,11 +65,11 @@ void ContactListener::BeginContact(b2Contact* contact) {
                 recentHookContacts[11-11] = contact->GetFixtureB()->GetBody();
             }
             if((uintptr_t)fixtureBUserData == 80) {
-//                cout << "HOST GAME" << endl;
+                cout << "HOST GAME" << endl;
                 hostGame = true;
             }
             if((uintptr_t)fixtureBUserData == 81) {
-//                cout << "JOIN GAME" << endl;
+                cout << "JOIN GAME" << endl;
                 joinGame = true;
             }
             break;
@@ -113,11 +116,11 @@ void ContactListener::BeginContact(b2Contact* contact) {
                 recentHookContacts[11-11] = contact->GetFixtureA()->GetBody();
             }
             if((uintptr_t)fixtureAUserData == 80) {
-//                cout << "HOST GAME" << endl;
+                cout << "HOST GAME" << endl;
                 hostGame = true;
             }
             if((uintptr_t)fixtureAUserData == 81) {
-//                cout << "JOIN GAME" << endl;
+                cout << "JOIN GAME" << endl;
                 joinGame = true;
             }
             break;
@@ -139,25 +142,6 @@ void ContactListener::BeginContact(b2Contact* contact) {
             
         default: ;
     }
-    
-    
-//    if((uintptr_t)fixtureAUserData == 3) {
-//		
-//    }
-//    else if((uintptr_t)fixtureAUserData == 4 && hookIsActive) {
-//        if((uintptr_t)fixtureBUserData == 5) {
-//        	recentHookContact = contact->GetFixtureB()->GetBody();
-//        }
-//    }
-//    
-//    if ((uintptr_t)fixtureBUserData == 3) {
-//        numFootContacts++;
-//    }
-//    else if ((uintptr_t)fixtureBUserData == 4 && hookIsActive) {
-//        if((uintptr_t)fixtureAUserData == 5) {
-//	        recentHookContact = contact->GetFixtureA()->GetBody();
-//        }
-//    }
 }
 
 // Checking if contact between bodies has ended

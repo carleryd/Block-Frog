@@ -53,6 +53,8 @@ private:
     string portAddress;
     string temp;
     
+    friend Controller;
+    
     // Server
     sf::IpAddress* a;
     string in;

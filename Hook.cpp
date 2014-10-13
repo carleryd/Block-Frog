@@ -34,7 +34,7 @@ Hook::Hook(Game* game_, Player* player) {
                          0.0);
     
     // This way it will be recognized in the ContactListnener(see if statements ContactListener.cpp)
-    hookTip->getBody()->GetFixtureList()->SetUserData( (void*)(player->getBirthNumber()+10));
+    hookTip->getBody()->GetFixtureList()->SetUserData( (void*)(uintptr_t)(player->getBirthNumber()+10));
     
     hookBase = new Rectangle(game,
                              new b2Vec2(10.0, 10.0),
