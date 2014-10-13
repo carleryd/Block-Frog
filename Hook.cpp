@@ -66,7 +66,7 @@ Hook::Hook(Game* game_, Player* player) {
     
     passiveLength = 0.5;
     grabLength = 2.0;
-    reachLength = 8.0;
+    reachLength = 5.0;
     currentLength = passiveLength;
     
     //game->getBody()->getBody();
