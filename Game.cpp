@@ -513,6 +513,12 @@ void Game::updatePlayer(player_info* p)
 		hookTip->getBody()->SetAngularVelocity(p->hookTip.angularVel);*/
 		//Rectangle* hookbase = player->getHookBase();
 		//hookbase->setPosition(&p->hookBase.position, p->hookBase.angle);
+		/*Circle * hookTip = player->getHookTip();
+		hookTip->setPosition(&p->hookTip.position, p->hookTip.angle);
+		/*hookTip->getBody()->SetLinearVelocity(p->hookTip.velocity);
+		hookTip->getBody()->SetAngularVelocity(p->hookTip.angularVel);
+		Rectangle* hookbase = player->getHookBase();
+		hookbase->setPosition(&p->hookBase.position, p->hookBase.angle);*/
 		player->getBox()->resetUpdateClock();
 	}
 	/*else
