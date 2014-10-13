@@ -30,6 +30,7 @@ Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_)
 	textor = new Textor(osHandler_);
 	exitCalled = false;
 	updateTime = 0.5;
+    score = 0;
 }
 
 Game::~Game()
@@ -82,11 +83,9 @@ void Game::initStartMenu() {
 }
 
 void Game::removeStartMenu() {
-    vector<Shape*>::iterator toDelete;
-    toDelete = boxes.begin();
     while(!boxes.empty()) {
-        world->DestroyBody(boxes[0]->getBody());
-     	boxes.erase(toDelete);
+        delete *boxes.begin();
+     	boxes.erase(boxes.begin());
     }
 }
 
@@ -199,6 +198,9 @@ void Game::run() {
 	//water
 	water->setPosition(float(window->getSize().x * -0.1), float(window->getSize().y - viewOffset.y -10));
 	window->draw(*water);
+    
+    // score)
+    window->draw(textor->write("Score: " + to_string(score), sf::Vector2f(window->getSize().x/2, 30)));
 
     if(localHost->isServer())
     {
@@ -329,6 +331,7 @@ Shape* Game::createBoxes()
     
 	if(duration > secPerDrops)
 	{
+        score += 50;
 		boxes.push_back(shapeFactory->createRandomShape(viewOffset));
 		duration = 0;
         clock.restart();
@@ -450,7 +453,7 @@ void Game::updateShapes(shapeSync* s)
 		shape->getBody()->SetAngularVelocity(s->angularVel);
 		shape->getBody()->SetLinearVelocity(s->velocity);
 		shape->setPosition(&s->position, s->angle);
-		shape->getBody()->GetFixtureList()->SetUserData((void*) s->hookUserData);
+		shape->getBody()->GetFixtureList()->SetUserData((void*)(uintptr_t)s->hookUserData);
 		shape->resetUpdateClock();
 	}
 	else

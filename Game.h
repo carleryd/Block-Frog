@@ -109,9 +109,12 @@ private:
     // Keep track of amount of players. This will affect the userData set for each player
     int playerAmount;
 
+    // This score is incremented when new boxes are created in createBoxes()
+    int score;
+    
 	//network
 	UDPNetwork* localHost;
-	std::thread* network;
+    std::clock_t start;	std::thread* network;
 	std::thread* join;
     
     std::vector<Shape*> boxes;
