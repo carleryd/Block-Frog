@@ -66,7 +66,7 @@ int main(int argc, char* argv[])
         // Update the window
         window->display();
     }
-	if(!menu->getGame()->exitCalled)
-		menu->getGame()->exitGame();
+	/*if(!menu->getGame()->exitCalled)
+		menu->getGame()->exitGame();*/
     return EXIT_SUCCESS;
 }

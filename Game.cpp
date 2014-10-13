@@ -201,7 +201,7 @@ void Game::run() {
 	window->draw(*water);
     
     // score)
-    window->draw(textor->write("Score: " + to_string(score), sf::Vector2f(window->getSize().x/2, 30)));
+	window->draw(textor->write("Score: " + to_string(score), sf::Vector2f(window->getSize().x/2, 30+viewOffset.y)));
 
     if(localHost->isServer())
     {

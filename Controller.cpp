@@ -14,6 +14,8 @@ void Controller::checkInput() {
         // Close window : exit
         if (event.type == sf::Event::Closed) {
             game->getWindow()->close();
+			if(!game->exitCalled)
+				game->exitGame();
         }
 
         // Escape pressed : exit
@@ -61,7 +63,7 @@ void Controller::checkInput() {
             }
         }
         position = sf::Mouse::getPosition(*game->getWindow());
-		game->getPlayer()->aimHook(position);
+		game->getPlayer()->aimHook(position + game->viewOffset);
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
 	        position = sf::Mouse::getPosition(*game->getWindow());
             game->getPlayer()->useHook(position);
