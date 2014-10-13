@@ -29,9 +29,10 @@ Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_)
 	water->setFillColor(sf::Color(0, 0, 255, 100));	
 	textor = new Textor(osHandler_);
 	exitCalled = false;
-	updateTime = 0.5;
+	updateTime = 1;
 	staticPlatform = 0;
     score = 0;
+	localHost = NULL;
 }
 
 Game::~Game()
@@ -108,7 +109,7 @@ void Game::runStartMenu() {
     window->draw(textor->write("Join", joinRectangle->getShape()->getPosition() - sf::Vector2f(0, 10)));
 }
 
-void Game::init() {
+void Game::basicInit() {
     //shapefactory for creating shapes easily
 	shapeFactory = new ShapeFactory(this);
     utility = new Utility(this);
@@ -175,7 +176,7 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
 	
 	window->setActive(true);
 	
-	secPerDrops = 1;
+	secPerDrops = 10;
 }
 
 sf::RenderWindow* Game::getWindow() { return window; }
@@ -260,6 +261,7 @@ void Game::run() {
 		//request server update on shapes
 		requestShapeUpdates();
 	}
+
 	requestPlayerUpdates();
 	//clear memory that is only valid this time step.
 	while(!localChanges.empty())
@@ -362,9 +364,10 @@ Shape* Game::createBoxes()
 void Game::addRemotePlayer(Player* p)
 {
 	playerAmount++;
+    cout << "playerAmount: " << playerAmount << endl;
     p->setBirthNumber(playerAmount);
 	remotePlayers.push_back(p);
-//	p->init(p);
+	p->init(p);
 }
 
 void Game::exitGame()
@@ -445,12 +448,14 @@ void Game::playerBoxInteraction()
 					push = true;
 				}
 				s->shapeID = id;
-//				s->angularVel = edge->other->GetAngularVelocity();
-//				s->velocity = edge->other->GetLinearVelocity();
+				s->angularVel = edge->other->GetAngularVelocity();
+				s->velocity = edge->other->GetLinearVelocity();
 				s->position = edge->other->GetPosition();
 				s->angle = edge->other->GetAngle();
-//				s->hookUserData = (uintptr_t)edge->other->GetFixtureList()->GetUserData();
-				getShape(id)->resetUpdateClock();
+				s->hookUserData = (uintptr_t)edge->other->GetFixtureList()->GetUserData();
+				Shape* shape = getShape(id);
+				if(shape != nullptr)
+					shape->resetUpdateClock();
 				if(push)
 					localChanges.push_back(s);
 			}
@@ -468,10 +473,10 @@ void Game::updateShapes(shapeSync* s)
 	if(i != boxes.end())
 	{
 		Shape* shape = *i;
-//		shape->getBody()->SetAngularVelocity(s->angularVel);
-//		shape->getBody()->SetLinearVelocity(s->velocity);
+		shape->getBody()->SetAngularVelocity(s->angularVel);
+		shape->getBody()->SetLinearVelocity(s->velocity);
 		shape->setPosition(&s->position, s->angle);
-//		shape->getBody()->GetFixtureList()->SetUserData((void*)(uintptr_t)s->hookUserData);
+		shape->getBody()->GetFixtureList()->SetUserData((void*)(uintptr_t)s->hookUserData);
 		shape->resetUpdateClock();
 	}
 	else
@@ -502,12 +507,12 @@ void Game::updatePlayer(player_info* p)
 		player->setPosition(&p->position);
 		player->getBody()->SetLinearVelocity(p->velocity);
 		//update player hook
-//		Circle * hookTip = player->getHookTip();
-//		hookTip->setPosition(&p->hookTip.position, p->hookTip.angle);
+		//Circle * hookTip = player->getHookTip();
+		//hookTip->setPosition(&p->hookTip.position, p->hookTip.angle);
 		/*hookTip->getBody()->SetLinearVelocity(p->hookTip.velocity);
 		hookTip->getBody()->SetAngularVelocity(p->hookTip.angularVel);*/
-//		Rectangle* hookbase = player->getHookBase();
-//		hookbase->setPosition(&p->hookBase.position, p->hookBase.angle);
+		//Rectangle* hookbase = player->getHookBase();
+		//hookbase->setPosition(&p->hookBase.position, p->hookBase.angle);
 		player->getBox()->resetUpdateClock();
 	}
 	/*else
@@ -591,7 +596,7 @@ void Game::requestShapeUpdates()
 	for(;i != boxes.end(); ++i)
 	{
 		Shape* s = *i;
-		if(s != nullptr)// && s->timeSinceUpdate().asSeconds() > updateTime)
+		if(s != nullptr && s->timeSinceUpdate().asSeconds() > updateTime)
 		{
 			//cout << "requesting synch data for shape "<< s->getId() << endl;
 			sf::Packet request = packetParser->pack<int>(UDPNetwork::SHAPE_SYNCH_REQUEST, s->getId());
@@ -607,7 +612,7 @@ void Game::requestPlayerUpdates()
 	for(; listItr != remotePlayers.end(); ++listItr)
 	{
 		Player* p = *listItr;
-		if(p != nullptr)// && p->getBox()->timeSinceUpdate().asSeconds() > updateTime)
+		if(p != nullptr && p->getBox()->timeSinceUpdate().asSeconds() > updateTime)
 		{
 			//cout << "Request update for player: " << p->getName() << endl;
 			sf::Packet request = packetParser->pack<string>(UDPNetwork::PLAYER_SYNCH_REQUEST, p->getName());

@@ -121,26 +121,27 @@ void Player::move(int dir, bool localPlayer, bool is_jumping)
 	default:
 		break;
 	}
-//	if(localPlayer)
-//	{
-//		//if client then tell server about movement
-//        sf::Packet packet;
-//		player_info p;
-//		p.name = name;
-//		p.movedir = dir;
-//		p.jumped = jumped;
-//		p.velocity = box->getBody()->GetLinearVelocity();
-//		packet = game->getPacketParser()->pack<player_info*>(UDPNetwork::PLAYER_MOVE, &p);
-//		if(game->getLocalHost()->isServer())
-//		{
-//			Server* server = dynamic_cast<Server*>(game->getLocalHost());
-//			server->broadCast(packet);
-//		}
-//		else
-//		{
-//			dynamic_cast<Client*>(game->getLocalHost())->sendToServer(packet);
-//		}
-//	}
+	if(game->getLocalHost() != NULL && localPlayer)
+	{
+		//if client then tell server about movement
+        sf::Packet packet;
+		player_info p;
+		p.name = name;
+		p.movedir = dir;
+		p.jumped = jumped;
+		p.velocity = box->getBody()->GetLinearVelocity();
+		packet = game->getPacketParser()->pack<player_info*>(UDPNetwork::PLAYER_MOVE, &p);
+
+		if(game->getLocalHost()->isServer())
+		{
+			Server* server = dynamic_cast<Server*>(game->getLocalHost());
+			server->broadCast(packet);
+		}
+		else
+		{
+			dynamic_cast<Client*>(game->getLocalHost())->sendToServer(packet);
+		}
+	}
 }
 
 void Player::push(b2Vec2&& dir) {

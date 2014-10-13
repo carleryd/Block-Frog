@@ -21,7 +21,7 @@ Menu::Menu(sf::RenderWindow* window_, OSHandler* osHandler_) {
 	a = nullptr;
 	p = 0;
     
-    game->init();
+    game->basicInit();
     game->initStartMenu();
     controller = new Controller(game, this);
 }

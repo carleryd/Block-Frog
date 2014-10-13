@@ -13,18 +13,18 @@ struct shapeSync
 	shapeSync(Shape& shape)
 	{
 		shapeID = shape.getId();
-//		angularVel = shape.getBody()->GetAngularVelocity();
-//		velocity = shape.getBody()->GetLinearVelocity();
+		angularVel = shape.getBody()->GetAngularVelocity();
+		velocity = shape.getBody()->GetLinearVelocity();
 		position = shape.getBody()->GetPosition();
 		angle = shape.getBody()->GetAngle();
-//		hookUserData = (uintptr_t)shape.getBody()->GetFixtureList()->GetUserData();
+		hookUserData = (uintptr_t)shape.getBody()->GetFixtureList()->GetUserData();
 	};
 	int shapeID;
-//	float angularVel;
-//	b2Vec2 velocity;
+	float angularVel;
+	b2Vec2 velocity;
 	b2Vec2 position;
 	float angle;
-//	int hookUserData;
+	int hookUserData;
 };
 
 struct player_info
@@ -37,16 +37,16 @@ struct player_info
 		jumped = false;  // illegal is set in player::move
 		velocity = p.getBody()->GetLinearVelocity();
 		position = p.getBody()->GetPosition();
-//		hookTip = shapeSync(*p.getHookTip());
-//		hookBase = shapeSync(*p.getHookBase());
+		hookTip = shapeSync(*p.getHookTip());
+		hookBase = shapeSync(*p.getHookBase());
 	}
 	string name;
 	int movedir;
 	bool jumped; 
 	b2Vec2 velocity;
 	b2Vec2 position;
-//	shapeSync hookTip;
-//	shapeSync hookBase;
+	shapeSync hookTip;
+	shapeSync hookBase;
 };
 
 class PacketParser

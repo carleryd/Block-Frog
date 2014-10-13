@@ -49,10 +49,10 @@ sf::Packet PacketParser::pack<player_info*>(int type, player_info* p)
 	packet << p->jumped;
 	packet << p->velocity.x << p->velocity.y;
 	packet << p->position.x << p->position.y;
-//	sf::Packet ht = pack(&p->hookTip, true);
-//	sf::Packet hb = pack(&p->hookBase, true);
-//	packet.append(ht.getData(), ht.getDataSize());
-//	packet.append(hb.getData(), ht.getDataSize());
+	sf::Packet ht = pack(&p->hookTip, true);
+	sf::Packet hb = pack(&p->hookBase, true);
+	packet.append(ht.getData(), ht.getDataSize());
+	packet.append(hb.getData(), ht.getDataSize());
 	return packet;
 }
 
@@ -71,11 +71,11 @@ sf::Packet PacketParser::pack(shapeSync* s, bool appendee)
 	if(!appendee)
 		p << UDPNetwork::SHAPE_SYNCH;
 	p << s->shapeID;
-//	p << s->angularVel;
-//	p << s->velocity.x << s->velocity.y;
+	p << s->angularVel;
+	p << s->velocity.x << s->velocity.y;
 	p << s->position.x << s->position.y;
 	p << s->angle;
-//	p << s->hookUserData;
+	p << s->hookUserData;
 	return p;
 }
 
@@ -149,11 +149,11 @@ shapeSync* PacketParser::unpack<shapeSync*>(sf::Packet& p)
 {
 	shapeSync* s = new shapeSync;
 	p >> s->shapeID;
-//	p >> s->angularVel;
-//	p >> s->velocity.x >> s->velocity.y;
+	p >> s->angularVel;
+	p >> s->velocity.x >> s->velocity.y;
 	p >> s->position.x >> s->position.y;
 	p >> s->angle;
-//	p >> s->hookUserData;
+	p >> s->hookUserData;
 	return s;
 }
 
@@ -167,13 +167,13 @@ player_info* PacketParser::unpack<player_info*>(sf::Packet& packet)
 	packet >> info->velocity.x >> info->velocity.y;
 	packet >> info->position.x >> info->position.y;
 	//hooktip
-//	shapeSync* hooktip = unpack<shapeSync*>(packet);
-//	info->hookTip = *hooktip;
-//	delete hooktip;
+	shapeSync* hooktip = unpack<shapeSync*>(packet);
+	info->hookTip = *hooktip;
+	delete hooktip;
 	//hookbase
-//	shapeSync* hookbase = unpack<shapeSync*>(packet);
-//	info->hookBase  = *hookbase;
-//	delete hookbase;
+	shapeSync* hookbase = unpack<shapeSync*>(packet);
+	info->hookBase  = *hookbase;
+	delete hookbase;
 	return info;
 }
 
