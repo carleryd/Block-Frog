@@ -51,17 +51,88 @@ Game::~Game()
 	//network->~thread();
 }
 
-void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short serverPort) {
-	//shapefactory for creating shapes easily
+void Game::initStartMenu() {
+    hostRectangle = shapeFactory->createRectangle(new b2Vec2(100.0f, 50.0f),
+                                                         new b2Vec2(-200.0f, 50.0f),
+                                                         false,
+                                                         1.0,
+                                                         1.0);
+    hostRectangle->getBody()->GetFixtureList()->SetUserData((void*)80);
+    
+    joinRectangle = shapeFactory->createRectangle(new b2Vec2(100.0f, 50.0f),
+                                                         new b2Vec2(200.0f, 50.0f),
+                                                         false ,
+                                                         1.0,
+                                                         1.0);
+    joinRectangle->getBody()->GetFixtureList()->SetUserData((void*)81);
+    
+    boxes.push_back(shapeFactory->createRectangle(new b2Vec2(750.0f, 50.0f),
+                                                  new b2Vec2(0.0f, -float(window->getSize().y)/2),
+                                                  false,
+                                                  1.0,
+                                                  1.0)
+                    );
+    
+    boxes.push_back(hostRectangle);
+    boxes.push_back(joinRectangle);
+    
+    riseSpeed = 0;
+    secPerDrops = 9999;
+    window->setActive(true);
+}
+
+void Game::removeStartMenu() {
+    vector<Shape*>::iterator toDelete;
+    toDelete = boxes.begin();
+    while(!boxes.empty()) {
+        world->DestroyBody(boxes[0]->getBody());
+     	boxes.erase(toDelete);
+    }
+}
+
+void Game::runStartMenu() {
+    // timeStep, velocityIterations, positionIterations
+    world->Step(1.0f/60.0f, 10, 8);
+    world->ClearForces();
+    
+    player->draw();
+	player->update();
+    
+    for(Shape* box : boxes)
+	{
+        box->update();
+        window->draw(*box->getShape());
+    }
+    
+    window->draw(textor->write("Make a choice", sf::Vector2f(window->getSize().x/2, 100)));
+	window->draw(textor->write("Host", hostRectangle->getShape()->getPosition() - sf::Vector2f(0, 10)));
+    window->draw(textor->write("Join", joinRectangle->getShape()->getPosition() - sf::Vector2f(0, 10)));
+}
+
+void Game::init() {
+    //shapefactory for creating shapes easily
 	shapeFactory = new ShapeFactory(this);
     utility = new Utility(this);
     
     contactListener = new ContactListener();
     world->SetContactListener(contactListener);
     
-	player = new Player(this);
+    player = new Player(this);
     player->init(player);
 	playerAmount = 1;
+}
+
+void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short serverPort) {
+	//shapefactory for creating shapes easily
+//	shapeFactory = new ShapeFactory(this);
+//    utility = new Utility(this);
+//    
+//    contactListener = new ContactListener();
+//    world->SetContactListener(contactListener);
+    
+//	player = new Player(this);
+//    player->init(player);
+//	playerAmount = 1;
     
 	packetParser = new PacketParser(*shapeFactory);
 	
@@ -74,7 +145,6 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
     
 	riseSpeed = 0; //-0.2f;
 	killOffset = 30;
-	secPerDrops = 1;
 	allowJoin = true;
     
 	//networking

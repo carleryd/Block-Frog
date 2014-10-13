@@ -4,10 +4,11 @@
 #include "Player.h"
 #include "Controller.h"
 
-Menu::Menu(sf::RenderWindow* window_, OSHandler* osHandler) {
-	textor = new Textor(osHandler);
+Menu::Menu(sf::RenderWindow* window_, OSHandler* osHandler_) {
     window = window_;
+    osHandler = osHandler_;
     
+	textor = new Textor(osHandler);
     window->setKeyRepeatEnabled(false);
 	gameStarted = false;
     ipAddress = "";
@@ -19,6 +20,10 @@ Menu::Menu(sf::RenderWindow* window_, OSHandler* osHandler) {
     
 	a = nullptr;
 	p = 0;
+    
+    game->init();
+    game->initStartMenu();
+    controller = new Controller(game);
 }
 
 
@@ -27,12 +32,12 @@ void Menu::run() {
         if(menuState != GAME) {
             if(joinAs == SERVER) {
                 game->init(SERVER);
-                controller = new Controller(game);
+//                controller = new Controller(game);
                 menuState = GAME;
             }
             else if(joinAs == CLIENT) {
                 game->init(CLIENT, new sf::IpAddress(ipAddress), atoi(portAddress.c_str()));
-                controller = new Controller(game);
+//                controller = new Controller(game);
                 menuState = GAME;
             }
         }
@@ -50,8 +55,10 @@ void Menu::run() {
 void Menu::draw() {
     switch(menuState) {
         case START:
-            window->draw(textor->write("1. Host game", sf::Vector2f(window->getSize().y/2 + 100, 250)));
-            window->draw(textor->write("2. Join game", sf::Vector2f(window->getSize().y/2 + 100, 350)));
+            game->runStartMenu();
+            controller->checkInput();
+//            window->draw(textor->write("1. Host game", sf::Vector2f(window->getSize().y/2 + 100, 250)));
+//            window->draw(textor->write("2. Join game", sf::Vector2f(window->getSize().y/2 + 100, 350)));
             break;
         case LOBBY:
             // Not yet implemented
@@ -77,6 +84,18 @@ void Menu::update() {
             window->close();
         switch(menuState) {
             case START:
+                if(game->getContactListener()->getHostGame()) {
+                    game->removeStartMenu();
+                    joinAs = SERVER;
+                    gameStarted = true;
+                }
+                if(game->getContactListener()->getJoinGame()) {
+                    game->removeStartMenu();
+                    joinAs = CLIENT;
+                    menuState = JOIN;
+                    window->pollEvent(event);
+                }
+                
                 if (event.type == sf::Event::KeyPressed) {
                     switch(event.key.code) {
                         case sf::Keyboard::Num1:

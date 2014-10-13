@@ -24,6 +24,7 @@ private:
     Textor* textor;
     Game* game;
     Controller* controller;
+    OSHandler* osHandler;
     sf::RenderWindow* window;
 	sf::Event event;
     
