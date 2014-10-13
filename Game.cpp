@@ -145,7 +145,7 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
     
 	rise = false;
 	riseSpeed = -0.2f;
-	killOffset = 30;
+	killOffset = 300;
 	allowJoin = true;
     
 	//networking
