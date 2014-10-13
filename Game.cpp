@@ -54,14 +54,14 @@ Game::~Game()
 
 void Game::initStartMenu() {
     hostRectangle = shapeFactory->createRectangle(new b2Vec2(100.0f, 50.0f),
-                                                         new b2Vec2(-200.0f, 50.0f),
+                                                         new b2Vec2(-200.0f, 30.0f),
                                                          false,
                                                          1.0,
                                                          1.0);
     hostRectangle->getBody()->GetFixtureList()->SetUserData((void*)80);
     
     joinRectangle = shapeFactory->createRectangle(new b2Vec2(100.0f, 50.0f),
-                                                         new b2Vec2(200.0f, 50.0f),
+                                                         new b2Vec2(200.0f, 30.0f),
                                                          false ,
                                                          1.0,
                                                          1.0);
