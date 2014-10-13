@@ -87,7 +87,7 @@ void Controller::checkInput() {
                     menu->portAddress += static_cast<char>(event.text.unicode);
             }
         }
-		cout << "unicode " << event.text.unicode << endl;
+		//cout << "unicode " << event.text.unicode << endl;
         
         position = sf::Mouse::getPosition(*game->getWindow());
 		game->getPlayer()->aimHook(position + game->viewOffset);
