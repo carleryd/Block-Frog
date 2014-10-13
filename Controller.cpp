@@ -74,20 +74,18 @@ void Controller::checkInput() {
                 else if(menu->joinState == menu->PORT)
                     menu->portAddress = menu->portAddress.substr(0, menu->portAddress.size()-1);
             }
-            else if(event.text.unicode > 47 && event.text.unicode < 123) {
-                if(menu->joinState == menu->IP)
-                    menu->ipAddress += static_cast<char>(event.text.unicode);
-                else if(menu->joinState == menu->PORT)
-                    menu->portAddress += static_cast<char>(event.text.unicode);
-            }
             else if(event.text.unicode == 10) {
                 if(menu->joinState == menu->IP)
                     menu->joinState = menu->PORT;
                 else if(menu->joinState == menu->PORT)
                     menu->gameStarted = true;
             }
-            else
-                cout << "Invalid input: " << event.text.unicode << " Only checking for numbers and backspace" << endl;
+            else {
+                if(menu->joinState == menu->IP)
+                    menu->ipAddress += static_cast<char>(event.text.unicode);
+                else if(menu->joinState == menu->PORT)
+                    menu->portAddress += static_cast<char>(event.text.unicode);
+            }
         }
         
         position = sf::Mouse::getPosition(*game->getWindow());
