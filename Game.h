@@ -26,8 +26,12 @@ public:
 	Game(sf::RenderWindow* window, OSHandler* osHandler);
 	~Game();
     
+    void init();
     void init(int playerType, sf::IpAddress* serverip = nullptr, unsigned short serverPort = 0);
+    void initStartMenu();
+    void runStartMenu();
     void run();
+    void removeStartMenu();
 	void exitGame();
 
     void spawnBox(sf::Vector2i position);
@@ -100,13 +104,21 @@ private:
 	PacketParser* packetParser;
 	Textor* textor;
     
+    // This is for the live menu
+    Shape* hostRectangle;
+    Shape* joinRectangle;
+    
     // Keep track of amount of players. This will affect the userData set for each player
     int playerAmount;
 
+    // This score is incremented when new boxes are created in createBoxes()
+    int score;
+    
 	//network
 	UDPNetwork* localHost;
 	std::thread* network;
     std::vector<shapeSync*> localChanges;
+    std::clock_t start;	
 
     std::vector<Shape*> boxes;
 	list<Shape*> deletion;

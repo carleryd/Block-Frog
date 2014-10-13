@@ -3,7 +3,7 @@
 Controller::Controller(Game* game_) 
 {
     game = game_;
-	game->window->setKeyRepeatEnabled(false); 
+	game->window->setKeyRepeatEnabled(false);
 }
 
 void Controller::checkInput() {
@@ -14,7 +14,6 @@ void Controller::checkInput() {
         // Close window : exit
         if (event.type == sf::Event::Closed) {
             game->getWindow()->close();
-			game->exitGame();
         }
 
         // Escape pressed : exit

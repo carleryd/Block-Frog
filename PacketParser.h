@@ -39,7 +39,6 @@ struct player_info
 		position = p.getBody()->GetPosition();
 		hookTip = shapeSync(*p.getHookTip());
 		hookBase = shapeSync(*p.getHookBase());
-		
 	}
 	string name;
 	int movedir;
