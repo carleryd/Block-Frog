@@ -75,7 +75,7 @@ void ContactListener::BeginContact(b2Contact* contact) {
             }
             break;
         case 12:
-//            cout << "hook contact " << 12 << endl;
+            cout << "hook contact " << 12 << endl;
             if((uintptr_t)fixtureBUserData == 99) {
                 recentHookContacts[12-11] = contact->GetFixtureB()->GetBody();
             }

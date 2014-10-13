@@ -26,7 +26,7 @@ public:
 	Game(sf::RenderWindow* window, OSHandler* osHandler);
 	~Game();
     
-    void init();
+    void basicInit();
     void init(int playerType, sf::IpAddress* serverip = nullptr, unsigned short serverPort = 0);
     void initStartMenu();
     void runStartMenu();
