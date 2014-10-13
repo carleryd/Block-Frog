@@ -71,6 +71,7 @@ public:
 	void updatePlayer(player_info* p);
 	void removeShape(int id);
 	bool exitCalled;
+	void startRise();
 
 private:
 	void removeFallenBoxes(std::list<Shape*>& todelete);
@@ -85,6 +86,7 @@ private:
 
 	//if local player interacts with boxes save changes to localChanges
 	void playerBoxInteraction();
+	void respawnPlayer();
 	
     b2World* world;
     Player* player; 					// This is the player that the player controlls
@@ -115,18 +117,21 @@ private:
 	//network
 	UDPNetwork* localHost;
 	std::thread* network;
-	std::thread* join;
-    
+    std::vector<shapeSync*> localChanges;
+    std::clock_t start;	
+
     std::vector<Shape*> boxes;
 	list<Shape*> deletion;
-	std::vector<shapeSync*> localChanges;
+	Shape* lastStaticShape;
 	sf::Shape* water;
 	double duration;
+	bool rise;
 	float riseSpeed;
 	int secPerDrops; //time before a new block is dropped
 	int killOffset; //how far under the screen blocks will be killed
 	bool allowJoin;
 	float updateTime;
+	int staticPlatform; //every staticPlatform:th created box will be a static platform
 	friend Controller;
 	friend UDPNetwork;
 };

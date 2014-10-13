@@ -13,6 +13,7 @@ struct b2BodyUserData
 {
 	int id;
 	Shape* parent;
+	bool toBeRemoved;
 };
 
 class Shape
@@ -34,13 +35,15 @@ public:
 		position = pos;
 		body->SetTransform(*pos, angle);
 	};
+	//void setDynamic(bool d) {dynamic = d;};
+	bool getDynamic() {return dynamic;};
 	void setId(int id) { userData.id = id; };
 	int getId() const {return userData.id;};
 	sf::Time timeSinceUpdate() const;
+	b2BodyUserData& getUserData() {return userData;};
 	//reset the update clock
 	void resetUpdateClock();
 	
-	bool ajour; 
 
 protected:
 	Shape(Game* game, b2Vec2* position,
@@ -51,6 +54,7 @@ protected:
     b2Vec2* position;
 	b2BodyUserData userData;
 	sf::Clock updateClock;
+	sf::Clock killTimer;
     
 	std::clock_t clock;
     float density, friction;

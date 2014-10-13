@@ -30,6 +30,7 @@ Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_)
 	textor = new Textor(osHandler_);
 	exitCalled = false;
 	updateTime = 0.5;
+	staticPlatform = 0;
     score = 0;
 }
 
@@ -49,7 +50,6 @@ Game::~Game()
 	delete player;
 	delete view;
 	delete shapeFactory;
-	//network->~thread();
 }
 
 void Game::initStartMenu() {
@@ -141,8 +141,10 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
                                                   1.0,
                                                   1.0)
                     );
+	lastStaticShape = boxes.back();
     
-	riseSpeed = 0; //-0.2f;
+	rise = false;
+	riseSpeed = -0.2f;
 	killOffset = 30;
 	allowJoin = true;
     
@@ -152,8 +154,6 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
         case SERVER:
             localHost = new Server("HOST", *shapeFactory, this);
             player->setName("HOST");
-            //join = new thread(&Server::waitForPlayers, dynamic_cast<Server*>(localHost), std::ref(allowJoin));
-            //dynamic_cast<Server*>(localHost)->waitForPlayers();
             cout << "Waiting for players..." << endl;
             window->setTitle("SERVER");
             break;
@@ -175,7 +175,7 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
 	
 	window->setActive(true);
 	
-	secPerDrops = 5;
+	secPerDrops = 1;
 }
 
 sf::RenderWindow* Game::getWindow() { return window; }
@@ -196,11 +196,12 @@ void Game::run() {
 	playerBoxInteraction();
 
 	//water
-	water->setPosition(float(window->getSize().x * -0.1), float(window->getSize().y - viewOffset.y -10));
+	//water->setPosition(float(window->getSize().x * -0.1), float(window->getSize().y - viewOffset.y -10));
+	water->setPosition(float(window->getSize().x * -0.1), float( viewOffset.y + water->getLocalBounds().height - 10));
 	window->draw(*water);
     
     // score)
-    window->draw(textor->write("Score: " + to_string(score), sf::Vector2f(window->getSize().x/2, 30)));
+	window->draw(textor->write("Score: " + to_string(score), sf::Vector2f(window->getSize().x/2, 30+viewOffset.y)));
 
     if(localHost->isServer())
     {
@@ -220,7 +221,8 @@ void Game::run() {
 	playerHandling();
 
 	//move view up/raise water level
-	view->move(0, riseSpeed);
+	if(rise)
+		view->move(0, riseSpeed);
 	window->setView(*view);
     
     // timeStep, velocityIterations, positionIterations
@@ -242,6 +244,10 @@ void Game::run() {
 			sf::Packet p = packetParser->pack(shapeSync);
 			server->broadCast(p);
 		}
+
+		//broadcast water level:
+		sf::Packet p = packetParser->pack<int>(UDPNetwork::WATER_LEVEL, viewOffset.y);
+		server->broadCast(p);
 	}
 	else
 	{
@@ -316,8 +322,11 @@ void Game::boxHandling()
 		/*string s = "ID: " +  to_string(box->getId());
 		window->draw(textor->write(s, box->getShape()->getPosition()));*/
 		//check if box has fallen "outside"
-		if(localHost->isServer() && box->getShape()->getPosition().y > window->getSize().y - viewOffset.y + killOffset)
+		if(localHost->isServer() && box->getShape()->getPosition().y > window->getSize().y + viewOffset.y + killOffset
+			&& box != lastStaticShape) //make sure there is still a static platform to stand on
+		{
 			deletion.push_back(box);
+		}
     }
 	if(localHost->isServer())
 		removeFallenBoxes(deletion);
@@ -328,11 +337,20 @@ Shape* Game::createBoxes()
 	//random dropping of boxes
     timer = clock.getElapsedTime();
     duration = timer.asSeconds();
+	staticPlatform = ++staticPlatform % 15;
     
 	if(duration > secPerDrops)
 	{
+		Shape* newBox;
+		if(staticPlatform == 0)
+		{
+			newBox = lastStaticShape = shapeFactory->createRandomShape(viewOffset, false);
+			staticPlatform = 0;
+		}
+		else
+			newBox = shapeFactory->createRandomShape(viewOffset); 
+		boxes.push_back(newBox);
         score += 50;
-		boxes.push_back(shapeFactory->createRandomShape(viewOffset));
 		duration = 0;
         clock.restart();
 		return boxes.back();
@@ -504,6 +522,7 @@ void Game::removeShape(int id)
 	});
 	if(del != boxes.end())
 	{
+		(*del)->getUserData().toBeRemoved = true;
 		delete *del;
 		boxes.erase(del);
 	}
@@ -516,13 +535,52 @@ void Game::playerHandling()
 	player->draw();
 	player->update();
 	window->draw(textor->write(player->getName(), player->getBox()->getShape()->getPosition()));
-    
+	if(player->getBox()->getShape()->getPosition().y >window->getSize().y + viewOffset.y + killOffset 
+		&& !player->isDead())
+	{
+		cout << player->getName() << " is now sleeping with the fishes." << endl;
+		player->setDeath(true);
+		sf::Packet p = packetParser->pack(UDPNetwork::PLAYER_DEAD);
+		if(localHost->isServer())
+		{
+			dynamic_cast<Server*>(localHost)->broadCast(p);
+		}
+		else
+		{
+			dynamic_cast<Client*>(localHost)->sendToServer(p);
+		}
+	}
+	respawnPlayer();
+
 	for(list<Player*>::iterator itr = remotePlayers.begin(); itr != remotePlayers.end(); itr++)
 	{
 		Player* remotePlayer = *itr;
 		remotePlayer->draw();
 		remotePlayer->update();
 		window->draw(textor->write(remotePlayer->getName(), remotePlayer->getBox()->getShape()->getPosition()));
+		/*if(remotePlayer->getBox()->getShape()->getPosition().y > /*window->getSize().y - viewOffset.y*//* viewOffset.y + killOffset)
+			remotePlayer->setPosition(lastStaticShape->getPosition());*/
+	}	
+}
+
+void Game::respawnPlayer()
+{
+	if(player->isDead())
+	{
+		b2Vec2 spawn = lastStaticShape->getBody()->GetPosition();
+		spawn.y += 10;
+		player->setPosition(&spawn);
+		cout << player->getName() << " has returned from the grave!" << endl;
+		player->setDeath(false);
+		sf::Packet p = packetParser->pack(UDPNetwork::PLAYER_RES);
+		if(localHost->isServer())
+		{
+			dynamic_cast<Server*>(localHost)->broadCast(p);
+		}
+		else
+		{
+			dynamic_cast<Client*>(localHost)->sendToServer(p);
+		}
 	}
 }
 
@@ -599,3 +657,11 @@ Player* Game::getPlayer(string name)
 	else
 		return getRemotePlayer(name);
 }
+
+void Game::startRise()
+{
+	rise = true;
+	sf::Packet p = packetParser->pack<int>(UDPNetwork::START_RISE, 1);
+	if(localHost->isServer())
+		dynamic_cast<Server*>(localHost)->broadCast(p);
+};

@@ -7,7 +7,6 @@
 #include <math.h>
 #include <iomanip>
 
-
 Hook::Hook(Game* game_, Player* player) {
     cout << "Hook()" << endl;
     game = game_;
@@ -179,6 +178,9 @@ void Hook::update() {
 
 	playerMeterPos = b2Vec2(owner->getBody()->GetPosition().x,
                             owner->getBody()->GetPosition().y);
+	;
+	/*if(recentBoxContact != NULL && ((b2BodyUserData*)recentBoxContact->GetUserData())->toBeRemoved)
+		release();*/
     
     switch(ACTION)
     {

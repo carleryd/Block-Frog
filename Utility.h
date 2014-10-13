@@ -6,6 +6,8 @@
 #include <Box2D/Box2D.h>
 using namespace std;
 
+
+
 class Game;
 
 class Utility
@@ -25,6 +27,11 @@ public:
     float getMTP();
     float getOffSetX();
     float getOffSetY();
+
+	friend ostream& operator<<(ostream& o, b2Vec2* v)
+	{
+		return o << "position (" << v->x << ", " << v->y << ")";
+	}
 private:
     Game* game;
     
@@ -34,11 +41,10 @@ private:
     float offSetY;
     short int cycles;
     float currDegrees, prevDegrees;
+
+
 };
 
-/*ostream& operator<<(ostream& o, b2Vec2* v)
-{
-	return o << "position (" << v->x << ", " << v->y << ")";
-}*/
+
 
 #endif /* defined(__Block_Frog__Utility__) */

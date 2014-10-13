@@ -27,9 +27,10 @@ Shape::Shape(Game* game_, b2Vec2* position_, bool dynamic_, int id, float densit
 
 	userData.id = id;
 	userData.parent = this;
+	userData.toBeRemoved = false;
 	body->SetUserData((void*)&userData);
 	updateClock.restart();
-	ajour = true;
+	
 }
 
 Shape::~Shape(void)

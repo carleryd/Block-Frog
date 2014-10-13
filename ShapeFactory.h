@@ -7,6 +7,7 @@
 using namespace std;
 
 class Game;
+class Utility;
 
 class ShapeFactory
 {
@@ -19,7 +20,7 @@ public:
 	Shape* createRectangle(b2Vec2* size, b2Vec2* position, bool dynamic, int _id);
 	Shape* createRectangle(b2Vec2* size, b2Vec2* position, bool dynamic,
 		float density = 1.0, float friction = 0.5);
-	Shape* createRandomShape(sf::Vector2i viewOffset);
+	Shape* createRandomShape(sf::Vector2i& viewoffset, bool dynamic = true);
 	
 	void setGlobalID(int id_) {id = id_;};
 	int getGlobalID() const {return id;};
@@ -32,5 +33,6 @@ private:
 	uniform_real_distribution<float> dist;
 	int minSize;
 	int id;
+	Utility* utility;
 };
 #endif

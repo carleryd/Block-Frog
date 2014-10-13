@@ -16,7 +16,8 @@ void Controller::checkInput() {
         // Close window : exit
         if (event.type == sf::Event::Closed) {
             game->getWindow()->close();
-			game->exitGame();
+			if(!game->exitCalled)
+				game->exitGame();
         }
 
         // Escape pressed : exit
@@ -65,7 +66,7 @@ void Controller::checkInput() {
         }
         
         // Checks for Menu.cpp
-        if (event.type == sf::Event::TextEntered) {
+        if (event.type == sf::Event::TextEntered && !menu->gameStarted) {
             // 8 is backspace | 10 is enter
             if(event.text.unicode == 8) {
                 if(menu->joinState == menu->IP)
@@ -90,7 +91,7 @@ void Controller::checkInput() {
         }
         
         position = sf::Mouse::getPosition(*game->getWindow());
-		game->getPlayer()->aimHook(position);
+		game->getPlayer()->aimHook(position + game->viewOffset);
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
 	        position = sf::Mouse::getPosition(*game->getWindow());
             game->getPlayer()->useHook(position);
@@ -107,16 +108,8 @@ void Controller::devInput(sf::Event& e)
 	{
 		//dev ctrls
 	case sf::Keyboard::R: //water rising
-		if(game->riseSpeed == 0)
-		{
-			game->riseSpeed = -0.5f; 
-			cout << "Water rising turned ON." << endl;
-		}
-		else
-		{
-			game->riseSpeed = 0; 
-			cout << "Water rising turned OFF." << endl;
-		}
+		//game->rise = !game->rise;
+		game->startRise();
 		break;
 	case sf::Keyboard::S: //reset player
 		game->getPlayer()->setPosition(new b2Vec2(0,0));

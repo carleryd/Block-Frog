@@ -54,11 +54,14 @@ Player::Player(Game* game_) {
     // game object, radius, position, dynamic, density, friction
     // I need to send box here because game->getPlayer() will give BAD_ACCESS(not created)
     
+    /*contactListener = new ContactListener();
+    game->getWorld()->SetContactListener(contactListener);*/
     contactListener = game->getContactListener();
 
 	leftSpeed = 0;
 	rightSpeed = 0;
     hook = NULL;
+	dead = false;
 }
 
 void Player::init(Player* player) {
@@ -81,13 +84,11 @@ void Player::setBirthNumber(int number) {
 }
 
 void Player::setPosition(b2Vec2* newPos) {
-	/*cout << "player pos " << getPosition()->x << ", " << getPosition()->y << endl;
-	//newPos->x += 10;
-	cout << "new pos " << newPos->x << ", " << newPos->y << endl;*/
 	box->getBody()->SetTransform(*newPos, box->getBody()->GetAngle());
-	//cout << "player pos " << getPosition()->x << ", " << getPosition()->y << endl;
-	//box->setPosition(newPos);
-	
+	b2Vec2 pos = box->getBody()->GetPosition();
+	hook->getHookBase()->setPosition(&pos);
+	pos.y += 5;
+	hook->getHookTip()->setPosition(&pos);
 }
 
 void Player::move(int dir, bool localPlayer, bool is_jumping)

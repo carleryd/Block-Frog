@@ -48,7 +48,9 @@ public:
     void increaseHook();
     void decreaseHook();
     bool isJumping();
-    
+	void setDeath(bool d) {dead = d;};
+	bool isDead() {return dead;};
+
 private:
     Game* game;
     Hook* hook;
@@ -65,6 +67,7 @@ private:
     bool jumping;
 	string name;
     int birthNumber;
+	bool dead;
 };
 
 #endif /* defined(__Block_Frog__Player__) */

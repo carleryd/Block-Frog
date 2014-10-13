@@ -18,6 +18,7 @@ public:
     Menu(sf::RenderWindow* window, OSHandler* osHandler);
     void run();
     void update();
+	Game* getGame() {return game;};
 private:
     void draw();
     
