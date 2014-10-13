@@ -26,18 +26,18 @@ ShapeFactory::~ShapeFactory(void)
 Shape* ShapeFactory::createRectangle(b2Vec2* size, b2Vec2* position, bool dynamic, int _id)
 {
 	//cout << "client shape id " << _id << endl;
-    Shape* newRectangle = new Rectangle(game, size, position, dynamic, _id);
-    newRectangle->getBody()->GetFixtureList()->SetUserData( (void*)99 );
+//    Shape* newRectangle = new Rectangle(game, size, position, dynamic, _id);
+//    newRectangle->getBody()->GetFixtureList()->SetUserData( (void*)99 );
     
 	return new Rectangle(game, size, position, dynamic, _id);
 }
 
 Shape* ShapeFactory::createRectangle(b2Vec2* size, b2Vec2* position, bool dynamic, float density, float friction)
 {
-	Shape* newRectangle = new Rectangle(game, size, position, dynamic, id++, density, friction);
-    newRectangle->getBody()->GetFixtureList()->SetUserData( (void*)99 );
+//	Shape* newRectangle = new Rectangle(game, size, position, dynamic, id++, density, friction);
+//    newRectangle->getBody()->GetFixtureList()->SetUserData( (void*)99 );
 	//newRectangle->getBody()->GetFixtureList()->SetUserData( (void*)5 );
-	return newRectangle;
+	return new Rectangle(game, size, position, dynamic, id++, density, friction);;
 }
 
 template<class T>

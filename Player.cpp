@@ -112,7 +112,7 @@ void Player::move(int dir, bool localPlayer, bool is_jumping)
             rightSpeed = 0;
         break;
 	case JUMP:
-            if(!isJumping())// || (!localPlayer && is_jumping))
+            if(!isJumping() || (!localPlayer && is_jumping))
 			{
 				push(b2Vec2(0, jumpHeight));
 				jumped = true;
