@@ -1,6 +1,6 @@
 #ifndef TEXTOR_H
 #define TEXTOR_H
-#include <SFML\Graphics.hpp>
+#include <SFML/Graphics.hpp>
 using namespace std;
 
 class OSHandler;

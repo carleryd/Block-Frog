@@ -17,7 +17,7 @@ struct shapeSync
 		velocity = shape.getBody()->GetLinearVelocity();
 		position = shape.getBody()->GetPosition();
 		angle = shape.getBody()->GetAngle();
-		hookUserData = (int)shape.getBody()->GetFixtureList()->GetUserData();
+		hookUserData = (uintptr_t)shape.getBody()->GetFixtureList()->GetUserData();
 	};
 	int shapeID;
 	float angularVel;
@@ -80,8 +80,9 @@ public:
 	//for packing primitive types
 	template<typename T>
 	sf::Packet pack(int type, T primitiveType);
-	
-	
+
+	//for sending an empty packet
+	sf::Packet pack(int type);	
 
 
 	//template function SHOULD be able to unpack ONE of any object

@@ -16,6 +16,7 @@ class Controller;
 class OSHandler;
 class UDPNetwork;
 class Textor;
+class ContactListener;
 
 enum {SERVER, CLIENT, SINGLE_PLAYER};
 
@@ -49,6 +50,7 @@ public:
 	//returns nullptr if not found
 	Shape* getShape(int id);
     OSHandler* getOSHandler();
+    ContactListener* getContactListener() { return contactListener; }
     
     // Setter methods
     void setUtility(Utility* utility);
@@ -65,6 +67,7 @@ public:
 	void updatePlayer(player_info* p);
 	void removeShape(int id);
 	bool exitCalled;
+	void startRise();
 
 private:
 	void removeFallenBoxes(std::list<Shape*>& todelete);
@@ -79,6 +82,7 @@ private:
 
 	//if local player interacts with boxes save changes to localChanges
 	void playerBoxInteraction();
+	void respawnPlayer();
 	
     b2World* world;
     Player* player; 					// This is the player that the player controlls
@@ -86,6 +90,7 @@ private:
 	list<Player*> remotePlayers;
     OSHandler* osHandler;
 	ShapeFactory* shapeFactory;
+    ContactListener* contactListener;
     
     sf::RenderWindow* window;
 	sf::View* view;
@@ -94,21 +99,27 @@ private:
     sf::Time timer;
 	PacketParser* packetParser;
 	Textor* textor;
+    
+    // Keep track of amount of players. This will affect the userData set for each player
+    int playerAmount;
 
 	//network
 	UDPNetwork* localHost;
 	std::thread* network;
-    
+    std::vector<shapeSync*> localChanges;
+
     std::vector<Shape*> boxes;
 	list<Shape*> deletion;
-	std::vector<shapeSync*> localChanges;
+	Shape* lastStaticShape;
 	sf::Shape* water;
 	double duration;
+	bool rise;
 	float riseSpeed;
 	int secPerDrops; //time before a new block is dropped
 	int killOffset; //how far under the screen blocks will be killed
 	bool allowJoin;
 	float updateTime;
+	int staticPlatform; //every staticPlatform:th created box will be a static platform
 	friend Controller;
 	friend UDPNetwork;
 };

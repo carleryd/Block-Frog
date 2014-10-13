@@ -5,6 +5,7 @@
 #include "ShapeFactory.h"
 #include "Utility.h"
 #include "Textor.h"
+#include "ContactListener.h"
 
 using namespace std;
 
@@ -29,6 +30,7 @@ Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_)
 	textor = new Textor(osHandler_);
 	exitCalled = false;
 	updateTime = 0.5;
+	staticPlatform = 0;
 }
 
 Game::~Game()
@@ -54,8 +56,13 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
 	//shapefactory for creating shapes easily
 	shapeFactory = new ShapeFactory(this);
     utility = new Utility(this);
+    
+    contactListener = new ContactListener();
+    world->SetContactListener(contactListener);
+    
 	player = new Player(this);
     player->init(player);
+	playerAmount = 1;
     
 	packetParser = new PacketParser(*shapeFactory);
 	
@@ -65,8 +72,10 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
                                                   1.0,
                                                   1.0)
                     );
+	lastStaticShape = boxes.back();
     
-	riseSpeed = 0; //-0.2f;
+	rise = false;
+	riseSpeed = -0.2f;
 	killOffset = 30;
 	secPerDrops = 1;
 	allowJoin = true;
@@ -98,7 +107,7 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
 	
 	window->setActive(true);
 	
-	secPerDrops = 10; 
+	secPerDrops = 1;
 }
 
 sf::RenderWindow* Game::getWindow() { return window; }
@@ -140,7 +149,8 @@ void Game::run() {
 	playerHandling();
 
 	//move view up/raise water level
-	view->move(0, riseSpeed);
+	if(rise)
+		view->move(0, riseSpeed);
 	window->setView(*view);
     
     // timeStep, velocityIterations, positionIterations
@@ -240,8 +250,11 @@ void Game::boxHandling()
 		/*string s = "ID: " +  to_string(box->getId());
 		window->draw(textor->write(s, box->getShape()->getPosition()));*/
 		//check if box has fallen "outside"
-		if(localHost->isServer() && box->getShape()->getPosition().y > window->getSize().y - viewOffset.y + killOffset)
+		if(localHost->isServer() && box->getShape()->getPosition().y > window->getSize().y + viewOffset.y + killOffset
+			&& box != lastStaticShape) //make sure there is still a static platform to stand on
+		{
 			deletion.push_back(box);
+		}
     }
 	if(localHost->isServer())
 		removeFallenBoxes(deletion);
@@ -252,10 +265,19 @@ Shape* Game::createBoxes()
 	//random dropping of boxes
     timer = clock.getElapsedTime();
     duration = timer.asSeconds();
+	staticPlatform = ++staticPlatform % 15;
     
 	if(duration > secPerDrops)
 	{
-		boxes.push_back(shapeFactory->createRandomShape(viewOffset));
+		Shape* newBox;
+		if(staticPlatform == 0)
+		{
+			newBox = lastStaticShape = shapeFactory->createRandomShape(viewOffset, false);
+			staticPlatform = 0;
+		}
+		else
+			newBox = shapeFactory->createRandomShape(viewOffset); 
+		boxes.push_back(newBox);
 		duration = 0;
         clock.restart();
 		return boxes.back();
@@ -266,6 +288,8 @@ Shape* Game::createBoxes()
 
 void Game::addRemotePlayer(Player* p)
 {
+	playerAmount++;
+    p->setBirthNumber(playerAmount);
 	remotePlayers.push_back(p);
 	p->init(p);
 }
@@ -352,7 +376,7 @@ void Game::playerBoxInteraction()
 				s->velocity = edge->other->GetLinearVelocity();
 				s->position = edge->other->GetPosition();
 				s->angle = edge->other->GetAngle();
-				s->hookUserData = (int)edge->other->GetFixtureList()->GetUserData();
+				s->hookUserData = (uintptr_t)edge->other->GetFixtureList()->GetUserData();
 				getShape(id)->resetUpdateClock();
 				if(push)
 					localChanges.push_back(s);
@@ -425,6 +449,7 @@ void Game::removeShape(int id)
 	});
 	if(del != boxes.end())
 	{
+		(*del)->getUserData().toBeRemoved = true;
 		delete *del;
 		boxes.erase(del);
 	}
@@ -437,13 +462,52 @@ void Game::playerHandling()
 	player->draw();
 	player->update();
 	window->draw(textor->write(player->getName(), player->getBox()->getShape()->getPosition()));
-    
+	if(player->getBox()->getShape()->getPosition().y >window->getSize().y + viewOffset.y + killOffset 
+		&& !player->isDead())
+	{
+		cout << player->getName() << " is now sleeping with the fishes." << endl;
+		player->setDeath(true);
+		sf::Packet p = packetParser->pack(UDPNetwork::PLAYER_DEAD);
+		if(localHost->isServer())
+		{
+			dynamic_cast<Server*>(localHost)->broadCast(p);
+		}
+		else
+		{
+			dynamic_cast<Client*>(localHost)->sendToServer(p);
+		}
+	}
+	respawnPlayer();
+
 	for(list<Player*>::iterator itr = remotePlayers.begin(); itr != remotePlayers.end(); itr++)
 	{
 		Player* remotePlayer = *itr;
 		remotePlayer->draw();
 		remotePlayer->update();
 		window->draw(textor->write(remotePlayer->getName(), remotePlayer->getBox()->getShape()->getPosition()));
+		/*if(remotePlayer->getBox()->getShape()->getPosition().y > /*window->getSize().y - viewOffset.y*//* viewOffset.y + killOffset)
+			remotePlayer->setPosition(lastStaticShape->getPosition());*/
+	}	
+}
+
+void Game::respawnPlayer()
+{
+	if(player->isDead())
+	{
+		b2Vec2 spawn = lastStaticShape->getBody()->GetPosition();
+		spawn.y += 10;
+		player->setPosition(&spawn);
+		cout << player->getName() << " has returned from the grave!" << endl;
+		player->setDeath(false);
+		sf::Packet p = packetParser->pack(UDPNetwork::PLAYER_RES);
+		if(localHost->isServer())
+		{
+			dynamic_cast<Server*>(localHost)->broadCast(p);
+		}
+		else
+		{
+			dynamic_cast<Client*>(localHost)->sendToServer(p);
+		}
 	}
 }
 
@@ -520,3 +584,11 @@ Player* Game::getPlayer(string name)
 	else
 		return getRemotePlayer(name);
 }
+
+void Game::startRise()
+{
+	rise = true;
+	sf::Packet p = packetParser->pack<int>(UDPNetwork::START_RISE, 1);
+	if(localHost->isServer())
+		dynamic_cast<Server*>(localHost)->broadCast(p);
+};

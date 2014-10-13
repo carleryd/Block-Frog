@@ -7,7 +7,6 @@
 #include <math.h>
 #include <iomanip>
 
-
 Hook::Hook(Game* game_, Player* player) {
     cout << "Hook()" << endl;
     game = game_;
@@ -15,7 +14,7 @@ Hook::Hook(Game* game_, Player* player) {
     utility = game->getUtility();
     //contactListener = game->getPlayer()->getContactListener();
 	contactListener = player->getContactListener();
-    recentBoxContact = contactListener->getRecentHookContact();
+    recentBoxContact = contactListener->getRecentHookContact(player->getBirthNumber());
     
     ACTION = PASSIVE;
     
@@ -34,7 +33,7 @@ Hook::Hook(Game* game_, Player* player) {
                          0.0);
     
     // This way it will be recognized in the ContactListnener(see if statements ContactListener.cpp)
-    hookTip->getBody()->GetFixtureList()->SetUserData( (void*)4 );
+    hookTip->getBody()->GetFixtureList()->SetUserData( (void*)(player->getBirthNumber()+10));
     
     hookBase = new Rectangle(game,
                              new b2Vec2(10.0, 10.0),
@@ -114,14 +113,16 @@ Hook::Hook(Game* game_, Player* player) {
 }
 
 void Hook::aim(sf::Vector2i mousePixelPos) {
-    newMouseAngle = utility->mouseAngle(mousePixelPos, playerMeterPos);
+    hookDegrees = utility->angleBetweenPoints(hookTip->getBody()->GetPosition(),
+                                              hookBase->getBody()->GetPosition());
+    newMouseAngle = utility->mouseAngle(mousePixelPos, playerMeterPos, hookDegrees);
 	revoluteJoint->SetLimits(utility->degToRad(newMouseAngle), utility->degToRad(newMouseAngle));
-//    cout << utility->angleBetweenPoints(hookBase->getBody()->GetPosition(), hookTip->getBody()->GetPosition()) << endl;
+    
+//    cout << "hookDegrees: " << hookDegrees << "    mouseAngle: " << newMouseAngle << endl;
 }
 
 void Hook::shoot(sf::Vector2i mousePixelPos) {
-    cout << "use()" << endl;
-    newMouseAngle = utility->mouseAngle(mousePixelPos, playerMeterPos);
+    newMouseAngle = utility->mouseAngle(mousePixelPos, playerMeterPos, hookDegrees);
     prismaticJoint->SetLimits(0.0, reachLength);
 
     // We want too look for objects to grab
@@ -131,8 +132,8 @@ void Hook::shoot(sf::Vector2i mousePixelPos) {
 
 b2RevoluteJoint* Hook::grab(b2Body* box) {
     // Makes the box more easily handled by frog
-    box->GetFixtureList()->SetDensity(0.001);
-    box->GetFixtureList()->SetFriction(0.1);
+    box->GetFixtureList()->SetDensity(0.0001);
+//    box->GetFixtureList()->SetFriction(0.1);
     box->SetFixedRotation(true);
     box->ResetMassData();
     
@@ -161,7 +162,7 @@ void Hook::release() {
     	grabJoint = NULL;
         
         // Remove the recent contact, we no longer want to grab it
-        contactListener->removeRecentHookContact();
+        contactListener->removeRecentHookContact(game->getPlayer()->getBirthNumber());
         
         // Make it so that we dont grab boxes while hook is returning to us
     	contactListener->setHookActive(false);
@@ -177,11 +178,14 @@ void Hook::update() {
 
 	playerMeterPos = b2Vec2(owner->getBody()->GetPosition().x,
                             owner->getBody()->GetPosition().y);
+	;
+	/*if(recentBoxContact != NULL && ((b2BodyUserData*)recentBoxContact->GetUserData())->toBeRemoved)
+		release();*/
     
     switch(ACTION)
     {
         case SHOOTING:
-            recentBoxContact = contactListener->getRecentHookContact();
+            recentBoxContact = contactListener->getRecentHookContact(game->getPlayer()->getBirthNumber());
             
 			if(recentBoxContact != NULL && grabJoint == NULL) {
                 prismaticJoint->SetLimits(0.0, grabLength);

@@ -1,7 +1,7 @@
 #include "Utility.h"
 #include "Game.h"
 #include <math.h>
-const float pi = 3.14;
+const float PI = 3.14;
 
 Utility::Utility(Game* game_) {
     game = game_;
@@ -37,27 +37,28 @@ float Utility::angleBetweenPoints(sf::Vector2i pixelPosA, sf::Vector2i pixelPosB
 float Utility::angleBetweenPoints(b2Vec2 meterPosA, b2Vec2 meterPosB) {
     b2Vec2 vector = b2Vec2(meterPosA.x - meterPosB.x, meterPosA.y - meterPosB.y);
     
-    currDegrees = (atan2(vector.y, -vector.x) * 180 / pi + 180);
+    // The reason I have y and -x is to get 0/360 degrees to be to the right of player
+    currDegrees = (atan2(vector.y, -vector.x) * 180 / PI + 180);
+    
+    return currDegrees;
+}
+
+float Utility::mouseAngle(sf::Vector2i mousePixelPos, b2Vec2 playerMeterPos, float hookDegrees) {
+    b2Vec2 mouseMeterPos = game->getUtility()->mouseToBox2D(mousePixelPos);
+
+    currDegrees = angleBetweenPoints(mouseMeterPos, playerMeterPos);
     
     // There is a problem where the revoluteJoint goes from 360 -> 1 degrees.
     // This makes the joint go back counter-clockwise
-	if(currDegrees - 270 > prevDegrees)
+	if(currDegrees - 180 > prevDegrees)
         cycles--;
-    else if(currDegrees + 270 < prevDegrees)
+    else if(currDegrees + 180 < prevDegrees)
         cycles++;
-    
+
     prevDegrees = currDegrees;
     
-    //cout << "cycles: " << cycles << endl;
-    
-    // The reason I have y and -x is to get 0/360 degrees to be to the right of player
+    prevDegrees = currDegrees;
     return currDegrees + 360 * cycles;
-}
-
-float Utility::mouseAngle(sf::Vector2i mousePixelPos, b2Vec2 playerMeterPos) {
-    b2Vec2 mouseMeterPos = game->getUtility()->mouseToBox2D(mousePixelPos);
-    
-    return angleBetweenPoints(mouseMeterPos, playerMeterPos);
 }
 
 float Utility::degToRad(float degrees) {

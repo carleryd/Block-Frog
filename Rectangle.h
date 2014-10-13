@@ -10,7 +10,7 @@ class Rectangle: public Shape
 {
 public:
 	Rectangle(Game* game, b2Vec2* size, b2Vec2* position,
-		bool dynamic, int id, float density = 1.0f, float friction = 0.3f, int groupIndex = 1);
+		bool dynamic, int id, float density = 1.0f, float friction = 1.0f, int groupIndex = 1);
 	~Rectangle();
 
   	b2Vec2* getSize() const;

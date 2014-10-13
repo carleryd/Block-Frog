@@ -79,16 +79,8 @@ void Controller::devInput(sf::Event& e)
 	{
 		//dev ctrls
 	case sf::Keyboard::R: //water rising
-		if(game->riseSpeed == 0)
-		{
-			game->riseSpeed = -0.5f; 
-			cout << "Water rising turned ON." << endl;
-		}
-		else
-		{
-			game->riseSpeed = 0; 
-			cout << "Water rising turned OFF." << endl;
-		}
+		//game->rise = !game->rise;
+		game->startRise();
 		break;
 	case sf::Keyboard::S: //reset player
 		game->getPlayer()->setPosition(new b2Vec2(0,0));

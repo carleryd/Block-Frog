@@ -128,6 +128,10 @@ void UDPNetwork::handleReceivedData(Game* game)
 			break;
 		case SHAPE:
 			game->boxes.push_back(packetParser.unpack<Shape*>(*packet));
+			if(game->boxes.back()->getDynamic())
+			{
+				game->lastStaticShape = game->boxes.back();
+			}
 			break;
 		case PLAYER_MOVE:
 			{
@@ -221,6 +225,15 @@ void UDPNetwork::handleReceivedData(Game* game)
 			break;
 		case WATER_LEVEL:
 			game->viewOffset.y = packetParser.unpack<int>(*packet);
+			break;
+		case START_RISE:
+			game->startRise();
+			break;
+		case PLAYER_DEAD:
+
+			break;
+		case PLAYER_RES:
+
 			break;
 		default:
 			cerr << "Type " << type << " is not a recognized data type!" << endl;

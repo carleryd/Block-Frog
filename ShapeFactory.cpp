@@ -4,10 +4,10 @@
 #include <functional>
 #include <chrono>
 #include <ctime>
-
+#include "Utility.h"
 
 ShapeFactory::ShapeFactory(Game* game_):
-    dist(0.0, 1.0)
+    dist(0.0, 1.0), utility(new Utility(game_))
 {
     game = game_;
 	chrono::system_clock::time_point t = chrono::system_clock::now();
@@ -15,7 +15,7 @@ ShapeFactory::ShapeFactory(Game* game_):
 	string s = ctime(&tt);
 	seed_seq seed(s.begin(), s.end()); 
 	mersenneGen.seed(seed);
-	minSize = 10;
+	minSize = 20;
 	id = 0;
 }
 
@@ -45,29 +45,26 @@ b2Vec2* ShapeFactory::sfvec_to_b2vec(sf::Vector2<T> v)
     return new b2Vec2(float(adjustVector.x), float(adjustVector.y));
 };
 
-Shape* ShapeFactory::createRandomShape(sf::Vector2i viewOffset)
+Shape* ShapeFactory::createRandomShape(sf::Vector2i& viewOffset, bool dynamic)
 {
 	auto rand = bind(dist, mersenneGen);
 	float x = float(dist(mersenneGen) * game->getWindow()->getSize().x);// + viewOffset.x);
-	float y = float(-200);// + viewOffset.y); //remember that positive y is up in box2d
+	float y = float(-200 + viewOffset.y*2); //viewoffset.y *2 otherwise the change in viewoffset will not be noted
 
     sf::Vector2f vec;
-    vec.x = x;
+	vec.x = x;
     vec.y = y;
     
 	int i = id++;
 	//cout << "Server shape id " << i << endl;
-
+	
     // game, size, pos, dynamic, density, friction
     Shape* newRectangle = new Rectangle(
-                                            game,
-                                            new b2Vec2(rand()*100 + minSize, (1 + rand() * 5) * minSize),
-                                            sfvec_to_b2vec(vec),
-                                            true,
-											i,
-                                            1.0,
-                                            1.0);
-    newRectangle->getBody()->GetFixtureList()->SetUserData( (void*)5 );
-    
+                                        game,
+                                        new b2Vec2(rand()*100 + minSize, (1 + rand() * 5) * minSize),
+                                        sfvec_to_b2vec(vec),
+                                        dynamic,
+                                        i);
+    newRectangle->getBody()->GetFixtureList()->SetUserData( (void*)99 );
 	return newRectangle;
 }

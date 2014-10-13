@@ -30,6 +30,7 @@ sf::Packet PacketParser::pack(Shape* shape)
         packet << body->GetPosition().x << body->GetPosition().y;
         packet << rectangle->getSize()->x << rectangle->getSize()->y;
 		packet << shape->getId();
+		packet << shape->getDynamic();
         return packet;
     }
     else {
@@ -95,17 +96,25 @@ sf::Packet PacketParser::pack<string>(int type, string s)
 	p << s;
 	return p;
 }
-//sf::Packet PacketParser::pack
+sf::Packet PacketParser::pack(int type)
+{
+	sf::Packet p;
+	p << type;
+	return p;
+}
 
 // ############# UNPACK FUNCTIONS ################
 template<>
 Shape* PacketParser::unpack<Shape*>(sf::Packet& packet)
 {
-	int id;
+	int id; 
+	bool dynamic;
 	b2Vec2 pos, size;
 	packet >> pos.x >> pos.y >> size.x >> size.y;
-	packet >> id;
-	Shape* s = factory.createRectangle(new b2Vec2(size), new b2Vec2(pos), true, id);
+	packet >> id >> dynamic;
+	if(dynamic == false)
+		cout << "dynamic is false. Static block created!" << endl;
+	Shape* s = factory.createRectangle(new b2Vec2(size), new b2Vec2(pos), dynamic, id);
 	s->setPosition(&pos);
 	s->setId(id);
 	return s;

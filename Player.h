@@ -21,6 +21,7 @@ public:
 
 	void setName(string n);
     void setPosition(b2Vec2* newPos);
+    void setBirthNumber(int number);
     
     b2Body* getBody();
 	string& getName(){return name;};
@@ -29,6 +30,7 @@ public:
 	Shape* getBox() {return box;};
 	Circle* getHookTip() {return hook->getHookTip();};
 	Rectangle* getHookBase() {return hook->getHookBase();};
+    int getBirthNumber() { return birthNumber; }
 
     
 	enum { LEFT, RIGHT, JUMP, LEFT_STOP, RIGHT_STOP };
@@ -46,21 +48,26 @@ public:
     void increaseHook();
     void decreaseHook();
     bool isJumping();
-    
+	void setDeath(bool d) {dead = d;};
+	bool isDead() {return dead;};
+
 private:
     Game* game;
     Hook* hook;
     Rectangle* box;
     ContactListener* contactListener;
+    Circle* hookTip;
     sf::Sprite frogSprite;
     sf::Texture frogTexture;
-    Circle* hookTip;
+    b2Fixture* footSensorFixture;
     
 	float leftSpeed, rightSpeed;
 	float jumpHeight;
     float movementSpeed;
     bool jumping;
 	string name;
+    int birthNumber;
+	bool dead;
 };
 
 #endif /* defined(__Block_Frog__Player__) */
