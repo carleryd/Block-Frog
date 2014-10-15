@@ -235,6 +235,16 @@ void UDPNetwork::handleReceivedData(Game* game)
 		case PLAYER_RES:
 
 			break;
+		case SHAPE_STATIC:
+			{
+				int id = packetParser.unpack<int>(*packet);
+				Shape* shape = game->getShape(id);
+				if(shape != nullptr)
+				{
+					shape->makeStatic();
+				}
+			}
+			break;
 		default:
 			cerr << "Type " << type << " is not a recognized data type!" << endl;
 			break;

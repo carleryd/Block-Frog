@@ -65,3 +65,9 @@ void Shape::resetUpdateClock()
 {
 	updateClock.restart();
 }
+
+void Shape::makeStatic()
+{
+	if(body->GetType() != b2BodyType::b2_staticBody)
+		body->SetType(b2BodyType::b2_staticBody);
+}

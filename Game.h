@@ -17,6 +17,7 @@ class OSHandler;
 class UDPNetwork;
 class Textor;
 class ContactListener;
+class Remover;
 
 enum {SERVER, CLIENT, SINGLE_PLAYER};
 
@@ -53,6 +54,8 @@ public:
 	vector<Shape*>& getShapes() {return boxes;};
 	//returns nullptr if not found
 	Shape* getShape(int id);
+	Shape* getLastStaticShape() const {return lastStaticShape;};
+	sf::Shape* getWater() const {return water;};
     OSHandler* getOSHandler();
     ContactListener* getContactListener() { return contactListener; }
     
@@ -86,7 +89,6 @@ private:
 
 	//if local player interacts with boxes save changes to localChanges
 	void playerBoxInteraction();
-	void respawnPlayer();
 	
     b2World* world;
     Player* player; 					// This is the player that the player controlls
@@ -103,6 +105,7 @@ private:
     sf::Time timer;
 	PacketParser* packetParser;
 	Textor* textor;
+	Remover* remover;
     
     // This is for the live menu
     Shape* hostRectangle;
@@ -121,14 +124,12 @@ private:
     std::clock_t start;	
 
     std::vector<Shape*> boxes;
-	list<Shape*> deletion;
 	Shape* lastStaticShape;
 	sf::Shape* water;
 	double duration;
 	bool rise;
 	float riseSpeed;
 	int secPerDrops; //time before a new block is dropped
-	int killOffset; //how far under the screen blocks will be killed
 	bool allowJoin;
 	float updateTime;
 	int staticPlatform; //every staticPlatform:th created box will be a static platform

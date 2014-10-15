@@ -53,7 +53,6 @@ class PacketParser
 {
 public:
 	PacketParser(ShapeFactory& factory);
-	PacketParser(); //cannot unpack shapes
 	~PacketParser(void);
 	sf::Packet pack(Shape* shape);
 	/*

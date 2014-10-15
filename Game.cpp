@@ -6,6 +6,7 @@
 #include "Utility.h"
 #include "Textor.h"
 #include "ContactListener.h"
+#include "Remover.h"
 
 using namespace std;
 
@@ -142,12 +143,14 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
                                                   1.0,
                                                   1.0)
                     );
+	
 	lastStaticShape = boxes.back();
-    
+    boxes.push_back(shapeFactory->createRandomShape(viewOffset));
+
 	rise = false;
 	riseSpeed = -0.2f;
-	killOffset = 300;
 	allowJoin = true;
+	remover = new Remover(this);
     
 	//networking
 	switch (playerType)
@@ -176,7 +179,7 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
 	
 	window->setActive(true);
 	
-	secPerDrops = 10;
+	secPerDrops = 1;
 }
 
 sf::RenderWindow* Game::getWindow() { return window; }
@@ -213,10 +216,6 @@ void Game::run() {
             dynamic_cast<Server*>(localHost)->broadCast(packet);
         }
     }
-	//else 
-	//{
-	//	boxes.push_back( static_cast<Shape*>(dynamic_cast<Client*>(localHost)->listenToServer()));
-	//}
 
 	//player
 	playerHandling();
@@ -285,27 +284,6 @@ void Game::spawnBox(sf::Vector2i position) {
 			true));
 }
 
-void Game::removeFallenBoxes(list<Shape*>& deletion)
-{
-	while(!deletion.empty())
-	{
-		vector<Shape*>::iterator todelete = std::find_if(boxes.begin(), boxes.end(), [&deletion](Shape* b)
-		{
-			return deletion.front() == b;
-		}
-		);
-		if(todelete != boxes.end())
-		{
-			sf::Packet p = packetParser->pack<int>(UDPNetwork::REMOVE_SHAPE, (*todelete)->getId());
-			dynamic_cast<Server*>(localHost)->broadCast(p);
-			boxes.erase(todelete);
-			delete deletion.front();
-			deletion.pop_front();
-		}
-	}
-	deletion.clear();
-}
-
 void Game::calcViewOffset()
 {
 	sf::Vector2f halfExtents = view->getSize() / 2.0f;
@@ -321,17 +299,13 @@ void Game::boxHandling()
 	{
         box->update();
         window->draw(*box->getShape());
-		/*string s = "ID: " +  to_string(box->getId());
-		window->draw(textor->write(s, box->getShape()->getPosition()));*/
 		//check if box has fallen "outside"
-		if(localHost->isServer() && box->getShape()->getPosition().y > window->getSize().y + viewOffset.y + killOffset
-			&& box != lastStaticShape) //make sure there is still a static platform to stand on
-		{
-			deletion.push_back(box);
-		}
+		if(localHost->isServer())
+			remover->checkShapeRemoval(box);
     }
+
 	if(localHost->isServer())
-		removeFallenBoxes(deletion);
+		remover->removeShapes();
 }
 
 Shape* Game::createBoxes()
@@ -546,22 +520,8 @@ void Game::playerHandling()
 	player->draw();
 	player->update();
 	window->draw(textor->write(player->getName(), player->getBox()->getShape()->getPosition()));
-	if(player->getBox()->getShape()->getPosition().y >window->getSize().y + viewOffset.y + killOffset 
-		&& !player->isDead())
-	{
-		cout << player->getName() << " is now sleeping with the fishes." << endl;
-		player->setDeath(true);
-		sf::Packet p = packetParser->pack(UDPNetwork::PLAYER_DEAD);
-		if(localHost->isServer())
-		{
-			dynamic_cast<Server*>(localHost)->broadCast(p);
-		}
-		else
-		{
-			dynamic_cast<Client*>(localHost)->sendToServer(p);
-		}
-	}
-	respawnPlayer();
+	remover->checkPlayerKill(player);
+	remover->respawnPlayer(player);
 
 	for(list<Player*>::iterator itr = remotePlayers.begin(); itr != remotePlayers.end(); itr++)
 	{
@@ -572,27 +532,6 @@ void Game::playerHandling()
 		/*if(remotePlayer->getBox()->getShape()->getPosition().y > /*window->getSize().y - viewOffset.y*//* viewOffset.y + killOffset)
 			remotePlayer->setPosition(lastStaticShape->getPosition());*/
 	}	
-}
-
-void Game::respawnPlayer()
-{
-	if(player->isDead())
-	{
-		b2Vec2 spawn = lastStaticShape->getBody()->GetPosition();
-		spawn.y += 10;
-		player->setPosition(&spawn);
-		cout << player->getName() << " has returned from the grave!" << endl;
-		player->setDeath(false);
-		sf::Packet p = packetParser->pack(UDPNetwork::PLAYER_RES);
-		if(localHost->isServer())
-		{
-			dynamic_cast<Server*>(localHost)->broadCast(p);
-		}
-		else
-		{
-			dynamic_cast<Client*>(localHost)->sendToServer(p);
-		}
-	}
 }
 
 void Game::requestShapeUpdates()

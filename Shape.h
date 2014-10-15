@@ -35,6 +35,7 @@ public:
 		position = pos;
 		body->SetTransform(*pos, angle);
 	};
+	void makeStatic();
 	//void setDynamic(bool d) {dynamic = d;};
 	bool getDynamic() {return dynamic;};
 	void setId(int id) { userData.id = id; };
