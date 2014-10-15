@@ -197,7 +197,7 @@ void Game::run() {
 
 	boxHandling();
 	calcViewOffset();
-	playerBoxInteraction();
+	//playerBoxInteraction();
 
 	//water
 	//water->setPosition(float(window->getSize().x * -0.1), float(window->getSize().y - viewOffset.y -10));
@@ -239,11 +239,11 @@ void Game::run() {
 		Server* server = dynamic_cast<Server*>(localHost);
 
 		//broadcast shapes that server has affected
-		for (shapeSync* shapeSync : localChanges)
+		/*for (shapeSync* shapeSync : localChanges)
 		{
 			sf::Packet p = packetParser->pack(shapeSync);
 			server->broadCast(p);
-		}
+		}*/
 
 		//broadcast water level:
 		sf::Packet p = packetParser->pack<int>(UDPNetwork::WATER_LEVEL, viewOffset.y);
@@ -252,11 +252,11 @@ void Game::run() {
 	else
 	{
 		//send local changes to server
-		for (shapeSync* shapeSync : localChanges)
+		/*for (shapeSync* shapeSync : localChanges)
 		{
 			sf::Packet p = packetParser->pack(shapeSync);
 			dynamic_cast<Client*>(localHost)->sendToServer(p);
-		}
+		}*/
 		//request server update on shapes
 		requestShapeUpdates();
 	}
