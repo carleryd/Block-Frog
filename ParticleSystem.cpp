@@ -1,4 +1,5 @@
 #include "ParticleSystem.h"
+#include <math.h>
 
 
 ParticleSystem::ParticleSystem(int count, sf::Vector2f pos):
@@ -66,7 +67,7 @@ void ParticleSystem::resetParticle(size_t index)
     // give a random velocity and lifetime to the particle
     float angle = (std::rand() % 360) * 3.14f / 180.f;
     float speed = (std::rand() % 50) + 150.f;
-    particles[index].velocity = sf::Vector2f(std::cos(angle) * speed, std::sin(angle) * speed);
+    particles[index].velocity = sf::Vector2f(cos(angle) * speed, sin(angle) * speed);
     particles[index].lifeTime = sf::milliseconds((std::rand() % 2000) + 1000);
 
     // reset the position of the corresponding vertex

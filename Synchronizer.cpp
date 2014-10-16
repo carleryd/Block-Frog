@@ -1,7 +1,7 @@
 #include "Synchronizer.h"
 #include "Client.h"
 #include "Server.h"
-#include <Box2D\Box2D.h>
+#include <Box2D/Box2D.h>
 
 Synchronizer::Synchronizer(Game& g):
 	game(g)

@@ -1,6 +1,6 @@
 #ifndef PARTICLE_SYSTEM_H
 #define PARTICLE_SYSTEM_H
-#include <SFML\Graphics.hpp>
+#include <SFML/Graphics.hpp>
 
 class ParticleSystem: public sf::Drawable, public sf::Transformable
 {
