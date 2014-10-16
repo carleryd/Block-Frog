@@ -64,6 +64,7 @@ protected:
 	sf::SocketSelector selector;
 private:
 	mutex packetsMutex;
+	int counter;
 };
 
 

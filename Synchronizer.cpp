@@ -40,8 +40,8 @@ void Synchronizer::updateShapes(shapeSync* s)
 		{
 			cout << shape->getId() << " ";
 		}
-		cout << endl;
-		cout << "Shape not found for update! ID: " << s->shapeID << endl;*/
+		cout << endl;*/
+		cout << "Shape not found for update! ID: " << s->shapeID << endl;
 		/*cout << "Creating new shape with ID " << s->shapeID << endl;
 		Shape* replacement = shapeFactory->createRectangle(&s->size, &s->position, true);
 		replacement->setId(s->shapeID);

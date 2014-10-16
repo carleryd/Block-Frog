@@ -59,7 +59,7 @@ void Shape::update()
 			particleSystem = nullptr;
 		}
 	}
-	else
+	else if(userData.id > -1)
 		checkForContacts();
 }
 
