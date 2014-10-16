@@ -5,6 +5,8 @@
 #include <iostream>
 #include "Player.h"
 #include "Rectangle.h"
+#include "Item.h"
+#include <typeinfo>
 
 PacketParser::PacketParser(ShapeFactory& f):
 	factory(f)
@@ -31,6 +33,8 @@ sf::Packet PacketParser::pack(Shape* shape)
         packet << rectangle->getSize()->x << rectangle->getSize()->y;
 		packet << shape->getId();
 		packet << shape->getDynamic();
+		//if it is an item or not
+		packet << (dynamic_cast<Item*>(shape) != nullptr? true : false);
         return packet;
     }
     else {
@@ -108,13 +112,15 @@ template<>
 Shape* PacketParser::unpack<Shape*>(sf::Packet& packet)
 {
 	int id; 
-	bool dynamic;
+	bool dynamic, item;
 	b2Vec2 pos, size;
 	packet >> pos.x >> pos.y >> size.x >> size.y;
-	packet >> id >> dynamic;
-	if(dynamic == false)
-		cout << "dynamic is false. Static block created!" << endl;
-	Shape* s = factory.createRectangle(new b2Vec2(size), new b2Vec2(pos), dynamic, id);
+	packet >> id >> dynamic >> item;
+	Shape* s;
+	if(!item)
+		s = factory.createRectangle(new b2Vec2(size), new b2Vec2(pos), dynamic, id);
+	else
+		s = factory.createItem(&pos, id);
 	s->setPosition(&pos);
 	s->setId(id);
 	return s;

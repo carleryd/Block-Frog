@@ -128,7 +128,7 @@ void UDPNetwork::handleReceivedData(Game* game)
 			break;
 		case SHAPE:
 			game->boxes.push_back(packetParser.unpack<Shape*>(*packet));
-			if(game->boxes.back()->getDynamic())
+			if(!game->boxes.back()->getDynamic())
 			{
 				game->lastStaticShape = game->boxes.back();
 			}
@@ -220,7 +220,11 @@ void UDPNetwork::handleReceivedData(Game* game)
 					dynamic_cast<Server*>(this)->broadCast(p);
 				}
 				else
+				{
 					cout << "Error: could not find Shape with ID: "<< id << endl;
+					sf::Packet del = packetParser.pack<int>(UDPNetwork::REMOVE_SHAPE, id);
+					dynamic_cast<Server*>(this)->broadCast(del);
+				}
 			}
 			break;
 		case WATER_LEVEL:
@@ -230,7 +234,7 @@ void UDPNetwork::handleReceivedData(Game* game)
 			game->startRise();
 			break;
 		case PLAYER_DEAD:
-
+			//game->score -= 500;
 			break;
 		case PLAYER_RES:
 
@@ -244,6 +248,9 @@ void UDPNetwork::handleReceivedData(Game* game)
 					shape->makeStatic();
 				}
 			}
+			break;
+		case SCORE_CHANGE:
+			game->score = packetParser.unpack<int>(*packet);
 			break;
 		default:
 			cerr << "Type " << type << " is not a recognized data type!" << endl;

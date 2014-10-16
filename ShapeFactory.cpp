@@ -5,6 +5,7 @@
 #include <chrono>
 #include <ctime>
 #include "Utility.h"
+#include "Item.h"
 
 ShapeFactory::ShapeFactory(Game* game_):
     dist(0.0, 1.0), utility(new Utility(game_))
@@ -71,4 +72,15 @@ Shape* ShapeFactory::createRandomShape(sf::Vector2i& viewOffset, bool dynamic)
                                         i);
     newRectangle->getBody()->GetFixtureList()->SetUserData( (void*)99 );
 	return newRectangle;
+}
+
+Shape* ShapeFactory::createItem(b2Vec2* position, int _id)
+{
+	b2Vec2* size = new b2Vec2(10, 10);
+	Item* item;
+	if(id == -1)
+		item = new Item(game, size, position, true, id++);
+	else
+		item = new Item(game, size, position, true, _id);
+	return item;
 }

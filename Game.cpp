@@ -7,11 +7,13 @@
 #include "Textor.h"
 #include "ContactListener.h"
 #include "Remover.h"
+#include "Synchronizer.h"
 
 using namespace std;
 
 Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_)
 {
+	
     window = window_;
     osHandler = osHandler_;
     
@@ -30,7 +32,7 @@ Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_)
 	water->setFillColor(sf::Color(0, 0, 255, 100));	
 	textor = new Textor(osHandler_);
 	exitCalled = false;
-	updateTime = 1;
+	
 	staticPlatform = 0;
     score = 0;
 	localHost = NULL;
@@ -52,6 +54,7 @@ Game::~Game()
 	delete player;
 	delete view;
 	delete shapeFactory;
+	exitGame();
 }
 
 void Game::initStartMenu() {
@@ -151,6 +154,7 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
 	riseSpeed = -0.2f;
 	allowJoin = true;
 	remover = new Remover(this);
+	synchronizer = new Synchronizer(*this);
     
 	//networking
 	switch (playerType)
@@ -214,6 +218,15 @@ void Game::run() {
         {
             sf::Packet packet = packetParser->pack(box);
             dynamic_cast<Server*>(localHost)->broadCast(packet);
+			if(staticPlatform == 0)
+			{
+				b2Vec2 v = lastStaticShape->getBody()->GetPosition();
+				v.y += 10;
+				boxes.push_back(shapeFactory->createItem(&v));
+				packet.clear();
+				packet = packetParser->pack(boxes.back());
+				dynamic_cast<Server*>(localHost)->broadCast(packet);
+			}
         }
     }
 
@@ -248,6 +261,8 @@ void Game::run() {
 		//broadcast water level:
 		sf::Packet p = packetParser->pack<int>(UDPNetwork::WATER_LEVEL, viewOffset.y);
 		server->broadCast(p);
+		sf::Packet score = packetParser->pack<int>(UDPNetwork::SCORE_CHANGE, Game::score);
+		server->broadCast(score);
 	}
 	else
 	{
@@ -258,16 +273,17 @@ void Game::run() {
 			dynamic_cast<Client*>(localHost)->sendToServer(p);
 		}*/
 		//request server update on shapes
-		requestShapeUpdates();
+		synchronizer->requestShapeUpdates();
 	}
 
-	requestPlayerUpdates();
+	synchronizer->requestPlayerUpdates();
 	//clear memory that is only valid this time step.
 	while(!localChanges.empty())
 	{
 		delete localChanges.back();
 		localChanges.pop_back();
 	}
+	
 }
 
 void Game::spawnBox(sf::Vector2i position) {
@@ -439,64 +455,12 @@ void Game::playerBoxInteraction()
 
 void Game::updateShapes(shapeSync* s)
 {
-	int id = s->shapeID;
-	vector<Shape*>::iterator i = find_if(boxes.begin(), boxes.end(), [id](Shape* s)
-	{
-		return s->getId() == id;
-	});
-	if(i != boxes.end())
-	{
-		Shape* shape = *i;
-		shape->getBody()->SetAngularVelocity(s->angularVel);
-		shape->getBody()->SetLinearVelocity(s->velocity);
-		shape->setPosition(&s->position, s->angle);
-		shape->getBody()->GetFixtureList()->SetUserData((void*)(uintptr_t)s->hookUserData);
-		shape->resetUpdateClock();
-	}
-	else
-	{
-		/*cout << "Shapes in vector boxes: ";
-		for (Shape* shape : boxes)
-		{
-			cout << shape->getId() << " ";
-		}
-		cout << endl;
-		cout << "Shape not found for update! ID: " << s->shapeID << endl;*/
-		/*cout << "Creating new shape with ID " << s->shapeID << endl;
-		Shape* replacement = shapeFactory->createRectangle(&s->size, &s->position, true);
-		replacement->setId(s->shapeID);
-		replacement->setPosition(&s->position, s->angle);
-		replacement->getBody()->SetAngularVelocity(s->angularVel);
-		replacement->getBody()->SetLinearVelocity(s->velocity);
-		boxes.push_back(replacement);*/
-	}
+	synchronizer->updateShapes(s);
 }
 
 void Game::updatePlayer(player_info* p)
 {
-	Player* player = getRemotePlayer(p->name);
-	if(player != nullptr)
-	{
-		//cout << "Updating player " << player->getName() << endl;
-		player->setPosition(&p->position);
-		player->getBody()->SetLinearVelocity(p->velocity);
-		//update player hook
-		//Circle * hookTip = player->getHookTip();
-		//hookTip->setPosition(&p->hookTip.position, p->hookTip.angle);
-		/*hookTip->getBody()->SetLinearVelocity(p->hookTip.velocity);
-		hookTip->getBody()->SetAngularVelocity(p->hookTip.angularVel);*/
-		//Rectangle* hookbase = player->getHookBase();
-		//hookbase->setPosition(&p->hookBase.position, p->hookBase.angle);
-		/*Circle * hookTip = player->getHookTip();
-		hookTip->setPosition(&p->hookTip.position, p->hookTip.angle);
-		/*hookTip->getBody()->SetLinearVelocity(p->hookTip.velocity);
-		hookTip->getBody()->SetAngularVelocity(p->hookTip.angularVel);
-		Rectangle* hookbase = player->getHookBase();
-		hookbase->setPosition(&p->hookBase.position, p->hookBase.angle);*/
-		player->getBox()->resetUpdateClock();
-	}
-	/*else
-		cerr << "Could not find player \'" << p->name << "\'" << endl;*/
+	synchronizer->updatePlayer(p);
 }
 
 void Game::removeShape(int id)
@@ -532,48 +496,6 @@ void Game::playerHandling()
 		/*if(remotePlayer->getBox()->getShape()->getPosition().y > /*window->getSize().y - viewOffset.y*//* viewOffset.y + killOffset)
 			remotePlayer->setPosition(lastStaticShape->getPosition());*/
 	}	
-}
-
-void Game::requestShapeUpdates()
-{
-	//shapes
-	vector<Shape*>::iterator i = boxes.begin()+1;
-	for(;i != boxes.end(); ++i)
-	{
-		Shape* s = *i;
-		if(s != nullptr && s->timeSinceUpdate().asSeconds() > updateTime)
-		{
-			//cout << "requesting synch data for shape "<< s->getId() << endl;
-			sf::Packet request = packetParser->pack<int>(UDPNetwork::SHAPE_SYNCH_REQUEST, s->getId());
-			dynamic_cast<Client*>(localHost)->sendToServer(request);
-		}
-	}
-}
-
-void Game::requestPlayerUpdates()
-{
-	//remote players
-	list<Player*>::iterator listItr = remotePlayers.begin();
-	for(; listItr != remotePlayers.end(); ++listItr)
-	{
-		Player* p = *listItr;
-		if(p != nullptr && p->getBox()->timeSinceUpdate().asSeconds() > updateTime)
-		{
-			//cout << "Request update for player: " << p->getName() << endl;
-			sf::Packet request = packetParser->pack<string>(UDPNetwork::PLAYER_SYNCH_REQUEST, p->getName());
-			if(localHost->isServer())
-			{
-				Server* server = dynamic_cast<Server*>(localHost);
-				client* receiver = server->getClient(p->getName());
-				localHost->send(request, receiver->clientAddress, receiver->clientPort);
-				
-			}
-			else
-			{
-				dynamic_cast<Client*>(localHost)->sendToServer(request);
-			}
-		}
-	}
 }
 
 Shape* Game::getShape(int id)

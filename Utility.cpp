@@ -27,6 +27,12 @@ b2Vec2 Utility::mouseToBox2D(sf::Vector2i mousePos) {
     return adjMeterPos;
 }
 
+sf::Vector2f Utility::box2dToSf(const b2Vec2& vector)
+{
+	return sf::Vector2f(vector.x + game->getWindow()->getSize().x/2,
+		vector.y - game->getWindow()->getSize().y/2);
+}
+
 float Utility::angleBetweenPoints(sf::Vector2i pixelPosA, sf::Vector2i pixelPosB) {
     b2Vec2 convertedA = b2Vec2(pixelPosA.x * pixelToMeter, pixelPosA.y * pixelToMeter);
     b2Vec2 convertedB = b2Vec2(pixelPosB.x * pixelToMeter, pixelPosB.y * pixelToMeter);

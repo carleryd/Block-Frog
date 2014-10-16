@@ -16,8 +16,7 @@ void Controller::checkInput() {
         // Close window : exit
         if (event.type == sf::Event::Closed) {
             game->getWindow()->close();
-			if(!game->exitCalled)
-				game->exitGame();
+				
         }
 
         // Escape pressed : exit

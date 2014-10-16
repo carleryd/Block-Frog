@@ -5,10 +5,13 @@
 #include <Box2D/Box2D.h>
 #include <ctime>
 #include <iostream>
+
 using namespace std;
 
 class Game;
 class Shape;
+class ParticleSystem;
+
 struct b2BodyUserData
 {
 	int id;
@@ -44,11 +47,13 @@ public:
 	b2BodyUserData& getUserData() {return userData;};
 	//reset the update clock
 	void resetUpdateClock();
-	
+	void startParticles();
 
 protected:
 	Shape(Game* game, b2Vec2* position,
 		bool dynamic, int id, float density, float friction, int groupIndex);
+
+	void checkForContacts();
     
 	sf::Shape* shape;
     b2Body* body;
@@ -61,7 +66,8 @@ protected:
     float density, friction;
     float angle;
     bool dynamic;
-private:
+	ParticleSystem* particleSystem;
+//private:
     Game* game;
 };
 

@@ -2,6 +2,7 @@
 #include "Game.h"
 #include <math.h>
 #include "Utility.h"
+#include "ParticleSystem.h"
 
 const float PI = 3.14f;
 
@@ -30,7 +31,7 @@ Shape::Shape(Game* game_, b2Vec2* position_, bool dynamic_, int id, float densit
 	userData.toBeRemoved = false;
 	body->SetUserData((void*)&userData);
 	updateClock.restart();
-	
+	particleSystem = nullptr;
 }
 
 Shape::~Shape(void)
@@ -44,6 +45,22 @@ void Shape::update()
     shape->setPosition((body->GetPosition().x + game->getUtility()->getOffSetX()) * game->getUtility()->getMTP(),
                        (-body->GetPosition().y + game->getUtility()->getOffSetY()) * game->getUtility()->getMTP());
     shape->setRotation((-body->GetAngle() / PI) * 180);
+
+	//particles
+	if(particleSystem != nullptr)
+	{
+		particleSystem->setEmitter( shape->getPosition() );
+		particleSystem->update();
+		game->getWindow()->draw(*particleSystem);
+		
+		if(!particleSystem->isRunning())
+		{
+			delete particleSystem;
+			particleSystem = nullptr;
+		}
+	}
+	else
+		checkForContacts();
 }
 
 sf::Shape* Shape::getShape()
@@ -70,4 +87,21 @@ void Shape::makeStatic()
 {
 	if(body->GetType() != b2BodyType::b2_staticBody)
 		body->SetType(b2BodyType::b2_staticBody);
+}
+
+void Shape::checkForContacts()
+{
+	b2ContactEdge* edge = body->GetContactList();
+	for(;edge; edge = edge->next)
+	{
+		if(edge->contact->IsTouching() && body->GetLinearVelocity().Length() > 1)
+		{
+			startParticles();
+		}
+	}
+}
+
+void Shape::startParticles()
+{
+	particleSystem = new ParticleSystem(1000, shape->getPosition());
 }

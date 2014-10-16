@@ -8,7 +8,7 @@
 Remover::Remover(Game* g):
 	packetParser(g->getPacketParser()), game(g)
 {
-	killOffset = 40;
+	killOffset = 60;
 	staleOffset = 20;
 }
 
@@ -42,16 +42,16 @@ void Remover::checkPlayerKill(Player* player)
 	{
 		cout << player->getName() << " is now sleeping with the fishes." << endl;
 		player->setDeath(true);
-		/*
+		
 		sf::Packet p = packetParser->pack(UDPNetwork::PLAYER_DEAD);
-		if(localHost->isServer())
+		if(game->getLocalHost()->isServer())
 		{
-			dynamic_cast<Server*>(localHost)->broadCast(p);
+			dynamic_cast<Server*>(game->getLocalHost())->broadCast(p);
 		}
 		else
 		{
-			dynamic_cast<Client*>(localHost)->sendToServer(p);
-		}*/
+			dynamic_cast<Client*>(game->getLocalHost())->sendToServer(p);
+		}
 	}
 }
 

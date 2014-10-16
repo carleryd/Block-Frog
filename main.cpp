@@ -46,8 +46,18 @@ int main(int argc, char* argv[])
     
     if (!icon.loadFromFile(osHandler->getResourcePath() + "frog_placeholder.png")) {
 		cerr << "Could not load frog!" << endl;
-        return EXIT_FAILURE;
+        //return EXIT_FAILURE;
     }
+
+	sf::Music music;
+	if(!music.openFromFile(osHandler->getResourcePath() + "nice_music.ogg"))
+	{
+		cerr  << "Could not load music!" << endl;
+	}
+	else
+	{
+		music.play();
+	}
     
     window->setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 	
@@ -55,11 +65,14 @@ int main(int argc, char* argv[])
     Menu* menu = new Menu(window, osHandler);
 	window->setFramerateLimit(60);
 
+	
+	
+
     // Start the game loop
     while (window->isOpen())
     {
         // Clear screen
-        window->clear();
+		window->clear(sf::Color(0,100,160));
         
         menu->run();
 

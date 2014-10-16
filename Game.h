@@ -8,7 +8,6 @@
 #include "Player.h"
 #include <list>
 #include <thread>
-#include <typeinfo>
 class Utility;
 class Shape;
 class ShapeFactory;
@@ -18,6 +17,7 @@ class UDPNetwork;
 class Textor;
 class ContactListener;
 class Remover;
+class Synchronizer;
 
 enum {SERVER, CLIENT, SINGLE_PLAYER};
 
@@ -84,8 +84,7 @@ private:
 	Shape* createBoxes(); //for server only. Returns pointer to last created box, nullptr if no box was created
 	void handleThreads();
 	void playerHandling();
-	void requestShapeUpdates();
-	void requestPlayerUpdates();
+
 
 	//if local player interacts with boxes save changes to localChanges
 	void playerBoxInteraction();
@@ -122,6 +121,7 @@ private:
 	std::thread* network;
     std::vector<shapeSync*> localChanges;
     std::clock_t start;	
+	Synchronizer* synchronizer;
 
     std::vector<Shape*> boxes;
 	Shape* lastStaticShape;
@@ -131,7 +131,7 @@ private:
 	float riseSpeed;
 	int secPerDrops; //time before a new block is dropped
 	bool allowJoin;
-	float updateTime;
+	//float updateTime;
 	int staticPlatform; //every staticPlatform:th created box will be a static platform
 	friend Controller;
 	friend UDPNetwork;

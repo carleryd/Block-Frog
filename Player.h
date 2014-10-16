@@ -10,6 +10,7 @@
 #include "Hook.h"
 class Game;
 class Hook;
+class Item;
 
 using namespace std;
 
@@ -68,6 +69,7 @@ private:
 	string name;
     int birthNumber;
 	bool dead;
+	friend Item;
 };
 
 #endif /* defined(__Block_Frog__Player__) */
