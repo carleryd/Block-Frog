@@ -120,12 +120,12 @@ Shape* PacketParser::unpack<Shape*>(sf::Packet& packet)
 	if(!item)
 	{
 		s = factory.createRectangle(new b2Vec2(size), new b2Vec2(pos), dynamic, id);
-		cout << "regular shape created" << endl;
+		//cout << "regular shape created" << endl;
 	}
 	else
 	{
 		s = factory.createItem(&pos, id);
-		cout << "item created" << endl;
+		//cout << "item created" << endl;
 	}
 	s->setPosition(&pos);
 	s->setId(id);
