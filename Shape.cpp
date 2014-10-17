@@ -59,7 +59,7 @@ void Shape::update()
 			particleSystem = nullptr;
 		}
 	}
-	else
+	else if(userData.id > -1)
 		checkForContacts();
 }
 
@@ -86,7 +86,10 @@ void Shape::resetUpdateClock()
 void Shape::makeStatic()
 {
 	if(body->GetType() != b2BodyType::b2_staticBody)
+	{
 		body->SetType(b2BodyType::b2_staticBody);
+		startParticles();
+	}
 }
 
 void Shape::checkForContacts()
@@ -103,5 +106,6 @@ void Shape::checkForContacts()
 
 void Shape::startParticles()
 {
-	particleSystem = new ParticleSystem(1000, shape->getPosition());
+	if(particleSystem == nullptr)
+		particleSystem = new ParticleSystem(1000, shape->getPosition());
 }

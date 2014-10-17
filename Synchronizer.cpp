@@ -4,9 +4,10 @@
 #include <Box2D/Box2D.h>
 
 Synchronizer::Synchronizer(Game& g):
-	game(g)
+	game(g), threshold(0.05, 0.05)
 {
 	updateTime = 0.2;
+	
 }
 
 
@@ -28,8 +29,14 @@ void Synchronizer::updateShapes(shapeSync* s)
 		shape->getBody()->SetAngularVelocity(s->angularVel);
 		//shape->getBody()->SetLinearVelocity(s->velocity);
 		//shape->setPosition(&s->position, s->angle);
+		//position
+		if(isWithinThresshold(s->position) /* && NOT HOOKED */)
+		{
+			b2Vec2 pos = interpolate( shape->getBody()->GetPosition(), s->position );
+			shape->setPosition(&pos, s->angle);
+		}
 		shape->getBody()->SetLinearVelocity(interpolate(shape->getBody()->GetLinearVelocity() ,s->velocity));
-		shape->setPosition( new b2Vec2( interpolate( shape->getBody()->GetPosition(), s->position )), s->angle);
+		
 		shape->getBody()->GetFixtureList()->SetUserData((void*)(uintptr_t)s->hookUserData);
 		shape->resetUpdateClock();
 	}
@@ -40,8 +47,8 @@ void Synchronizer::updateShapes(shapeSync* s)
 		{
 			cout << shape->getId() << " ";
 		}
-		cout << endl;
-		cout << "Shape not found for update! ID: " << s->shapeID << endl;*/
+		cout << endl;*/
+		cout << "Shape not found for update! ID: " << s->shapeID << endl;
 		/*cout << "Creating new shape with ID " << s->shapeID << endl;
 		Shape* replacement = shapeFactory->createRectangle(&s->size, &s->position, true);
 		replacement->setId(s->shapeID);
@@ -130,4 +137,9 @@ b2Vec2 Synchronizer::interpolate(const b2Vec2& oldV, const b2Vec2& newV)
 const float Synchronizer::interpolate(float o, float n)
 {
 	return o*0.5 + 0.5*n;
+}
+
+bool Synchronizer::isWithinThresshold(b2Vec2& v)
+{
+	return v.Length() > threshold.Length();
 }

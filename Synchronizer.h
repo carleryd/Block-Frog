@@ -19,8 +19,11 @@ private:
 	b2Vec2 interpolate(const b2Vec2& oldV, const b2Vec2& newV);
 	const float interpolate(float oldV, float newV);
 
+	bool isWithinThresshold(b2Vec2& v);
+
 	Game& game;
 	float updateTime;
+	b2Vec2 threshold;
 };
 
 #endif

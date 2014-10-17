@@ -19,6 +19,7 @@ UDPNetwork::UDPNetwork(string PlayerName, ShapeFactory& factory):
 	playerName = PlayerName;
 	selector.add(mySocket);
 	mySocket.setBlocking(true);
+	counter = 0;
 }
 
 UDPNetwork::~UDPNetwork(void)
@@ -128,6 +129,7 @@ void UDPNetwork::handleReceivedData(Game* game)
 			break;
 		case SHAPE:
 			game->boxes.push_back(packetParser.unpack<Shape*>(*packet));
+			//cout << "shape counter: " << ++counter << endl;
 			if(!game->boxes.back()->getDynamic())
 			{
 				game->lastStaticShape = game->boxes.back();

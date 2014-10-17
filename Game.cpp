@@ -140,6 +140,7 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
     
 	packetParser = new PacketParser(*shapeFactory);
 	
+	//ground
     boxes.push_back(shapeFactory->createRectangle(new b2Vec2(750.0f, 50.0f),
                                                   new b2Vec2(0.0f, -float(window->getSize().y)/2),
                                                   false,
@@ -148,7 +149,8 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
                     );
 	
 	lastStaticShape = boxes.back();
-    boxes.push_back(shapeFactory->createRandomShape(viewOffset));
+	//test shape
+    //boxes.push_back(shapeFactory->createRandomShape(viewOffset));
 
 	rise = false;
 	riseSpeed = -0.2f;
@@ -183,7 +185,7 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
 	
 	window->setActive(true);
 	
-	secPerDrops = 1;
+	secPerDrops = 4;
 }
 
 sf::RenderWindow* Game::getWindow() { return window; }
