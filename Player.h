@@ -23,6 +23,7 @@ public:
 
 	void setName(string n);
     void setPosition(b2Vec2* newPos);
+    void resetPlayer(b2Vec2* newPos);
     void setBirthNumber(int number);
     
     b2Body* getBody();

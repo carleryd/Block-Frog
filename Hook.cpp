@@ -127,7 +127,7 @@ void Hook::shoot(sf::Vector2i mousePixelPos) {
     prismaticJoint->SetLimits(0.0, reachLength);
 
     // We want too look for objects to grab
-    contactListener->setHookActive(true);
+    contactListener->setHookActive(true, owner->getBirthNumber());
     ACTION = SHOOTING;
 }
 
@@ -167,10 +167,10 @@ void Hook::release() {
     	grabJoint = NULL;
         
         // Remove the recent contact, we no longer want to grab it
-        contactListener->removeRecentHookContact(game->getPlayer()->getBirthNumber());
+        contactListener->removeRecentHookContact(owner->getBirthNumber());
         
         // Make it so that we dont grab boxes while hook is returning to us
-    	contactListener->setHookActive(false);
+    	contactListener->setHookActive(false, owner->getBirthNumber());
         ACTION = PASSIVE;
     }
 }
@@ -187,7 +187,7 @@ void Hook::update() {
     switch(ACTION)
     {
         case SHOOTING:
-            recentBoxContact = contactListener->getRecentHookContact(game->getPlayer()->getBirthNumber());
+            recentBoxContact = contactListener->getRecentHookContact(owner->getBirthNumber());
             
 			if(recentBoxContact != NULL && grabJoint == NULL) {
                 prismaticJoint->SetLimits(0.0, grabLength);
@@ -195,7 +195,7 @@ void Hook::update() {
                 ACTION = PASSIVE;
             }
             else if(recentBoxContact == NULL && getLength() > (reachLength - 0.01)) {
-                contactListener->setHookActive(false);
+                contactListener->setHookActive(false, owner->getBirthNumber());
                 prismaticJoint->SetLimits(0.0, passiveLength);
                 ACTION = PASSIVE;
             }

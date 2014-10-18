@@ -15,7 +15,7 @@ public:
     void BeginContact(b2Contact* contact);
     void EndContact(b2Contact* contact);
     
-    void setHookActive(bool active);
+    void setHookActive(bool active, int birthNumber);
     
     bool getHostGame() { return hostGame; }
     bool getJoinGame() { return joinGame; }
@@ -30,7 +30,7 @@ private:
     int numFootContacts[10];
     b2Body* recentHookContacts[10];
     // So that it wont hook with stuff when it shouldnt(released hook)
-    bool hookIsActive;
+    int hookIsActive[10];
     bool hostGame;
     bool joinGame;
 };

@@ -84,15 +84,27 @@ void Player::setBirthNumber(int number) {
 	// also set hook number+10
 }
 
-void Player::setPosition(b2Vec2* newPos) {
-	box->getBody()->SetTransform(*newPos, box->getBody()->GetAngle());
+void Player::resetPlayer(b2Vec2* newPos) {
+    b2Vec2 hookTipPos = box->getBody()->GetPosition() - *hook->getHookTip()->getPosition();
+    box->getBody()->SetTransform(*newPos, box->getBody()->GetAngle());
 	b2Vec2 pos = box->getBody()->GetPosition();
 	if(hook != NULL)
 	{
 		hook->getHookBase()->setPosition(&pos);
-		pos.y += 5;
+		pos += hookTipPos;
 		hook->getHookTip()->setPosition(&pos);
 	}
+}
+
+void Player::setPosition(b2Vec2* newPos) {
+	box->getBody()->SetTransform(*newPos, box->getBody()->GetAngle());
+//	b2Vec2 pos = box->getBody()->GetPosition();
+//	if(hook != NULL)
+//	{
+//		hook->getHookBase()->setPosition(&pos);
+//		pos.y += 5;
+//		hook->getHookTip()->setPosition(&pos);
+//	}
 }
 
 void Player::move(int dir, bool localPlayer, bool is_jumping)
@@ -157,7 +169,7 @@ void Player::useHook(sf::Vector2i mousePos, bool local) {
 		{
 			hook_info h;
 			h.name = name;
-			h.mousePos;
+			h.mousePos = mousePos;
 			sf::Packet p = game->getPacketParser()->pack(UDPNetwork::HOOK_SHOT, h);
 			send(p);
 		}
@@ -172,7 +184,7 @@ void Player::aimHook(sf::Vector2i mousePos, bool local) {
 		{
 			hook_info h;
 			h.name = name;
-			h.mousePos;
+			h.mousePos = mousePos;
 			sf::Packet p = game->getPacketParser()->pack(UDPNetwork::HOOK_AIM, h);
 			send(p);
 		}

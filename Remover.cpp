@@ -97,7 +97,7 @@ void Remover::respawnPlayer(Player* player)
 	{
 		b2Vec2 spawn = game->getLastStaticShape()->getBody()->GetPosition();
 		spawn.y += 10;
-		player->setPosition(&spawn);
+		player->resetPlayer(&spawn);
 		cout << player->getName() << " has returned from the grave!" << endl;
 		player->setDeath(false);
 		sf::Packet p = packetParser->pack(UDPNetwork::PLAYER_RES);

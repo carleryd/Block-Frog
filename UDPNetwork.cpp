@@ -266,7 +266,7 @@ void UDPNetwork::handleReceivedData(Game* game)
 				if(p != nullptr)
 				{
 					p->useHook(hook->mousePos, false);
-					cout << hook->name << " uses hook" << endl;
+//					cout << hook->name << " uses hook" << endl;
 				}
 				else
 					cout << hook->name << " not found" << endl;
@@ -280,10 +280,10 @@ void UDPNetwork::handleReceivedData(Game* game)
 				if(p != nullptr)
 				{
 					p->aimHook(hook->mousePos + game->getViewOffset(), false);
-					cout << hook->name << " aims hook" << endl;
+//					cout << hook->name << " aims hook" << endl;
 				}
 				else
-					 cout << hook->name << " not found" << endl;
+                    cout << hook->name << " not found" << endl;
 				delete hook;
 			}
 			break;
