@@ -7,47 +7,31 @@
 class Shape;
 class Player;
 
-struct shapeSync
-{
-	shapeSync(){};
-	shapeSync(Shape& shape)
-	{
-		shapeID = shape.getId();
-		angularVel = shape.getBody()->GetAngularVelocity();
-		velocity = shape.getBody()->GetLinearVelocity();
-		position = shape.getBody()->GetPosition();
-		angle = shape.getBody()->GetAngle();
-		hookUserData = (uintptr_t)shape.getBody()->GetFixtureList()->GetUserData();
-	};
-	int shapeID;
-	float angularVel;
-	b2Vec2 velocity;
-	b2Vec2 position;
-	float angle;
-	int hookUserData;
-};
-
 struct player_info
 {
 	player_info(){};
-	player_info(Player& p)
+	/*player_info(Player& p)
 	{
+		
 		name = p.getName();
 		movedir = -1; // illegal is set in player::move
 		jumped = false;  // illegal is set in player::move
 		velocity = p.getBody()->GetLinearVelocity();
 		position = p.getBody()->GetPosition();
-		hookTip = shapeSync(*p.getHookTip());
-		hookBase = shapeSync(*p.getHookBase());
-	}
+
+		/*hookTip = shapeSync(*p.getHookTip());
+		hookBase = shapeSync(*p.getHookBase());*/
+	//}*/
 	string name;
 	int movedir;
 	bool jumped; 
 	b2Vec2 velocity;
 	b2Vec2 position;
-	shapeSync hookTip;
-	shapeSync hookBase;
+	/*shapeSync hookTip;
+	shapeSync hookBase;*/
 };
+struct shapeSync;
+struct hook_info;
 
 class PacketParser
 {
@@ -74,6 +58,7 @@ public:
 		appendee = false sets a type to the packet so that it can be handled by the receiver
 	*/
 	sf::Packet pack(shapeSync* s, bool appendee = false);
+	sf::Packet pack(int type, hook_info&);
 
 	//for packing primitive types
 	template<typename T>
@@ -97,5 +82,35 @@ private:
 	appendto.append(appendwith.getData(), appendwith.getDataSize());
 	return appendto;
 };*/
+
+struct shapeSync
+{
+	shapeSync(){};
+	shapeSync(Shape& shape)
+	{
+		shapeID = shape.getId();
+		angularVel = shape.getBody()->GetAngularVelocity();
+		velocity = shape.getBody()->GetLinearVelocity();
+		position = shape.getBody()->GetPosition();
+		angle = shape.getBody()->GetAngle();
+		hookUserData = (uintptr_t)shape.getBody()->GetFixtureList()->GetUserData();
+	};
+	int shapeID;
+	float angularVel;
+	b2Vec2 velocity;
+	b2Vec2 position;
+	float angle;
+	int hookUserData;
+};
+
+
+
+
+struct hook_info
+{
+	string name;
+	sf::Vector2i mousePos;
+};
+
 
 #endif

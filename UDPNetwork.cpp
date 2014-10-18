@@ -180,7 +180,12 @@ void UDPNetwork::handleReceivedData(Game* game)
 				Player* player = game->getPlayer(name);
 				if(player != nullptr)
 				{
-					player_info* pi = new player_info(*player);
+					player_info* pi = new player_info();
+					pi->name = player->getName();
+					pi->movedir = -1;
+					pi->jumped = false;
+					pi->velocity = player->getBody()->GetLinearVelocity();
+					pi->position = player->getBody()->GetPosition();
 					sf::Packet p = packetParser.pack<player_info*>(PLAYER_SYNCH, pi);
 					send(p, senderAddress, senderPort);
 				}
@@ -253,6 +258,34 @@ void UDPNetwork::handleReceivedData(Game* game)
 			break;
 		case SCORE_CHANGE:
 			game->score = packetParser.unpack<int>(*packet);
+			break;
+		case HOOK_SHOT:
+			{
+				hook_info* hook = packetParser.unpack<hook_info*>(*packet);
+				Player* p = game->getPlayer(hook->name);
+				if(p != nullptr)
+				{
+					p->useHook(hook->mousePos, false);
+					cout << hook->name << " uses hook" << endl;
+				}
+				else
+					cout << hook->name << " not found" << endl;
+				delete hook;
+			}
+			break;
+		case HOOK_AIM:
+			{
+				hook_info* hook = packetParser.unpack<hook_info*>(*packet);
+				Player* p = game->getPlayer(hook->name);
+				if(p != nullptr)
+				{
+					p->aimHook(hook->mousePos + game->getViewOffset(), false);
+					cout << hook->name << " aims hook" << endl;
+				}
+				else
+					 cout << hook->name << " not found" << endl;
+				delete hook;
+			}
 			break;
 		default:
 			cerr << "Type " << type << " is not a recognized data type!" << endl;

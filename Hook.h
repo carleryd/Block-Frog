@@ -34,9 +34,13 @@ public:
     float getLength();
     void changeLength(float delta);
 
+	
+
 	//network
 	Circle* getHookTip(){return hookTip;};
 	Rectangle* getHookBase() {return hookBase;};
+
+	int getAction() {return ACTION;};
     
 private:
     Game* game;

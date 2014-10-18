@@ -21,6 +21,7 @@ bool Client::isServer()
 
 bool Client::connect(b2Vec2* pPos)
 {
+	cout << "contacting server" << endl;
 	//send
 	sf::Packet p;
 	p << UDPNetwork::NEW_PLAYER;
@@ -32,6 +33,7 @@ bool Client::connect(b2Vec2* pPos)
 	m.clear();
 	
 	//receive
+	cout << "Waiting for host response" << endl;
 	int ret = receive(&p);
 	p >> m;
 	

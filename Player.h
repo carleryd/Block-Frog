@@ -8,6 +8,7 @@
 #include "Circle.h"
 #include "ContactListener.h"
 #include "Hook.h"
+#include "PacketParser.h"
 class Game;
 class Hook;
 class Item;
@@ -32,6 +33,7 @@ public:
 	Circle* getHookTip() {return hook->getHookTip();};
 	Rectangle* getHookBase() {return hook->getHookBase();};
     int getBirthNumber() { return birthNumber; }
+	//Hook* getHook() {return hook;};
 
     
 	enum { LEFT, RIGHT, JUMP, LEFT_STOP, RIGHT_STOP };
@@ -43,9 +45,9 @@ public:
 	void push(b2Vec2&& direction);
     void draw();
 	void update();
-    void useHook(sf::Vector2i mousePos);
-    void aimHook(sf::Vector2i mousePos);
-    void releaseHook();
+    void useHook(sf::Vector2i mousePos, bool localPlayer = true);
+    void aimHook(sf::Vector2i mousePos, bool localPlayer = true);
+    void releaseHook(bool localPlayer = true);
     void increaseHook();
     void decreaseHook();
     bool isJumping();
@@ -61,6 +63,8 @@ private:
     sf::Sprite frogSprite;
     sf::Texture frogTexture;
     b2Fixture* footSensorFixture;
+	//check for item collision
+	void itemCheck();
     
 	float leftSpeed, rightSpeed;
 	float jumpHeight;
@@ -70,6 +74,9 @@ private:
     int birthNumber;
 	bool dead;
 	friend Item;
+
+	//small networking
+	void send(sf::Packet& p);
 };
 
 #endif /* defined(__Block_Frog__Player__) */
