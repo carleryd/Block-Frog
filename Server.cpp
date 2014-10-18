@@ -37,6 +37,7 @@ void Server::handleNewPlayer(packetInfo& pack)
 	m = "Welcome to " + playerName + "'s game.";
 	sendPack << m;
 	send(sendPack, pack.senderAddress, pack.senderPort);
+	cout << "first response message sent to client" << endl;
 
 	//send other to players' Frogs to newly connected player
 	typedef list<Player*>::iterator iter;

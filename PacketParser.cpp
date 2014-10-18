@@ -3,7 +3,7 @@
 #include "ShapeFactory.h"
 #include "UDPNetwork.h"
 #include <iostream>
-#include "Player.h"
+//#include "Player.h"
 #include "Rectangle.h"
 #include "Item.h"
 #include <typeinfo>
@@ -53,10 +53,10 @@ sf::Packet PacketParser::pack<player_info*>(int type, player_info* p)
 	packet << p->jumped;
 	packet << p->velocity.x << p->velocity.y;
 	packet << p->position.x << p->position.y;
-	sf::Packet ht = pack(&p->hookTip, true);
-	sf::Packet hb = pack(&p->hookBase, true);
-	packet.append(ht.getData(), ht.getDataSize());
-	packet.append(hb.getData(), ht.getDataSize());
+	/*sf::Packet ht = pack(&p->hookTip, true);
+	sf::Packet hb = pack(&p->hookBase, true);*/
+	/*packet.append(ht.getData(), ht.getDataSize());
+	packet.append(hb.getData(), ht.getDataSize());*/
 	return packet;
 }
 
@@ -104,6 +104,15 @@ sf::Packet PacketParser::pack(int type)
 {
 	sf::Packet p;
 	p << type;
+	return p;
+}
+
+sf::Packet PacketParser::pack(int type, hook_info& h)
+{
+	sf::Packet p;
+	p << type;
+	p << h.name;
+	p << h.mousePos.x << h.mousePos.y;
 	return p;
 }
 
@@ -179,13 +188,21 @@ player_info* PacketParser::unpack<player_info*>(sf::Packet& packet)
 	packet >> info->velocity.x >> info->velocity.y;
 	packet >> info->position.x >> info->position.y;
 	//hooktip
-	shapeSync* hooktip = unpack<shapeSync*>(packet);
+	/*shapeSync* hooktip = unpack<shapeSync*>(packet);
 	info->hookTip = *hooktip;
 	delete hooktip;
 	//hookbase
 	shapeSync* hookbase = unpack<shapeSync*>(packet);
 	info->hookBase  = *hookbase;
-	delete hookbase;
+	delete hookbase;*/
 	return info;
 }
 
+template<>
+hook_info* PacketParser::unpack<hook_info*>(sf::Packet& p)
+{
+	hook_info* h = new hook_info;
+	p >> h->name;
+	p >> h->mousePos.x >> h->mousePos.y;
+	return h;
+}

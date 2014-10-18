@@ -5,6 +5,7 @@
 #include "Client.h"
 #include "Server.h"
 #include "PacketParser.h"
+#include "Item.h"
 
 Player::Player(Game* game_) {
     game = game_;
@@ -131,8 +132,8 @@ void Player::move(int dir, bool localPlayer, bool is_jumping)
 		p.jumped = jumped;
 		p.velocity = box->getBody()->GetLinearVelocity();
 		packet = game->getPacketParser()->pack<player_info*>(UDPNetwork::PLAYER_MOVE, &p);
-
-		if(game->getLocalHost()->isServer())
+		send(packet);
+		/*if(game->getLocalHost()->isServer())
 		{
 			Server* server = dynamic_cast<Server*>(game->getLocalHost());
 			server->broadCast(packet);
@@ -140,7 +141,7 @@ void Player::move(int dir, bool localPlayer, bool is_jumping)
 		else
 		{
 			dynamic_cast<Client*>(game->getLocalHost())->sendToServer(packet);
-		}
+		}*/
 	}
 }
 
@@ -148,16 +149,47 @@ void Player::push(b2Vec2&& dir) {
 	box->getBody()->ApplyLinearImpulse(dir, box->getBody()->GetPosition(), true);
 }
 
-void Player::useHook(sf::Vector2i mousePos) {
-    if(hook != NULL && hook->getLength() < 0.7) hook->shoot(mousePos);
+void Player::useHook(sf::Vector2i mousePos, bool local) {
+    if(hook != NULL && hook->getLength() < 0.7)
+	{
+		hook->shoot(mousePos);
+		if(local)
+		{
+			hook_info h;
+			h.name = name;
+			h.mousePos;
+			sf::Packet p = game->getPacketParser()->pack(UDPNetwork::HOOK_SHOT, h);
+			send(p);
+		}
+	}
 }
 
-void Player::aimHook(sf::Vector2i mousePos) {
-    if(hook != NULL) hook->aim(mousePos);
+void Player::aimHook(sf::Vector2i mousePos, bool local) {
+    if(hook != NULL) 
+	{
+		hook->aim(mousePos);
+		if(local)
+		{
+			hook_info h;
+			h.name = name;
+			h.mousePos;
+			sf::Packet p = game->getPacketParser()->pack(UDPNetwork::HOOK_AIM, h);
+			send(p);
+		}
+	}
 }
 
-void Player::releaseHook() {
-    if(hook != NULL) hook->release();
+void Player::releaseHook(bool local) {
+    if(hook != NULL) 
+	{
+		hook->release();
+		if(local)
+		{
+			sf::Packet p = game->getPacketParser()->pack<string>(UDPNetwork::HOOK_RELEASE, name);
+			send(p);
+		}
+
+	}
 }
 
 bool Player::isJumping() {
@@ -186,8 +218,40 @@ void Player::update() {
 	box->update();
     box->getBody()->SetLinearVelocity(b2Vec2(leftSpeed + rightSpeed, 0) + oldSpeed);
     
-    if(hook != NULL) hook->update();
+    if(hook != NULL) 
+		hook->update();
+
+	itemCheck();
     
 //    cout << "player position: " << adjPosX << " " << adjPosY << endl;
 }
 
+void Player::itemCheck()
+{
+	/*b2Body* body = box->getBody();
+	b2ContactEdge* edge = body->GetContactList();
+	for(;edge; edge = edge->next)
+	{
+		if(edge->contact->IsTouching() &&
+			dynamic_cast<Item*>(edge->contact->GetFixtureB()->) != nullptr)
+		{
+			dynamic_cast<Item*>(edge->contact)->causeEffect(this);
+		}
+	}*/
+}
+
+void Player::send(sf::Packet& packet)
+{ 
+	if(game->getLocalHost() != NULL)
+	{
+		if(game->getLocalHost()->isServer())
+		{
+			Server* server = dynamic_cast<Server*>(game->getLocalHost());
+			server->broadCast(packet);
+		}
+		else
+		{
+			dynamic_cast<Client*>(game->getLocalHost())->sendToServer(packet);
+		}
+	}
+}
