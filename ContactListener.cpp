@@ -61,17 +61,19 @@ void ContactListener::BeginContact(b2Contact* contact) {
             numFootContacts[4-1]++;
             break;
         case 11:
-            cout << "hook contact " << 11 << endl;
-            if((uintptr_t)fixtureBUserData == 99) {
-                recentHookContacts[11-11] = contact->GetFixtureB()->GetBody();
-            }
-            if((uintptr_t)fixtureBUserData == 80) {
-                cout << "HOST GAME" << endl;
-                hostGame = true;
-            }
-            if((uintptr_t)fixtureBUserData == 81) {
-                cout << "JOIN GAME" << endl;
-                joinGame = true;
+            if(hookIsActive) {
+                cout << "hook contact " << 11 << endl;
+                if((uintptr_t)fixtureBUserData == 99) {
+                    recentHookContacts[11-11] = contact->GetFixtureB()->GetBody();
+                }
+                if((uintptr_t)fixtureBUserData == 80) {
+                    cout << "HOST GAME" << endl;
+                    hostGame = true;
+                }
+                if((uintptr_t)fixtureBUserData == 81) {
+                    cout << "JOIN GAME" << endl;
+                    joinGame = true;
+                }
             }
             break;
         case 12:
@@ -113,16 +115,18 @@ void ContactListener::BeginContact(b2Contact* contact) {
             break;
         case 11:
 //            cout << "hook contact " << 11 << endl;
-            if((uintptr_t)fixtureAUserData == 99) {
-                recentHookContacts[11-11] = contact->GetFixtureA()->GetBody();
-            }
-            if((uintptr_t)fixtureAUserData == 80) {
-                cout << "HOST GAME" << endl;
-                hostGame = true;
-            }
-            if((uintptr_t)fixtureAUserData == 81) {
-                cout << "JOIN GAME" << endl;
-                joinGame = true;
+            if(hookIsActive) {
+                if((uintptr_t)fixtureAUserData == 99) {
+                    recentHookContacts[11-11] = contact->GetFixtureA()->GetBody();
+                }
+                if((uintptr_t)fixtureAUserData == 80) {
+                    cout << "HOST GAME" << endl;
+                    hostGame = true;
+                }
+                if((uintptr_t)fixtureAUserData == 81) {
+                    cout << "JOIN GAME" << endl;
+                    joinGame = true;
+                }
             }
             break;
         case 12:

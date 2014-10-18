@@ -133,10 +133,12 @@ void Hook::shoot(sf::Vector2i mousePixelPos) {
 
 b2RevoluteJoint* Hook::grab(b2Body* box) {
     // Makes the box more easily handled by frog
-    box->GetFixtureList()->SetDensity(0.0001);
+    if(box->GetType() == b2BodyType::b2_dynamicBody) {
+	    box->GetFixtureList()->SetDensity(0.0001);
 //    box->GetFixtureList()->SetFriction(0.1);
-    box->SetFixedRotation(true);
-    box->ResetMassData();
+    	box->SetFixedRotation(true);
+        box->ResetMassData();
+    }
     
     b2RevoluteJointDef def;
     def.bodyA = hookTip->getBody();
@@ -152,11 +154,13 @@ void Hook::release() {
     if(grabJoint != NULL) {
         prismaticJoint->SetLimits(0.0, passiveLength);
         // Return to original density and friction
-        grabJoint->GetBodyB()->GetFixtureList()->SetDensity(1.0);
-        grabJoint->GetBodyB()->GetFixtureList()->SetFriction(1.0);
-        grabJoint->GetBodyB()->SetFixedRotation(false);
-        grabJoint->GetBodyB()->SetLinearVelocity(b2Vec2(0, 0));
-        grabJoint->GetBodyB()->ResetMassData();
+        if(grabJoint->GetBodyB()->GetType() == b2BodyType::b2_dynamicBody) {
+	        grabJoint->GetBodyB()->GetFixtureList()->SetDensity(1.0);
+    	    grabJoint->GetBodyB()->SetFixedRotation(false);
+        	grabJoint->GetBodyB()->SetLinearVelocity(b2Vec2(0, 0));
+            grabJoint->GetBodyB()->GetFixtureList()->SetFriction(1.0);
+            grabJoint->GetBodyB()->ResetMassData();
+        }
         
         // Destroy the joint connecting hook and box
     	game->getWorld()->DestroyJoint(grabJoint);
@@ -174,9 +178,6 @@ void Hook::release() {
 void Hook::update() {
     hookTip->update();
     hookBase->update();
-    /*playerMeterPos = b2Vec2(game->getPlayer()->getBody()->GetPosition().x,
-                            game->getPlayer()->getBody()->GetPosition().y);*/
-
 	playerMeterPos = b2Vec2(owner->getBody()->GetPosition().x,
                             owner->getBody()->GetPosition().y);
 	;
@@ -193,7 +194,8 @@ void Hook::update() {
                 grabJoint = grab(recentBoxContact);
                 ACTION = PASSIVE;
             }
-            else if(recentBoxContact == NULL && getLength() > (reachLength - 0.2)) {
+            else if(recentBoxContact == NULL && getLength() > (reachLength - 0.01)) {
+                contactListener->setHookActive(false);
                 prismaticJoint->SetLimits(0.0, passiveLength);
                 ACTION = PASSIVE;
             }
@@ -204,17 +206,6 @@ void Hook::update() {
         default:
             cout << "Invalid action" << endl;
     }
-//    
-//    if(recentBoxContact == NULL && getLength() > (reachLength - 0.2)) {
-//        cout << "OVER " << (reachLength - 0.2) << endl;
-//        prismaticJoint->SetLimits(0.0, passiveLength);
-//    }
-//	
-//    if(recentBoxContact != NULL && weldJoint == NULL) {
-//        prismaticJoint->SetLimits(0.0, grabLength);
-//        
-//        weldJoint = grab(recentBoxContact);
-//    }
 }
 
 void Hook::draw() {

@@ -29,7 +29,7 @@ Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_)
     // Construct a world object, which will hold and simulate the rigid bodies.
     world = new b2World(gravity);
 	water = new sf::RectangleShape(sf::Vector2f(float(window->getSize().x * 2), float(window->getSize().y)));
-	water->setFillColor(sf::Color(0, 0, 255, 100));	
+	water->setFillColor(sf::Color(255, 0, 0, 150));
 	textor = new Textor(osHandler_);
 	exitCalled = false;
 	
@@ -144,7 +144,7 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
     boxes.push_back(shapeFactory->createRectangle(new b2Vec2(750.0f, 50.0f),
                                                   new b2Vec2(0.0f, -float(window->getSize().y)/2),
                                                   false,
-                                                  1.0,
+                                         	         1.0,
                                                   1.0)
                     );
 	
