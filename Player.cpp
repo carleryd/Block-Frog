@@ -98,13 +98,6 @@ void Player::resetPlayer(b2Vec2* newPos) {
 
 void Player::setPosition(b2Vec2* newPos) {
 	box->getBody()->SetTransform(*newPos, box->getBody()->GetAngle());
-//	b2Vec2 pos = box->getBody()->GetPosition();
-//	if(hook != NULL)
-//	{
-//		hook->getHookBase()->setPosition(&pos);
-//		pos.y += 5;
-//		hook->getHookTip()->setPosition(&pos);
-//	}
 }
 
 void Player::move(int dir, bool localPlayer, bool is_jumping)

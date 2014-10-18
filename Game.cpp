@@ -339,6 +339,7 @@ Shape* Game::createBoxes()
 		if(staticPlatform == 0)
 		{
 			newBox = lastStaticShape = shapeFactory->createRandomShape(viewOffset, false);
+            newBox->getBody()->SetUserData((void*)98);
 			staticPlatform = 0;
 		}
 		else

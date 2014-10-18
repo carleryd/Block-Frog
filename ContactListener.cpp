@@ -36,6 +36,7 @@ void ContactListener::removeRecentHookContact(int birthNumber) {
 // 11-20	hook collision for players
 // 80-81	hostGame and joinGame objects
 // 71		hook length item
+// 98		static platforms
 // 99		randomly spawned rectangles(createRandomShape(...))
 
 // Checking if contact between bodies has started
