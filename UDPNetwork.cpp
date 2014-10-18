@@ -287,6 +287,20 @@ void UDPNetwork::handleReceivedData(Game* game)
 				delete hook;
 			}
 			break;
+		case HOOK_RELEASE:
+			{
+				hook_info* hook = packetParser.unpack<hook_info*>(*packet);
+				Player* p = game->getPlayer(hook->name);
+				if(p != nullptr)
+				{
+					p->releaseHook(false);
+					cout << hook->name << " release hook" << endl;
+				}
+				else
+					 cout << hook->name << " not found" << endl;
+				delete hook;
+			}
+			break;
 		default:
 			cerr << "Type " << type << " is not a recognized data type!" << endl;
 			break;
