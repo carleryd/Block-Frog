@@ -44,8 +44,11 @@ Player::Player(Game* game_) {
     
     // ##### SENSOR #####
     // width, height, center, angle
-    polygonShape.SetAsBox(box->getSize()->x * game->getUtility()->getPTM(),
-                          0.2 * game->getUtility()->getPTM(), b2Vec2(0,-2), 0);
+    // O.98 will stop player form being able to jump riiight next to a block without touching ground
+    float playerMeterWidth = box->getSize()->x/2 * game->getUtility()->getPTM();
+    float playerMeterHeight = box->getSize()->y/2 * game->getUtility()->getPTM();
+    polygonShape.SetAsBox(0.98 * playerMeterWidth,
+                          0.05, b2Vec2(0, -playerMeterHeight), 0);
     myFixtureDef.isSensor = true;
     myFixtureDef.density = 0.0001;
     footSensorFixture = box->getBody()->CreateFixture(&myFixtureDef);
