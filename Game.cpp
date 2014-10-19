@@ -218,6 +218,7 @@ void Game::run() {
         Shape* box = createBoxes();
         if(box != nullptr)
         {
+            cout << "Created box collisionID: " << box->getBody()->GetFixtureList()->GetUserData() << endl;
             sf::Packet packet = packetParser->pack(box);
             dynamic_cast<Server*>(localHost)->broadCast(packet);
 			if(staticPlatform == 0)
@@ -338,8 +339,7 @@ Shape* Game::createBoxes()
 		Shape* newBox;
 		if(staticPlatform == 0)
 		{
-			newBox = lastStaticShape = shapeFactory->createRandomShape(viewOffset, false);
-            newBox->getBody()->SetUserData((void*)98);
+			newBox = lastStaticShape = shapeFactory->createRandomShape(viewOffset, false, 98);
 			staticPlatform = 0;
 		}
 		else
@@ -445,7 +445,7 @@ void Game::playerBoxInteraction()
 				s->velocity = edge->other->GetLinearVelocity();
 				s->position = edge->other->GetPosition();
 				s->angle = edge->other->GetAngle();
-				s->hookUserData = (uintptr_t)edge->other->GetFixtureList()->GetUserData();
+//				s->collisionID = (uintptr_t)edge->other->GetFixtureList()->GetUserData();
 				Shape* shape = getShape(id);
 				if(shape != nullptr)
 					shape->resetUpdateClock();
