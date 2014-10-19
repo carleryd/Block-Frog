@@ -238,14 +238,11 @@ void Player::itemCheck()
 	Item* touchedItem = nullptr;
 	for(;edge; edge = edge->next)
 	{
-		if(edge->contact->IsTouching())
+		if(edge->contact->IsTouching() &&
+			((b2BodyUserData*)edge->other->GetUserData())->isItem)
 		{
-			
-			if(((b2BodyUserData*)edge->other->GetUserData())->isItem)
-			{
-				touchedItem = ((Item*)((b2BodyUserData*)edge->other->GetUserData())->parent);
-				touchedItem->causeEffect(this);
-			}
+			touchedItem = ((Item*)((b2BodyUserData*)edge->other->GetUserData())->parent);
+			touchedItem->causeEffect(this);
 		}
 	}
 	if(touchedItem != nullptr)

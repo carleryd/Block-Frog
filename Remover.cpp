@@ -4,6 +4,7 @@
 #include "PacketParser.h"
 #include "Server.h"
 #include "Client.h"
+#include "Textor.h"
 
 Remover::Remover(Game* g):
 	packetParser(g->getPacketParser()), game(g)
@@ -23,7 +24,7 @@ void Remover::checkShapeRemoval(Shape* shape)
 	if(shape->getShape()->getPosition().y > updateKillOffset() && shape != game->getLastStaticShape())
 	{
 		deletion.push(shape);
-		cout << "shape killed at "<< updateKillOffset() << endl;
+		//cout << "shape killed at "<< updateKillOffset() << endl;
 	}
 	//check for making shape stale
 	else if(shape->getShape()->getPosition().y > updateStaleOffset()) //make sure there is still a static platform to stand on
@@ -40,8 +41,11 @@ void Remover::checkPlayerKill(Player* player)
 	if(player->getBox()->getShape()->getPosition().y > updateKillOffset()
 		&& !player->isDead())
 	{
-		cout << player->getName() << " is now sleeping with the fishes." << endl;
+		string s = player->getName() + " is now sleeping with the fishes.";
 		player->setDeath(true);
+		sf::Vector2f v = sf::Vector2f(game->getWindow()->getSize().x/2, game->getWindow()->getSize().y/2);
+		v += sf::Vector2f(game->getViewOffset());
+		game->getTextor()->writeTemporaryText(s, v, 3);
 		
 		sf::Packet p = packetParser->pack(UDPNetwork::PLAYER_DEAD);
 		if(game->getLocalHost()->isServer())
@@ -98,7 +102,12 @@ void Remover::respawnPlayer(Player* player)
 		b2Vec2 spawn = game->getLastStaticShape()->getBody()->GetPosition();
 		spawn.y += 10;
 		player->resetPlayer(&spawn);
-		cout << player->getName() << " has returned from the grave!" << endl;
+
+		string s = player->getName() + " has returned from the grave.";
+		sf::Vector2f v = sf::Vector2f(game->getWindow()->getSize().x/2, game->getWindow()->getSize().y/2);
+		v += sf::Vector2f(game->getViewOffset());
+		game->getTextor()->writeTemporaryText(s, v, 3);
+
 		player->setDeath(false);
 		sf::Packet p = packetParser->pack(UDPNetwork::PLAYER_RES);
 		UDPNetwork* lh = game->getLocalHost();
