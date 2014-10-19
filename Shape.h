@@ -27,7 +27,12 @@ public:
     
 	sf::Shape* getShape();
 	b2Body* getBody();
-	b2Vec2* getPosition() const {return position;};
+	b2Vec2* getPosition() const 
+	{
+		b2Vec2* v = const_cast<b2Vec2*>(&body->GetPosition());
+		return v;
+		/*return position;*/
+	};
 	void setPosition(b2Vec2* pos) 
 	{
 		position = pos;
