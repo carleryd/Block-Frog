@@ -103,10 +103,10 @@ void Remover::respawnPlayer(Player* player)
 		spawn.y += 10;
 		player->resetPlayer(&spawn);
 
-		string s = player->getName() + " has returned from the grave.";
+		/*string s = player->getName() + " has returned from the grave.";
 		sf::Vector2f v = sf::Vector2f(game->getWindow()->getSize().x/2, game->getWindow()->getSize().y/2);
 		v += sf::Vector2f(game->getViewOffset());
-		game->getTextor()->writeTemporaryText(s, v, 3);
+		game->getTextor()->writeTemporaryText(s, v, 3);*/
 
 		player->setDeath(false);
 		sf::Packet p = packetParser->pack(UDPNetwork::PLAYER_RES);
