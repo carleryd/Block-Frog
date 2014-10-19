@@ -17,6 +17,7 @@ struct b2BodyUserData
 	int id;
 	Shape* parent;
 	bool toBeRemoved;
+	bool isItem;
 };
 
 class Shape

@@ -33,6 +33,7 @@ Rectangle::Rectangle(Game* game, b2Vec2* size_, b2Vec2* position,
     // This makes SFML use the same origin for shapes as Box2D(middle, middle)
     shape->setOrigin(size->x/2, size->y/2);
     shape->setPosition(position->x, position->y);
+	userData.isItem = false;
 }
 
 Rectangle::~Rectangle()

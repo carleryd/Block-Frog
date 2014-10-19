@@ -233,16 +233,23 @@ void Player::update() {
 
 void Player::itemCheck()
 {
-	/*b2Body* body = box->getBody();
+	b2Body* body = box->getBody();
 	b2ContactEdge* edge = body->GetContactList();
+	Item* touchedItem = nullptr;
 	for(;edge; edge = edge->next)
 	{
-		if(edge->contact->IsTouching() &&
-			dynamic_cast<Item*>(edge->contact->GetFixtureB()->) != nullptr)
+		if(edge->contact->IsTouching())
 		{
-			dynamic_cast<Item*>(edge->contact)->causeEffect(this);
+			
+			if(((b2BodyUserData*)edge->other->GetUserData())->isItem)
+			{
+				touchedItem = ((Item*)((b2BodyUserData*)edge->other->GetUserData())->parent);
+				touchedItem->causeEffect(this);
+			}
 		}
-	}*/
+	}
+	if(touchedItem != nullptr)
+		game->removeShape(touchedItem->getId());
 }
 
 void Player::send(sf::Packet& packet)

@@ -35,6 +35,7 @@ sf::Packet PacketParser::pack(Shape* shape)
 		packet << shape->getDynamic();
 		//if it is an item or not
 		packet << (dynamic_cast<Item*>(shape) != nullptr? true : false);
+
         return packet;
     }
     else {
