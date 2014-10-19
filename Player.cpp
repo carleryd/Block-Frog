@@ -17,13 +17,13 @@ Player::Player(Game* game_) {
                         new b2Vec2(0, 0),
                         true,
 						-1,
-                        1.0,
+                        0.1,
                         0.001);
     box->getBody()->SetFixedRotation(true);
-    box->getBody()->SetGravityScale(3);
+//    box->getBody()->SetGravityScale(3);
     
 	jumpHeight = 50;
-    movementSpeed = 10;
+    movementSpeed = 15;
     
     if (!frogTexture.loadFromFile(game->getOSHandler()->getResourcePath() + "frog_placeholder.png")) {
         std::cout << "Could not load frog image" << std::endl;
@@ -157,6 +157,7 @@ void Player::move(int dir, bool localPlayer, bool is_jumping)
 }
 
 void Player::push(b2Vec2&& dir) {
+    dir *= 0.5;
 	box->getBody()->ApplyLinearImpulse(dir, box->getBody()->GetPosition(), true);
 }
 
@@ -228,7 +229,11 @@ void Player::update() {
     oldSpeed = b2Vec2(0, oldSpeed.y);
 	box->update();
 //    if(leftSpeed + rightSpeed != 0)
+
     box->getBody()->SetLinearVelocity(b2Vec2(leftSpeed + rightSpeed, 0) + oldSpeed);
+    // Artificially increase player gravity
+    box->getBody()->ApplyLinearImpulse(b2Vec2(0, -1.0), box->getBody()->GetPosition(), true);
+    box->getBody()->SetLinearDamping(5);
     
     if(hook != NULL) 
 		hook->update();
