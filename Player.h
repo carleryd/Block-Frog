@@ -19,6 +19,7 @@ class Player
 {
 public:
 	Player(Game* game);
+    ~Player();
     void init(Player* player);
 
 	void setName(string n);
@@ -68,7 +69,7 @@ private:
 	void itemCheck();
     
 	float leftSpeed, rightSpeed;
-	float jumpHeight;
+	float jumpHeight, downWardPull, linearDamping;
     float movementSpeed;
     bool jumping;
 	string name;

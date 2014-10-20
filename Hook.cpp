@@ -70,20 +70,16 @@ Hook::Hook(Game* game_, Player* player) {
     reachLength = 5.0;
     currentLength = passiveLength;
     
-    //game->getBody()->getBody();
     b2RevoluteJointDef revDef;
     revDef.bodyA = hookBase->getBody();
-    //revDef.bodyB = game->getPlayer()->getBody();
 	revDef.bodyB = player->getBody();
-//    revDef.collideConnected = false;
     revDef.localAnchorA = b2Vec2(0, 0);
     revDef.localAnchorB = b2Vec2(0, 0);
     revDef.enableLimit = true;
     revDef.enableMotor = true;
     revDef.lowerAngle = 0.0;
     revDef.upperAngle = 1.0;
-    //    revDef.motorSpeed = 1;
-    revDef.maxMotorTorque = 1000;
+    revDef.maxMotorTorque = 10;
     
     revoluteJoint = (b2RevoluteJoint*)(game->getWorld()->CreateJoint(&revDef));
     
@@ -93,13 +89,10 @@ Hook::Hook(Game* game_, Player* player) {
     b2Vec2 axis = hookBase->getBody()->GetPosition() - hookTip->getBody()->GetPosition();
     axis.Normalize();
     
-//    def.Initialize(hookBase->getBody(), hookTip->getBody(), b2Vec2(0, 0), axis);
     def.bodyA = hookBase->getBody();
     def.bodyB = hookTip->getBody();
     def.localAnchorA = b2Vec2(0, 0);
-    def.localAnchorB = b2Vec2(0, 0);
-//    def.collideConnected = false;
-    def.enableLimit = true;
+    def.localAnchorB = b2Vec2(0, 0);    def.enableLimit = true;
     def.enableMotor = true;
     def.lowerTranslation = 0.0f;
     def.upperTranslation = passiveLength;
@@ -118,8 +111,6 @@ void Hook::aim(sf::Vector2i mousePixelPos) {
                                               hookBase->getBody()->GetPosition());
     newMouseAngle = utility->mouseAngle(mousePixelPos, playerMeterPos, hookDegrees);
 	revoluteJoint->SetLimits(utility->degToRad(newMouseAngle), utility->degToRad(newMouseAngle));
-    
-//    cout << "hookDegrees: " << hookDegrees << "    mouseAngle: " << newMouseAngle << endl;
 }
 
 void Hook::shoot(sf::Vector2i mousePixelPos) {

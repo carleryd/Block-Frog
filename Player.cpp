@@ -22,7 +22,11 @@ Player::Player(Game* game_) {
     box->getBody()->SetFixedRotation(true);
 //    box->getBody()->SetGravityScale(3);
     
+    // Jump parameters
 	jumpHeight = 50;
+    downWardPull = -1.0;
+    linearDamping = 5;
+    // Left and right movement
     movementSpeed = 15;
     
     if (!frogTexture.loadFromFile(game->getOSHandler()->getResourcePath() + "frog_placeholder.png")) {
@@ -69,6 +73,10 @@ Player::Player(Game* game_) {
 	rightSpeed = 0;
     hook = NULL;
 	dead = false;
+}
+
+Player::~Player() {
+    game = NULL;
 }
 
 void Player::init(Player* player) {
@@ -232,8 +240,8 @@ void Player::update() {
 
     box->getBody()->SetLinearVelocity(b2Vec2(leftSpeed + rightSpeed, 0) + oldSpeed);
     // Artificially increase player gravity
-    box->getBody()->ApplyLinearImpulse(b2Vec2(0, -1.0), box->getBody()->GetPosition(), true);
-    box->getBody()->SetLinearDamping(5);
+    box->getBody()->ApplyLinearImpulse(b2Vec2(0, downWardPull), box->getBody()->GetPosition(), true);
+    box->getBody()->SetLinearDamping(linearDamping);
     
     if(hook != NULL) 
 		hook->update();
