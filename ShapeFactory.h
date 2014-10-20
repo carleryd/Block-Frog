@@ -19,10 +19,10 @@ public:
 	template<class T>
 	b2Vec2* sfvec_to_b2vec(sf::Vector2<T> v);
 	//
-	Shape* createRectangle(b2Vec2* size, b2Vec2* position, bool dynamic, int _id);
+	Shape* createClientRectangle(b2Vec2* size, b2Vec2* position, bool dynamic, int id, uintptr_t collisionID);
 	Shape* createRectangle(b2Vec2* size, b2Vec2* position, bool dynamic,
 		float density = 1.0, float friction = 0.5);
-	Shape* createRandomShape(sf::Vector2i& viewoffset, bool dynamic = true);
+	Shape* createRandomShape(sf::Vector2i& viewoffset, bool dynamic = true, uintptr_t collisionID = 99);
 	Shape* createItem(b2Vec2* position, int _id = -1);
 	
 	void setGlobalID(int id_) {id = id_;};

@@ -18,5 +18,6 @@ Item::~Item(void)
 void Item::causeEffect(Player* affectee)
 {
 	//add randomness and more effects
-	affectee->jumpHeight *= 2;
+	affectee->jumpHeight *= 1.1;
+	//affectee->
 }

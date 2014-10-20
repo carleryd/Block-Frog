@@ -33,6 +33,11 @@ sf::Packet PacketParser::pack(Shape* shape)
         packet << rectangle->getSize()->x << rectangle->getSize()->y;
 		packet << shape->getId();
 		packet << shape->getDynamic();
+        // This is some fancy-ugly stuff to convert 64 bit pointer value to 32 bit primitive int
+        long long temp = reinterpret_cast<long long>(shape->getBody()->GetFixtureList()->GetUserData());
+        int collisionID = static_cast<int>(temp);
+        cout << "pack(shape): " << collisionID << endl;
+        packet << collisionID;
 		//if it is an item or not
 		packet << (dynamic_cast<Item*>(shape) != nullptr? true : false);
 
@@ -80,7 +85,7 @@ sf::Packet PacketParser::pack(shapeSync* s, bool appendee)
 	p << s->velocity.x << s->velocity.y;
 	p << s->position.x << s->position.y;
 	p << s->angle;
-	p << s->hookUserData;
+//	p << s->collisionID;
 	return p;
 }
 
@@ -121,20 +126,21 @@ sf::Packet PacketParser::pack(int type, hook_info& h)
 template<>
 Shape* PacketParser::unpack<Shape*>(sf::Packet& packet)
 {
-	int id; 
+	int id, collisionID;
 	bool dynamic, item;
 	b2Vec2 pos, size;
 	packet >> pos.x >> pos.y >> size.x >> size.y;
-	packet >> id >> dynamic >> item;
+	packet >> id >> dynamic >> collisionID >> item;
 	Shape* s;
 	if(!item)
 	{
-		s = factory.createRectangle(new b2Vec2(size), new b2Vec2(pos), dynamic, id);
+        cout << "UNPACKING collisionID: " << collisionID << endl;
+		s = factory.createClientRectangle(new b2Vec2(size), new b2Vec2(pos), dynamic, id, (uintptr_t)collisionID);
 		//cout << "regular shape created" << endl;
 	}
 	else
 	{
-		s = factory.createItem(&pos, id);
+		s = factory.createItem(&pos, id); // Needs collisionID, cba to add it :>
 		//cout << "item created" << endl;
 	}
 	s->setPosition(&pos);
@@ -175,7 +181,7 @@ shapeSync* PacketParser::unpack<shapeSync*>(sf::Packet& p)
 	p >> s->velocity.x >> s->velocity.y;
 	p >> s->position.x >> s->position.y;
 	p >> s->angle;
-	p >> s->hookUserData;
+//	p >> s->collisionID;
 	return s;
 }
 

@@ -135,7 +135,6 @@ b2RevoluteJoint* Hook::grab(b2Body* box) {
     // Makes the box more easily handled by frog
     if(box->GetType() == b2BodyType::b2_dynamicBody) {
 	    box->GetFixtureList()->SetDensity(0.0001);
-//    box->GetFixtureList()->SetFriction(0.1);
     	box->SetFixedRotation(true);
         box->ResetMassData();
     }
@@ -158,7 +157,6 @@ void Hook::release() {
 	        grabJoint->GetBodyB()->GetFixtureList()->SetDensity(1.0);
     	    grabJoint->GetBodyB()->SetFixedRotation(false);
         	grabJoint->GetBodyB()->SetLinearVelocity(b2Vec2(0, 0));
-            grabJoint->GetBodyB()->GetFixtureList()->SetFriction(1.0);
             grabJoint->GetBodyB()->ResetMassData();
         }
         

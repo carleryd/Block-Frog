@@ -6,23 +6,24 @@
 #include "Server.h"
 #include "PacketParser.h"
 #include "Item.h"
+#include "Utility.h"
 
 Player::Player(Game* game_) {
     game = game_;
 	Player::name = name;
-    // World, Size, Position, Density, Friction, Dynamic, Collision group
+    // World, Size, Position, Dynamic, Collision group, Density, Friction
     box = new Rectangle(game_,
                         new b2Vec2(50.0f, 50.0f),
                         new b2Vec2(0, 0),
                         true,
 						-1,
-                        1.0,
-                        0.1);
+                        0.1,
+                        0.001);
     box->getBody()->SetFixedRotation(true);
-    box->getBody()->SetGravityScale(3);
+//    box->getBody()->SetGravityScale(3);
     
 	jumpHeight = 50;
-    movementSpeed = 10;
+    movementSpeed = 15;
     
     if (!frogTexture.loadFromFile(game->getOSHandler()->getResourcePath() + "frog_placeholder.png")) {
         std::cout << "Could not load frog image" << std::endl;
@@ -43,8 +44,13 @@ Player::Player(Game* game_) {
     
     // ##### SENSOR #####
     // width, height, center, angle
-    polygonShape.SetAsBox(0.3, 0.3, b2Vec2(0,-2), 0);
+    // O.98 will stop player form being able to jump riiight next to a block without touching ground
+    float playerMeterWidth = box->getSize()->x/2 * game->getUtility()->getPTM();
+    float playerMeterHeight = box->getSize()->y/2 * game->getUtility()->getPTM();
+    polygonShape.SetAsBox(0.98 * playerMeterWidth,
+                          0.05, b2Vec2(0, -playerMeterHeight), 0);
     myFixtureDef.isSensor = true;
+    myFixtureDef.density = 0.0001;
     footSensorFixture = box->getBody()->CreateFixture(&myFixtureDef);
     
     // This is needed for the ContactListener to recognize footSensor(see ContactListener.cpp)
@@ -151,6 +157,7 @@ void Player::move(int dir, bool localPlayer, bool is_jumping)
 }
 
 void Player::push(b2Vec2&& dir) {
+    dir *= 0.5;
 	box->getBody()->ApplyLinearImpulse(dir, box->getBody()->GetPosition(), true);
 }
 
@@ -221,7 +228,12 @@ void Player::update() {
 	b2Vec2 oldSpeed = box->getBody()->GetLinearVelocity();
     oldSpeed = b2Vec2(0, oldSpeed.y);
 	box->update();
+//    if(leftSpeed + rightSpeed != 0)
+
     box->getBody()->SetLinearVelocity(b2Vec2(leftSpeed + rightSpeed, 0) + oldSpeed);
+    // Artificially increase player gravity
+    box->getBody()->ApplyLinearImpulse(b2Vec2(0, -1.0), box->getBody()->GetPosition(), true);
+    box->getBody()->SetLinearDamping(5);
     
     if(hook != NULL) 
 		hook->update();

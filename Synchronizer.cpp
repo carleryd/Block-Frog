@@ -37,7 +37,7 @@ void Synchronizer::updateShapes(shapeSync* s)
 		}
 		shape->getBody()->SetLinearVelocity(interpolate(shape->getBody()->GetLinearVelocity() ,s->velocity));
 		
-		shape->getBody()->GetFixtureList()->SetUserData((void*)(uintptr_t)s->hookUserData);
+//		shape->getBody()->GetFixtureList()->SetUserData((void*)(uintptr_t)s->collisionID);
 		shape->resetUpdateClock();
 	}
 	else

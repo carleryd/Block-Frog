@@ -93,14 +93,15 @@ struct shapeSync
 		velocity = shape.getBody()->GetLinearVelocity();
 		position = shape.getBody()->GetPosition();
 		angle = shape.getBody()->GetAngle();
-		hookUserData = (uintptr_t)shape.getBody()->GetFixtureList()->GetUserData();
+//		collisionID = (uintptr_t)shape.getBody()->GetFixtureList()->GetUserData();
+//        cout << "INCOMING SHAPE: collisionID: " << collisionID << endl;
 	};
 	int shapeID;
 	float angularVel;
 	b2Vec2 velocity;
 	b2Vec2 position;
 	float angle;
-	int hookUserData;
+//	int collisionID;
 };
 
 
