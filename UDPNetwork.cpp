@@ -10,6 +10,7 @@ UDPNetwork::UDPNetwork(string PlayerName, ShapeFactory& factory):
 {
 	exit = false;
 	if(mySocket.bind(sf::Socket::AnyPort) != sf::Socket::Done)
+	//if(mySocket.bind(49977) != sf::Socket::Done)
 		cerr << "Could not bind port" << endl;
 	else
 	{

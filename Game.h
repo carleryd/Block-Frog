@@ -41,6 +41,8 @@ public:
     sf::RenderWindow* getWindow();
     b2World* getWorld();
     Player* getPlayer();
+	Textor* getTextor() {return textor;};
+
 	/*
 		get any one player, remote or local
 		returns nullptr if not found

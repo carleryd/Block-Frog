@@ -40,6 +40,7 @@ sf::Packet PacketParser::pack(Shape* shape)
         packet << collisionID;
 		//if it is an item or not
 		packet << (dynamic_cast<Item*>(shape) != nullptr? true : false);
+
         return packet;
     }
     else {

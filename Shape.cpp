@@ -29,6 +29,8 @@ Shape::Shape(Game* game_, b2Vec2* position_, bool dynamic_, int id, float densit
 	userData.id = id;
 	userData.parent = this;
 	userData.toBeRemoved = false;
+	userData.isItem = false;
+
 	body->SetUserData((void*)&userData);
 	updateClock.restart();
 	particleSystem = nullptr;
@@ -88,6 +90,7 @@ void Shape::makeStatic()
 	if(body->GetType() != b2BodyType::b2_staticBody)
 	{
 		body->SetType(b2BodyType::b2_staticBody);
+		dynamic = false;
 		startParticles();
 	}
 }

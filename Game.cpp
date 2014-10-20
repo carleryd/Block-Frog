@@ -185,7 +185,7 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
 	
 	window->setActive(true);
 	
-	secPerDrops = 4;
+	secPerDrops = 2;
 }
 
 sf::RenderWindow* Game::getWindow() { return window; }
@@ -203,6 +203,7 @@ void Game::run() {
 
 	boxHandling();
 	calcViewOffset();
+	textor->handleTemporaryTexts(*window);
 	//playerBoxInteraction();
 
 	//water
@@ -332,7 +333,7 @@ Shape* Game::createBoxes()
 	//random dropping of boxes
     timer = clock.getElapsedTime();
     duration = timer.asSeconds();
-	staticPlatform = ++staticPlatform % 15;
+	staticPlatform = ++staticPlatform % 4;
     
 	if(duration > secPerDrops)
 	{
