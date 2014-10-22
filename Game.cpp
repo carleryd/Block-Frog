@@ -549,7 +549,7 @@ void Game::playerHandling()
 		Player* remotePlayer = *itr;
 		remotePlayer->draw();
 		remotePlayer->update();
-		window->draw(textor->write(remotePlayer->getName(), remotePlayer->getBox()->getShape()->getPosition()));
+//		window->draw(textor->write(remotePlayer->getName(), remotePlayer->getBox()->getShape()->getPosition()));
 		/*if(remotePlayer->getBox()->getShape()->getPosition().y > /*window->getSize().y - viewOffset.y*//* viewOffset.y + killOffset)
 			remotePlayer->setPosition(lastStaticShape->getPosition());*/
 	}	

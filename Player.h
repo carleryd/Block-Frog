@@ -18,7 +18,7 @@ using namespace std;
 class Player
 {
 public:
-	Player(Game* game);
+	Player(Game* game, string color = "green");
     ~Player();
     void init();
 

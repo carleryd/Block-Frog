@@ -8,7 +8,7 @@
 #include "Item.h"
 #include "Utility.h"
 
-Player::Player(Game* game_) {
+Player::Player(Game* game_, string color) {
     game = game_;
 	Player::name = name;
     // World, Size, Position, Dynamic, Density, Friction, Collision group
@@ -30,7 +30,7 @@ Player::Player(Game* game_) {
     // Left and right movement
     movementSpeed = 15;
     
-    if (!frogTexture.loadFromFile(game->getOSHandler()->getResourcePath() + "frog_placeholder.png")) {
+    if (!frogTexture.loadFromFile(game->getOSHandler()->getResourcePath() + "frog_" + color + ".png")) {
         std::cout << "Could not load frog image" << std::endl;
     }
     

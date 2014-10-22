@@ -25,7 +25,6 @@
 #include "OSHandler.h"
 #include "Menu.h"
 
-
 int main(int argc, char* argv[])
 {
     OSHandler* osHandler = new OSHandler();
@@ -52,15 +51,14 @@ int main(int argc, char* argv[])
         //return EXIT_FAILURE;
     }
 
-//	sf::Music music;
-//	if(!music.openFromFile(osHandler->getResourcePath() + "nice_music.ogg"))
-//	{
-//		cerr  << "Could not load music!" << endl;
-//	}
-//	else
-//	{
-//		music.play();
-//	}
+	sf::Music music;
+    music.setLoop(true);
+	if(!music.openFromFile(osHandler->getResourcePath() + "frog_theme.wav")) {
+		cerr  << "Could not load music!" << endl;
+	}
+	else {
+		music.play();
+	}
     
     window->setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 	
