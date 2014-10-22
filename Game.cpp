@@ -30,12 +30,32 @@ Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_)
     world = new b2World(gravity);
 	water = new sf::RectangleShape(sf::Vector2f(float(window->getSize().x * 2), float(window->getSize().y)));
 	water->setFillColor(sf::Color(255, 0, 0, 150));
+    // Need to set it here aswell as in run() because otherwise it is set to 0 at start, resulting in
+    // removal of all shapes created before it is set in run().
+    water->setPosition(float(window->getSize().x * -0.1),
+                       float(viewOffset.y + water->getLocalBounds().height - 10));
 	textor = new Textor(osHandler_);
 	exitCalled = false;
+    gameHasStarted = false;
 	
-	staticPlatform = 0;
+    platformsPerLevel = 1.5;
+    arrangeX = 1;
+    prevArrangeX = 1;
+//	staticPlatform = 0;
+    prevStage = 0;
+    waterStage = 1;
     score = 0;
+    boxCount = 0;
 	localHost = NULL;
+    
+    // Used by client to set position of given water levels
+    oldViewOffset = sf::Vector2i(0, 0);
+    
+    shapeFactory = new ShapeFactory(this);
+    utility = new Utility(this);
+    
+    contactListener = new ContactListener(this);
+    world->SetContactListener(contactListener);
 }
 
 Game::~Game()
@@ -57,98 +77,34 @@ Game::~Game()
 	exitGame();
 }
 
-void Game::initStartMenu() {
-    hostRectangle = shapeFactory->createRectangle(new b2Vec2(100.0f, 50.0f),
-                                                         new b2Vec2(-200.0f, 30.0f),
-                                                         false,
-                                                         1.0,
-                                                         1.0);
-    hostRectangle->getBody()->GetFixtureList()->SetUserData((void*)80);
+void Game::destroyPlayer() {
+    delete player;
+    if(player == nullptr) cout << "player is nullptr" << endl;
+	else {
+     	player = nullptr;
+        cout << "player needs to be set nullptr" << endl;
+    }
+}
+
+void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short serverPort) {
+	player = new Player(this);
+    player->init();
+	playerAmount = 1;
     
-    joinRectangle = shapeFactory->createRectangle(new b2Vec2(100.0f, 50.0f),
-                                                         new b2Vec2(200.0f, 30.0f),
-                                                         false ,
-                                                         1.0,
-                                                         1.0);
-    joinRectangle->getBody()->GetFixtureList()->SetUserData((void*)81);
+	packetParser = new PacketParser(*shapeFactory);
     
-    boxes.push_back(shapeFactory->createRectangle(new b2Vec2(750.0f, 50.0f),
+	//ground
+    boxes.push_back(shapeFactory->createRectangle(new b2Vec2(1280.0f, 50.0f),
                                                   new b2Vec2(0.0f, -float(window->getSize().y)/2),
                                                   false,
                                                   1.0,
                                                   1.0)
                     );
     
-    boxes.push_back(hostRectangle);
-    boxes.push_back(joinRectangle);
     
-    riseSpeed = 0;
-    secPerDrops = 9999;
-    window->setActive(true);
-}
-
-void Game::removeStartMenu() {
-    while(!boxes.empty()) {
-        delete *boxes.begin();
-     	boxes.erase(boxes.begin());
-    }
-}
-
-void Game::runStartMenu() {
-    // timeStep, velocityIterations, positionIterations
-    world->Step(1.0f/60.0f, 10, 8);
-    world->ClearForces();
-    
-    player->draw();
-	player->update();
-    
-    for(Shape* box : boxes)
-	{
-        box->update();
-        window->draw(*box->getShape());
-    }
-    
-    window->draw(textor->write("Make a choice", sf::Vector2f(window->getSize().x/2, 100)));
-	window->draw(textor->write("Host", hostRectangle->getShape()->getPosition() - sf::Vector2f(0, 10)));
-    window->draw(textor->write("Join", joinRectangle->getShape()->getPosition() - sf::Vector2f(0, 10)));
-}
-
-void Game::basicInit() {
-    //shapefactory for creating shapes easily
-	shapeFactory = new ShapeFactory(this);
-    utility = new Utility(this);
-    
-    contactListener = new ContactListener(this);
-    world->SetContactListener(contactListener);
-    
-    player = new Player(this);
-    player->init(player);
-	playerAmount = 1;
-}
-
-void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short serverPort) {
-	//shapefactory for creating shapes easily
-//	shapeFactory = new ShapeFactory(this);
-//    utility = new Utility(this);
-//    
-//    contactListener = new ContactListener();
-//    world->SetContactListener(contactListener);
-    
-//	player = new Player(this);
-//    player->init(player);
-//	playerAmount = 1;
-    
-	packetParser = new PacketParser(*shapeFactory);
-	
-	//ground
-    boxes.push_back(shapeFactory->createRectangle(new b2Vec2(750.0f, 50.0f),
-                                                  new b2Vec2(0.0f, -float(window->getSize().y)/2),
-                                                  false,
-                                         	         1.0,
-                                                  1.0)
-                    );
-	
 	lastStaticShape = boxes.back();
+    
+	
 	//test shape
     //boxes.push_back(shapeFactory->createRandomShape(viewOffset));
 
@@ -183,16 +139,50 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
 	}
 	network = new thread(&UDPNetwork::listen, localHost);
 	
+    if(localHost->isServer())
+	    createStaticPlatform();
+    
 	window->setActive(true);
 	
-	secPerDrops = 2;
+    // Needed so that preparation time is not started on Game::Game(...)
+    clock.restart();
+	secPerDrops = 5;
 }
 
-sf::RenderWindow* Game::getWindow() { return window; }
-b2World* Game::getWorld() { return world; }
-Player* Game::getPlayer() { return player; }
-Utility* Game::getUtility() { return utility; }
-OSHandler* Game::getOSHandler() { return osHandler; }
+void Game::createStaticPlatform() {
+    b2Vec2* size = new b2Vec2(window->getSize().x/3, 50);
+    
+    do {
+        arrangeX = rand() % 3;
+    } while(arrangeX == prevArrangeX);
+	prevArrangeX = arrangeX;
+    
+    b2Vec2* pos = new b2Vec2(size->x * arrangeX - window->getSize().x/3,
+                             waterStage * window->getSize().y / platformsPerLevel - window->getSize().y/2);
+    
+    boxes.push_back(shapeFactory->createRectangle(size, pos,
+                                                  false,
+                                                  1.0,
+                                                  1.0,
+                                                  2));
+    
+    staticShapes.push_back(boxes.back());
+    
+//    sf::Packet packet = packetParser->pack(boxes.back());
+//    dynamic_cast<Server*>(localHost)->broadCast(packet);
+    
+    b2Vec2 itemPos = b2Vec2(staticShapes.back()->getBody()->GetPosition().x * utility->getMTP(),
+                            staticShapes.back()->getBody()->GetPosition().y * utility->getMTP());
+    
+    itemPos.y += 10;
+    Shape* item = shapeFactory->createItem(&itemPos);
+    boxes.push_back(item);
+    
+//    packet.clear();
+    cout << "Packing item " << item->getId() << " at pos: " << item->getBody()->GetPosition().x << " " << item->getBody()->GetPosition().y << endl;
+    sf::Packet packet = packetParser->pack(item);
+    dynamic_cast<Server*>(localHost)->broadCast(packet);
+}
 
 void Game::setUtility(Utility* utility_) { utility = utility_; }
 void Game::setPlayer(Player* player_) { player = player_; }
@@ -202,45 +192,103 @@ void Game::run() {
 	localHost->handleReceivedData(this);
 
 	boxHandling();
-	calcViewOffset();
+    if(localHost->isServer())
+		calcViewOffset();
 	textor->handleTemporaryTexts(*window);
 	//playerBoxInteraction();
 
 	//water
-	//water->setPosition(float(window->getSize().x * -0.1), float(window->getSize().y - viewOffset.y -10));
-	water->setPosition(float(window->getSize().x * -0.1), float( viewOffset.y + water->getLocalBounds().height - 10));
+	water->setPosition(float(window->getSize().x * -0.1),
+                       float(viewOffset.y + water->getLocalBounds().height - 10));
 	window->draw(*water);
     
-    // score)
-	window->draw(textor->write("Score: " + to_string(score), sf::Vector2f(window->getSize().x/2, 30+viewOffset.y)));
-
+    
+//    cout << "waterStage: " << waterStage << endl;
+//    cout << "position: " << -(water->getPosition().y - window->getSize().y) << endl;
+    if(localHost->isServer()) {
+        waterStage = (-(water->getPosition().y - window->getSize().y) / (window->getSize().y / platformsPerLevel)) + 2;
+        if(prevStage < waterStage) {
+            createStaticPlatform();
+            prevStage = waterStage;
+            // Gradually increase speed per new platform
+            riseSpeed = -0.05 * waterStage;
+//            sf::Packet p = packetParser->pack(UDPNetwork::RISE_CHANGE);
+//            p << riseSpeed;
+            //            dynamic_cast<Server*>(localHost)->broadCast(p);
+            
+            if(staticShapes.size() > 1) lastStaticShape = staticShapes[staticShapes.size()-2];
+            else cout << "WARNING: staticShapes not more than 1" << endl;
+            
+            sf::Packet packet = packetParser->pack(UDPNetwork::PLATFORM_CHANGE);
+            packet << lastStaticShape->getId();
+            dynamic_cast<Server*>(localHost)->broadCast(packet);
+        }
+    }
+    
+    timer = clock.getElapsedTime();
+    if(!gameHasStarted) {
+        if(localHost->isServer()) {
+        	prepTime = timer.asSeconds();
+        	
+            sf::Packet packet = packetParser->pack(UDPNetwork::PREPTIME_CHANGE);
+        	packet << prepTime;
+        	dynamic_cast<Server*>(localHost)->broadCast(packet);
+        }
+        else
+            synchronizer->requestGameHasStarted();
+        
+        string countDown = to_string(prepTime-20);
+        countDown = countDown.substr(1, countDown.size());
+        
+        window->draw(textor->write(countDown, sf::Vector2f(window->getSize().x/2,
+                                                           30+viewOffset.y)));
+        if(prepTime - 20 >= 0) {
+         	gameHasStarted = true;
+            score = 0;
+        }
+    }
+    else {
+	    window->draw(textor->write("Score: " + to_string(score), sf::Vector2f(window->getSize().x/2,
+                                                                              30+viewOffset.y)));
+        
+        startRise();
+    }
+    
     if(localHost->isServer())
     {
         Shape* box = createBoxes();
         if(box != nullptr)
         {
-            cout << "Created box collisionID: " << box->getBody()->GetFixtureList()->GetUserData() << endl;
             sf::Packet packet = packetParser->pack(box);
             dynamic_cast<Server*>(localHost)->broadCast(packet);
-			if(staticPlatform == 0)
-			{
-				b2Vec2 v = lastStaticShape->getBody()->GetPosition();
-				v.y += 10;
-				boxes.push_back(shapeFactory->createItem(&v));
-				packet.clear();
-				packet = packetParser->pack(boxes.back());
-				dynamic_cast<Server*>(localHost)->broadCast(packet);
-			}
+//            if(staticPlatform == 0)
+//            {
+//                b2Vec2 v = lastStaticShape->getBody()->GetPosition();
+//                v.y += 10;
+//                boxes.push_back(shapeFactory->createItem(&v));
+//                packet.clear();
+//                packet = packetParser->pack(boxes.back());
+//                dynamic_cast<Server*>(localHost)->broadCast(packet);
+//            }
         }
     }
 
 	//player
-	playerHandling();
+	if(player != nullptr) playerHandling();
 
 	//move view up/raise water level
-	if(rise)
+	if(localHost->isServer() && rise)
 		view->move(0, riseSpeed);
+    
+//    view->setViewport();
+    if(!localHost->isServer()) {
+        view->move(-oldViewOffset.x, -oldViewOffset.y);
+	    view->move(viewOffset.x, viewOffset.y);
+        oldViewOffset = viewOffset;
+    }
+    
 	window->setView(*view);
+//    cout << "Current water level: " << viewOffset.y << endl;
     
     // timeStep, velocityIterations, positionIterations
     world->Step(1.0f/60.0f, 10, 8);
@@ -263,6 +311,7 @@ void Game::run() {
 		}*/
 
 		//broadcast water level:
+//        cout << "Sending water level: " << viewOffset.y << endl;
 		sf::Packet p = packetParser->pack<int>(UDPNetwork::WATER_LEVEL, viewOffset.y);
 		server->broadCast(p);
 		sf::Packet score = packetParser->pack<int>(UDPNetwork::SCORE_CHANGE, Game::score);
@@ -331,24 +380,25 @@ void Game::boxHandling()
 Shape* Game::createBoxes()
 {
 	//random dropping of boxes
-    timer = clock.getElapsedTime();
     duration = timer.asSeconds();
-	staticPlatform = ++staticPlatform % 4;
+//	staticPlatform = ++staticPlatform % 10;
     
-	if(duration > secPerDrops)
+	if(duration > secPerDrops * boxCount)
 	{
 		Shape* newBox;
-		if(staticPlatform == 0)
-		{
-			newBox = lastStaticShape = shapeFactory->createRandomShape(viewOffset, false, 98);
-			staticPlatform = 0;
-		}
-		else
-			newBox = shapeFactory->createRandomShape(viewOffset); 
+//		if(staticPlatform == 0)
+//		{
+//			newBox = lastStaticShape = shapeFactory->createRandomShape(viewOffset, false, 98);
+//			staticPlatform = 0;
+//		}
+//		else
+        newBox = shapeFactory->createRandomShape(viewOffset);
+        
 		boxes.push_back(newBox);
+        boxCount++;
         score += 50;
-		duration = 0;
-        clock.restart();
+		
+//        clock.restart();
 		return boxes.back();
 	}	
 	else
@@ -361,34 +411,37 @@ void Game::addRemotePlayer(Player* p)
     cout << "playerAmount: " << playerAmount << endl;
     p->setBirthNumber(playerAmount);
 	remotePlayers.push_back(p);
-	p->init(p);
+	p->init();
 }
 
 void Game::exitGame()
 {
 	cout << "Exiting game..." << endl;
-	localHost->exit = true;
-	if(localHost->isServer())
-	{
-		allowJoin = false; //prepare listen thread for shutdown
-		Server* server = dynamic_cast<Server*>(localHost);
-		sf::Packet packet;
-		packet << UDPNetwork::SERVER_EXIT;
-		packet << player->getName();
-		server->broadCast(packet);
-		cout << "Waiting for network thread to join..." << endl;
-	}
-	else
-	{
-		Client* client = dynamic_cast<Client*>(localHost);
-		sf::Packet packet;
-		packet << UDPNetwork::CLIENT_EXIT;
-		packet << player->getName();
-		client->sendToServer(packet);
-		
-	}
-	cout << "Waiting for listen thread to join..."<< endl;
-	network->join();
+	// localHost is not defined when in main menu
+	if(localHost != nullptr) {
+        localHost->exit = true;
+        if(localHost->isServer())
+        {
+            allowJoin = false; //prepare listen thread for shutdown
+            Server* server = dynamic_cast<Server*>(localHost);
+            sf::Packet packet;
+            packet << UDPNetwork::SERVER_EXIT;
+            packet << player->getName();
+            server->broadCast(packet);
+            cout << "Waiting for network thread to join..." << endl;
+        }
+        else
+        {
+            Client* client = dynamic_cast<Client*>(localHost);
+            sf::Packet packet;
+            packet << UDPNetwork::CLIENT_EXIT;
+            packet << player->getName();
+            client->sendToServer(packet);
+            
+        }
+        cout << "Waiting for listen thread to join..."<< endl;
+        network->join();
+    }
 	window->close();
 	exitCalled = true;
 	cout << "Good bye!" << endl;
@@ -487,7 +540,7 @@ void Game::playerHandling()
 {
 	player->draw();
 	player->update();
-	window->draw(textor->write(player->getName(), player->getBox()->getShape()->getPosition()));
+//	window->draw(textor->write(player->getName(), player->getBox()->getShape()->getPosition()));
 	remover->checkPlayerKill(player);
 	remover->respawnPlayer(player);
 

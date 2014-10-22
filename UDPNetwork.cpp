@@ -6,16 +6,16 @@
 #include <memory>
 
 UDPNetwork::UDPNetwork(string PlayerName, ShapeFactory& factory):
-	packetParser(factory)
+packetParser(factory)
 {
 	exit = false;
 	if(mySocket.bind(sf::Socket::AnyPort) != sf::Socket::Done)
-	//if(mySocket.bind(49977) != sf::Socket::Done)
+        //if(mySocket.bind(49977) != sf::Socket::Done)
 		cerr << "Could not bind port" << endl;
 	else
 	{
 		cout << "My IP address: "<< myAddress.getPublicAddress().toString() << endl;
-		cout << "My port: " << mySocket.getLocalPort() << endl; 
+		cout << "My port: " << mySocket.getLocalPort() << endl;
 	}
 	playerName = PlayerName;
 	selector.add(mySocket);
@@ -63,10 +63,10 @@ void UDPNetwork::listen()
 			packets.push_front(packetInfo());
 			
 			if(receive(&packets.front().packet,
-				packets.front().senderAddress, 
-				packets.front().senderPort) != sf::Socket::Done)
+                       packets.front().senderAddress,
+                       packets.front().senderPort) != sf::Socket::Done)
 				cerr << "Error when receiving data" << endl;
-
+            
 			//cout << "Packet size: " << packets.front().packet.getDataSize() << endl;
 			packetsMutex.unlock();
 		}
@@ -86,38 +86,38 @@ void UDPNetwork::handleReceivedData(Game* game)
 		*packet >> type;
 		switch (type)
 		{
-		case SERVER_EXIT:
-			//dynamic_cast<Client*>(this)->dropServer();  //DOESN'T WORK ATM
-			cout << "Server has disconnected." << endl;
-			game->exitGame();
-			break;
-		case CLIENT_EXIT:
+            case SERVER_EXIT:
+                //dynamic_cast<Client*>(this)->dropServer();  //DOESN'T WORK ATM
+                cout << "Server has disconnected." << endl;
+                game->exitGame();
+                break;
+            case CLIENT_EXIT:
 			{
 				string name;
 				*packet >> name;
 				Server* server = dynamic_cast<Server*>(this);
 				vector<client*>& clients = server->getClients();
-
+                
 				//tell everyone else that a client has disconnected
 				if(isServer())
 				{
 					for_each(clients.begin(), clients.end(), [name, server](client* a)
-					{
-						sf::Packet p;
-						p << CLIENT_EXIT;
-						p << a->name;
-						server->broadCast(p);
-					});
+                             {
+                                 sf::Packet p;
+                                 p << CLIENT_EXIT;
+                                 p << a->name;
+                                 server->broadCast(p);
+                             });
 				}
 				if(game->removeRemotePlayer(name))
 					cout << name << " has disconnected." << endl;
 				else
 					cout << "failed to disconnect " << name << endl;
 			}
-			break;
-		case NEW_PLAYER:
+                break;
+            case NEW_PLAYER:
 			{
-				b2Vec2* newpos = packetParser.unpack<b2Vec2*>(*packet);  
+				b2Vec2* newpos = packetParser.unpack<b2Vec2*>(*packet);
 				game->addRemotePlayer(new Player(game));
 				game->remotePlayers.back()->setPosition( newpos);
 				if(isServer())
@@ -127,16 +127,16 @@ void UDPNetwork::handleReceivedData(Game* game)
 				else
 					game->getRemotePlayers().back()->setName(packetParser.unpack<string>(*packet));
 			}
-			break;
-		case SHAPE:
-			game->boxes.push_back(packetParser.unpack<Shape*>(*packet));
-			//cout << "shape counter: " << ++counter << endl;
-			if(!game->boxes.back()->getDynamic())
-			{
-				game->lastStaticShape = game->boxes.back();
-			}
-			break;
-		case PLAYER_MOVE:
+                break;
+            case SHAPE:
+                game->boxes.push_back(packetParser.unpack<Shape*>(*packet));
+                //cout << "shape counter: " << ++counter << endl;
+                if(!game->boxes.back()->getDynamic())
+                {
+                    game->lastStaticShape = game->boxes.back();
+                }
+                break;
+            case PLAYER_MOVE:
 			{
 				//cout << "moving player" << endl;
 				typedef list<Player*> players;
@@ -145,11 +145,11 @@ void UDPNetwork::handleReceivedData(Game* game)
 				string& name = info->name;
 				players remotePlayers = game->getRemotePlayers();
 				//find player that has made a move
-				itr found = std::find_if(remotePlayers.begin(), remotePlayers.end(), 
-					[name](Player* p)
-					{
-						return p->getName() == name;
-					});
+				itr found = std::find_if(remotePlayers.begin(), remotePlayers.end(),
+                                         [name](Player* p)
+                                         {
+                                             return p->getName() == name;
+                                         });
 				//player found
 				if(found != remotePlayers.end())
 				{
@@ -162,20 +162,20 @@ void UDPNetwork::handleReceivedData(Game* game)
 					{
 						sf::Packet p = packetParser.pack<player_info*>(PLAYER_MOVE, info);
 						dynamic_cast<Server*>(this)->broadCastExcept(
-							packets.front().senderAddress,
-							packets.front().senderPort,
-							p);
+                                                                     packets.front().senderAddress,
+                                                                     packets.front().senderPort,
+                                                                     p);
 					}
 				}
 			}
-			break;
-		case PLAYER_SYNCH:
+                break;
+            case PLAYER_SYNCH:
 			{
 				player_info* pSynch = packetParser.unpack<player_info*>(*packet);
 				game->updatePlayer(pSynch);
 			}
-			break;
-		case PLAYER_SYNCH_REQUEST:
+                break;
+            case PLAYER_SYNCH_REQUEST:
 			{
 				string name = packetParser.unpack<string>(*packet);
 				Player* player = game->getPlayer(name);
@@ -193,8 +193,8 @@ void UDPNetwork::handleReceivedData(Game* game)
 				else
 					cout << "Player " << name << " not fond; sync not sent." << endl;
 			}
-			break;
-		case SHAPE_SYNCH:
+                break;
+            case SHAPE_SYNCH:
 			{
 				shared_ptr<shapeSync> s(packetParser.unpack<shapeSync*>(*packet));
 				game->updateShapes(s.get());
@@ -202,28 +202,28 @@ void UDPNetwork::handleReceivedData(Game* game)
 				{
 					sf::Packet broadcast = packetParser.pack(s.get());
 					dynamic_cast<Server*>(this)->broadCastExcept(
-						packets.front().senderAddress,
-						packets.front().senderPort,
-						broadcast
-						);
+                                                                 packets.front().senderAddress,
+                                                                 packets.front().senderPort,
+                                                                 broadcast
+                                                                 );
 				}
 				//cout << "Synching shape " << s->shapeID << endl;
 			}
-			break;
-		case REMOVE_SHAPE:
+                break;
+            case REMOVE_SHAPE:
 			{
 				int id = packetParser.unpack<int>(*packet);
 				game->removeShape(id);
 			}
-			break;
-		case SHAPE_SYNCH_REQUEST:
+                break;
+            case SHAPE_SYNCH_REQUEST:
 			{
 				int id = packetParser.unpack<int>(*packet);
 				Shape* shape = game->getShape(id);
 				if(shape != nullptr)
-				{					
+				{
 					shapeSync* sync = new shapeSync(*shape);
-
+                    
 					sf::Packet p = packetParser.pack(sync);
 					dynamic_cast<Server*>(this)->broadCast(p);
 				}
@@ -234,20 +234,28 @@ void UDPNetwork::handleReceivedData(Game* game)
 					dynamic_cast<Server*>(this)->broadCast(del);
 				}
 			}
-			break;
-		case WATER_LEVEL:
-			game->viewOffset.y = packetParser.unpack<int>(*packet);
-			break;
-		case START_RISE:
-			game->startRise();
-			break;
-		case PLAYER_DEAD:
-			//game->score -= 500;
-			break;
-		case PLAYER_RES:
-
-			break;
-		case SHAPE_STATIC:
+                break;
+            case WATER_LEVEL:
+            {
+                int waterLevel = packetParser.unpack<int>(*packet);
+				game->viewOffset.y = waterLevel;
+                //                window->setView(*view);
+                //                cout << "Incoming WATER_LEVEL: " << waterLevel << endl;
+        	}
+                break;
+            case START_RISE:
+                game->startRise();
+                break;
+            case PLAYER_DEAD:
+                //game->score -= 500;
+                break;
+            case PLAYER_RES:
+            {
+            	res_info* player = packetParser.unpack<res_info*>(*packet);
+            	game->getPlayer(player->name)->resetPlayer(&player->spawn);
+        	}
+                break;
+            case SHAPE_STATIC:
 			{
 				int id = packetParser.unpack<int>(*packet);
 				Shape* shape = game->getShape(id);
@@ -256,55 +264,80 @@ void UDPNetwork::handleReceivedData(Game* game)
 					shape->makeStatic();
 				}
 			}
-			break;
-		case SCORE_CHANGE:
-			game->score = packetParser.unpack<int>(*packet);
-			break;
-		case HOOK_SHOT:
+                break;
+            case PLATFORM_CHANGE:
+            {
+                int id = packetParser.unpack<int>(*packet);
+                game->setStaticPlatform(game->getShape(id));
+            }
+                break;
+            case PREPTIME_CHANGE:
+            {
+                float prepTime = packetParser.unpack<int>(*packet);
+                game->setPrepTime(prepTime);
+            }
+                break;
+            case GAME_STARTED:
+            {
+                bool gameHasStarted = packetParser.unpack<bool>(*packet);
+                game->setGameHasStarted(gameHasStarted);
+            }
+                break;
+            case GAME_STARTED_REQUEST:
+            {
+                sf::Packet packet = packetParser.pack(UDPNetwork::GAME_STARTED);
+                packet << game->getGameHasStarted();
+                dynamic_cast<Server*>(this)->broadCast(packet);
+            }
+                break;
+            case SCORE_CHANGE:
+                game->score = packetParser.unpack<int>(*packet);
+                break;
+            case HOOK_SHOT:
 			{
 				hook_info* hook = packetParser.unpack<hook_info*>(*packet);
 				Player* p = game->getPlayer(hook->name);
 				if(p != nullptr)
 				{
 					p->useHook(hook->mousePos, false);
-//					cout << hook->name << " uses hook" << endl;
+                    //					cout << hook->name << " uses hook" << endl;
 				}
 				else
 					cout << hook->name << " not found" << endl;
 				delete hook;
 			}
-			break;
-		case HOOK_AIM:
+                break;
+            case HOOK_AIM:
 			{
 				hook_info* hook = packetParser.unpack<hook_info*>(*packet);
-				Player* p = game->getPlayer(hook->name);
-				if(p != nullptr)
+				Player* player = game->getPlayer(hook->name);
+				if(player != nullptr)
 				{
-					p->aimHook(hook->mousePos + game->getViewOffset(), false);
-//					cout << hook->name << " aims hook" << endl;
+                    //                    cout << "INCOMING: " << hook->mousePos.y + game->getViewOffset().y << endl;
+					player->aimHook(hook->mousePos/* + game->getViewOffset()*/, false);
+                    //					cout << hook->name << " aims hook" << endl;
 				}
 				else
                     cout << hook->name << " not found" << endl;
 				delete hook;
 			}
-			break;
-		case HOOK_RELEASE:
+                break;
+            case HOOK_RELEASE:
 			{
 				hook_info* hook = packetParser.unpack<hook_info*>(*packet);
 				Player* p = game->getPlayer(hook->name);
 				if(p != nullptr)
 				{
 					p->releaseHook(false);
-					cout << hook->name << " release hook" << endl;
 				}
 				else
-					 cout << hook->name << " not found" << endl;
+                    cout << hook->name << " not found" << endl;
 				delete hook;
 			}
-			break;
-		default:
-			cerr << "Type " << type << " is not a recognized data type!" << endl;
-			break;
+                break;
+            default:
+                cerr << "Type " << type << " is not a recognized data type!" << endl;
+                break;
 		}
 		packets.pop_front();
 		packetsMutex.unlock();

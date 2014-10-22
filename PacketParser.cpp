@@ -1,9 +1,7 @@
 #include "PacketParser.h"
-//#include "Shape.h"
 #include "ShapeFactory.h"
 #include "UDPNetwork.h"
 #include <iostream>
-//#include "Player.h"
 #include "Rectangle.h"
 #include "Item.h"
 #include <typeinfo>
@@ -36,11 +34,10 @@ sf::Packet PacketParser::pack(Shape* shape)
         // This is some fancy-ugly stuff to convert 64 bit pointer value to 32 bit primitive int
         long long temp = reinterpret_cast<long long>(shape->getBody()->GetFixtureList()->GetUserData());
         int collisionID = static_cast<int>(temp);
-        cout << "pack(shape): " << collisionID << endl;
         packet << collisionID;
 		//if it is an item or not
 		packet << (dynamic_cast<Item*>(shape) != nullptr? true : false);
-
+        
         return packet;
     }
     else {
@@ -134,13 +131,13 @@ Shape* PacketParser::unpack<Shape*>(sf::Packet& packet)
 	Shape* s;
 	if(!item)
 	{
-        cout << "UNPACKING collisionID: " << collisionID << endl;
 		s = factory.createClientRectangle(new b2Vec2(size), new b2Vec2(pos), dynamic, id, (uintptr_t)collisionID);
 		//cout << "regular shape created" << endl;
 	}
 	else
 	{
-		s = factory.createItem(&pos, id); // Needs collisionID, cba to add it :>
+        cout << "Item " << id << " created at pos: " << pos.x << " " << pos.y << endl;
+		s = factory.createItem(new b2Vec2(pos), id); // Needs collisionID, cba to add it :>
 		//cout << "item created" << endl;
 	}
 	s->setPosition(&pos);
@@ -162,6 +159,14 @@ int PacketParser::unpack<int>(sf::Packet& packet)
 	int i;
 	packet >> i;
 	return i;
+}
+
+template<>
+bool PacketParser::unpack<bool>(sf::Packet& packet)
+{
+	bool b;
+	packet >> b;
+	return b;
 }
 
 template<>
@@ -212,4 +217,14 @@ hook_info* PacketParser::unpack<hook_info*>(sf::Packet& p)
 	p >> h->name;
 	p >> h->mousePos.x >> h->mousePos.y;
 	return h;
+}
+
+template<>
+res_info* PacketParser::unpack<res_info*>(sf::Packet& p)
+{
+    res_info* resInfo = new res_info;
+    p >> resInfo->name;
+    p >> resInfo->spawn.x;
+    p >> resInfo->spawn.y;
+    return resInfo;
 }

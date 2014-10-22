@@ -16,7 +16,7 @@ ShapeFactory::ShapeFactory(Game* game_):
 	string s = ctime(&tt);
 	seed_seq seed(s.begin(), s.end()); 
 	mersenneGen.seed(seed);
-	minSize = 20;
+	minSize = 40;
 	id = 0;
 }
 
@@ -33,12 +33,12 @@ Shape* ShapeFactory::createClientRectangle(b2Vec2* size, b2Vec2* position, bool 
 	return newRectangle;//new Rectangle(game, size, position, dynamic, id);
 }
 
-Shape* ShapeFactory::createRectangle(b2Vec2* size, b2Vec2* position, bool dynamic, float density, float friction)
+Shape* ShapeFactory::createRectangle(b2Vec2* size, b2Vec2* position, bool dynamic, float density, float friction, int groupIndex)
 {
 //	Shape* newRectangle = new Rectangle(game, size, position, dynamic, id++, density, friction);
 //    newRectangle->getBody()->GetFixtureList()->SetUserData( (void*)99 );
 	//newRectangle->getBody()->GetFixtureList()->SetUserData( (void*)5 );
-	return new Rectangle(game, size, position, dynamic, id++, density, friction);
+	return new Rectangle(game, size, position, dynamic, id++, density, friction, groupIndex);
 }
 
 template<class T>
@@ -66,7 +66,8 @@ Shape* ShapeFactory::createRandomShape(sf::Vector2i& viewOffset, bool dynamic, u
     // game, size, pos, dynamic, density, friction
     Shape* newRectangle = new Rectangle(
                                         game,
-                                        new b2Vec2(rand()*100 + minSize, (1 + rand() * 5) * minSize),
+                                        new b2Vec2(rand()*50 + minSize,
+                                                   rand()*50 + minSize/*(1 + rand() * 5) * minSize*/),
                                         sfvec_to_b2vec(vec),
                                         dynamic,
                                         i);
@@ -74,13 +75,15 @@ Shape* ShapeFactory::createRandomShape(sf::Vector2i& viewOffset, bool dynamic, u
 	return newRectangle;
 }
 
-Shape* ShapeFactory::createItem(b2Vec2* position, int _id)
+Shape* ShapeFactory::createItem(b2Vec2* position, int id_)
 {
 	b2Vec2* size = new b2Vec2(10, 10);
 	Item* item;
-	if(id == -1)
-		item = new Item(game, size, position, true, id++);
+    int i = id++;
+    cout << "item id: " << id << " id_: " << id_ << endl;
+	if(id_ == -1)
+		item = new Item(game, size, position, true, i);
 	else
-		item = new Item(game, size, position, true, _id);
+		item = new Item(game, size, position, true, id_);
 	return item;
 }

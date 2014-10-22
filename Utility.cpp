@@ -33,6 +33,11 @@ sf::Vector2f Utility::box2dToSf(const b2Vec2& vector)
 		vector.y - game->getWindow()->getSize().y/2);
 }
 
+sf::Vector2f Utility::B2DtoSFML(const b2Vec2& vector) {
+    return sf::Vector2f(vector.x * meterToPixel + game->getWindow()->getSize().x/2,
+                        -vector.y * meterToPixel + game->getWindow()->getSize().y/2);
+}
+
 float Utility::angleBetweenPoints(sf::Vector2i pixelPosA, sf::Vector2i pixelPosB) {
     b2Vec2 convertedA = b2Vec2(pixelPosA.x * pixelToMeter, pixelPosA.y * pixelToMeter);
     b2Vec2 convertedB = b2Vec2(pixelPosB.x * pixelToMeter, pixelPosB.y * pixelToMeter);

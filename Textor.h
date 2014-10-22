@@ -6,7 +6,6 @@ using namespace std;
 
 class OSHandler;
 
-
 struct tempText
 {
 	sf::Text t;

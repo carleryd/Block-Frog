@@ -4,7 +4,7 @@
 
 Circle::Circle(Game* game, float radius_, b2Vec2* position,
 					 bool dynamic, int id, float density, float friction, int groupIndex):
-Shape(game, position, dynamic, id, density, friction, groupIndex)
+Shape(game, position, dynamic, id, density, friction)
 {
     radius = radius_;
     

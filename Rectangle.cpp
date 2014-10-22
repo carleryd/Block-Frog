@@ -4,9 +4,14 @@
 
 Rectangle::Rectangle(Game* game, b2Vec2* size_, b2Vec2* position,
 					 bool dynamic, int id, float density, float friction, int groupIndex):
-	Shape(game, position, dynamic, id, density, friction, groupIndex)
+	Shape(game, position, dynamic, id, density, friction)
 {
     size = size_;
+    
+    // GROUP INDEX:
+    // 1: All randomly created falling boxes
+    // 2: All static platforms
+    // 3: Player and hook
     
     // Define another box shape for our dynamic body.
     b2PolygonShape boxShape; //dynamicBox;

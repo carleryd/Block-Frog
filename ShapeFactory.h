@@ -21,9 +21,9 @@ public:
 	//
 	Shape* createClientRectangle(b2Vec2* size, b2Vec2* position, bool dynamic, int id, uintptr_t collisionID);
 	Shape* createRectangle(b2Vec2* size, b2Vec2* position, bool dynamic,
-		float density = 1.0, float friction = 0.5);
+		float density = 1.0, float friction = 0.5, int groupIndex = 1);
 	Shape* createRandomShape(sf::Vector2i& viewoffset, bool dynamic = true, uintptr_t collisionID = 99);
-	Shape* createItem(b2Vec2* position, int _id = -1);
+	Shape* createItem(b2Vec2* position, int id_ = -1);
 	
 	void setGlobalID(int id_) {id = id_;};
 	//returns id++

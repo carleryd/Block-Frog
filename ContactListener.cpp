@@ -64,25 +64,25 @@ void ContactListener::BeginContact(b2Contact* contact) {
             break;
         case 11:
             if(hookIsActive[1-1]) {
-                cout << "hook contact " << 11 << endl;
+//                cout << "hook contact " << 11 << endl;
                 if((uintptr_t)fixtureBUserData == 99) {
                     recentHookContacts[11-11] = contact->GetFixtureB()->GetBody();
                 }
                 if((uintptr_t)fixtureBUserData == 80) {
-                    cout << "HOST GAME" << endl;
+//                    cout << "HOST GAME" << endl;
                     hostGame = true;
                 }
                 if((uintptr_t)fixtureBUserData == 81) {
-                    cout << "JOIN GAME" << endl;
+//                    cout << "JOIN GAME" << endl;
                     joinGame = true;
                 }
             }
             break;
         case 12:
             if(hookIsActive[2-1]) {
-                cout << "hook contact " << 12 << endl;
+//                cout << "hook contact " << 12 << endl;
                 if((uintptr_t)fixtureBUserData == 99) {
-                    cout << "The other guy hooked with 99" << endl;
+//                    cout << "The other guy hooked with 99" << endl;
                     recentHookContacts[12-11] = contact->GetFixtureB()->GetBody();
                 }
             }
@@ -125,20 +125,20 @@ void ContactListener::BeginContact(b2Contact* contact) {
                     recentHookContacts[11-11] = contact->GetFixtureA()->GetBody();
                 }
                 if((uintptr_t)fixtureAUserData == 80) {
-                    cout << "HOST GAME" << endl;
+//                    cout << "HOST GAME" << endl;
                     hostGame = true;
                 }
                 if((uintptr_t)fixtureAUserData == 81) {
-                    cout << "JOIN GAME" << endl;
+//                    cout << "JOIN GAME" << endl;
                     joinGame = true;
                 }
             }
             break;
         case 12:
             if(hookIsActive[2-1]) {
-                cout << "hook contact " << 12 << endl;
+//                cout << "hook contact " << 12 << endl;
                 if((uintptr_t)fixtureAUserData == 99) {
-                    cout << "The other guy hooked with 99" << endl;
+//                    cout << "The other guy hooked with 99" << endl;
                     recentHookContacts[12-11] = contact->GetFixtureA()->GetBody();
                 }
             }

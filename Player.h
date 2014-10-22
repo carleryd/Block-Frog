@@ -20,14 +20,14 @@ class Player
 public:
 	Player(Game* game);
     ~Player();
-    void init(Player* player);
+    void init();
 
 	void setName(string n);
     void setPosition(b2Vec2* newPos);
     void resetPlayer(b2Vec2* newPos);
     void setBirthNumber(int number);
     
-    b2Body* getBody();
+    b2Body* getBody() { return box->getBody(); }
 	string& getName(){return name;};
 	b2Vec2* getPosition() const{return box->getPosition();};
     ContactListener* getContactListener() { return contactListener; }
@@ -35,24 +35,25 @@ public:
 	Circle* getHookTip() {return hook->getHookTip();};
 	Rectangle* getHookBase() {return hook->getHookBase();};
     int getBirthNumber() { return birthNumber; }
-	//Hook* getHook() {return hook;};
+    Hook* getHook();
 
     
 	enum { LEFT, RIGHT, JUMP, LEFT_STOP, RIGHT_STOP };
 	//set bool to true when moving a remote player
-	void move(int dir, bool localPlayer=true, bool is_jumping = true);
-	/*
-	*	Pushes player in the direction
-	*/
-	void push(b2Vec2&& direction);
-    void draw();
-	void update();
     void useHook(sf::Vector2i mousePos, bool localPlayer = true);
     void aimHook(sf::Vector2i mousePos, bool localPlayer = true);
     void releaseHook(bool localPlayer = true);
     void increaseHook();
     void decreaseHook();
+    void destroyHook();
+    
+	void move(int dir, bool localPlayer=true, bool is_jumping = true);
+	void push(b2Vec2&& direction);
     bool isJumping();
+    
+    void draw();
+	void update();
+    
 	void setDeath(bool d) {dead = d;};
 	bool isDead() {return dead;};
 

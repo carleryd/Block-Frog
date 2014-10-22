@@ -11,21 +11,22 @@
 Player::Player(Game* game_) {
     game = game_;
 	Player::name = name;
-    // World, Size, Position, Dynamic, Collision group, Density, Friction
+    // World, Size, Position, Dynamic, Density, Friction, Collision group
     box = new Rectangle(game_,
                         new b2Vec2(50.0f, 50.0f),
                         new b2Vec2(0, 0),
                         true,
 						-1,
                         0.1,
-                        0.001);
+                        1.0,
+                        3);
     box->getBody()->SetFixedRotation(true);
 //    box->getBody()->SetGravityScale(3);
     
     // Jump parameters
-	jumpHeight = 50;
-    downWardPull = -1.0;
-    linearDamping = 5;
+	jumpHeight = 15;
+    downWardPull = -0.6;
+    linearDamping = 1;
     // Left and right movement
     movementSpeed = 15;
     
@@ -44,7 +45,7 @@ Player::Player(Game* game_) {
     
     b2FixtureDef myFixtureDef;
     myFixtureDef.shape = &polygonShape;
-    myFixtureDef.density = 1;
+    myFixtureDef.density = 0.0001;
     
     // ##### SENSOR #####
     // width, height, center, angle
@@ -54,7 +55,6 @@ Player::Player(Game* game_) {
     polygonShape.SetAsBox(0.98 * playerMeterWidth,
                           0.05, b2Vec2(0, -playerMeterHeight), 0);
     myFixtureDef.isSensor = true;
-    myFixtureDef.density = 0.0001;
     footSensorFixture = box->getBody()->CreateFixture(&myFixtureDef);
     
     // This is needed for the ContactListener to recognize footSensor(see ContactListener.cpp)
@@ -71,20 +71,33 @@ Player::Player(Game* game_) {
 
 	leftSpeed = 0;
 	rightSpeed = 0;
-    hook = NULL;
+    hook = nullptr;
 	dead = false;
 }
 
 Player::~Player() {
-    game = NULL;
+	destroyHook();
+    
+    delete box;
+    box = nullptr;
+    footSensorFixture = nullptr;
+
+    game = nullptr;
 }
 
-void Player::init(Player* player) {
-	hook = new Hook(game, player);
+void Player::destroyHook() {
+    delete hook;
+    hook = nullptr;
 }
 
-b2Body* Player::getBody() {
-    return box->getBody();
+void Player::init() {
+	hook = new Hook(game, this);
+}
+
+Hook* Player::getHook() {
+    if(hook == nullptr)
+        hook = new Hook(game, this);
+	return hook;
 }
 
 void Player::setName(string n)
@@ -102,8 +115,9 @@ void Player::resetPlayer(b2Vec2* newPos) {
     b2Vec2 hookTipPos = box->getBody()->GetPosition() - *hook->getHookTip()->getPosition();
     box->getBody()->SetTransform(*newPos, box->getBody()->GetAngle());
 	b2Vec2 pos = box->getBody()->GetPosition();
-	if(hook != NULL)
+	if(hook != nullptr)
 	{
+        hook->release();
 		hook->getHookBase()->setPosition(&pos);
 		pos += hookTipPos;
 		hook->getHookTip()->setPosition(&pos);
@@ -132,7 +146,7 @@ void Player::move(int dir, bool localPlayer, bool is_jumping)
             rightSpeed = 0;
         break;
 	case JUMP:
-            if(!isJumping() || (!localPlayer && is_jumping))
+            if(!isJumping())// || (!localPlayer && is_jumping))
 			{
 				push(b2Vec2(0, jumpHeight));
 				jumped = true;
@@ -165,12 +179,11 @@ void Player::move(int dir, bool localPlayer, bool is_jumping)
 }
 
 void Player::push(b2Vec2&& dir) {
-    dir *= 0.5;
 	box->getBody()->ApplyLinearImpulse(dir, box->getBody()->GetPosition(), true);
 }
 
 void Player::useHook(sf::Vector2i mousePos, bool local) {
-    if(hook != NULL && hook->getLength() < 0.7)
+    if(hook != nullptr && hook->getLength() < hook->getPassiveLength() + 0.1)
 	{
 		hook->shoot(mousePos);
 		if(local)
@@ -185,7 +198,7 @@ void Player::useHook(sf::Vector2i mousePos, bool local) {
 }
 
 void Player::aimHook(sf::Vector2i mousePos, bool local) {
-    if(hook != NULL) 
+    if(hook != nullptr)
 	{
 		hook->aim(mousePos);
 		if(local)
@@ -200,7 +213,7 @@ void Player::aimHook(sf::Vector2i mousePos, bool local) {
 }
 
 void Player::releaseHook(bool local) {
-    if(hook != NULL) 
+    if(hook != nullptr)
 	{
 		hook->release();
 		if(local)
@@ -219,7 +232,7 @@ bool Player::isJumping() {
 
 void Player::draw() {
     game->getWindow()->draw(frogSprite);
-    if(hook != NULL) hook->draw();
+    if(hook != nullptr) hook->draw();
     
     frogSprite.setPosition(box->getBody()->GetPosition().x, box->getBody()->GetPosition().y);
 }
@@ -243,7 +256,7 @@ void Player::update() {
     box->getBody()->ApplyLinearImpulse(b2Vec2(0, downWardPull), box->getBody()->GetPosition(), true);
     box->getBody()->SetLinearDamping(linearDamping);
     
-    if(hook != NULL) 
+    if(hook != nullptr)
 		hook->update();
 
 	itemCheck();

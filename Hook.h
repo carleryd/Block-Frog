@@ -16,7 +16,7 @@ class Hook
 {
 public:
 	Hook(Game* game, Player* player);
-//    ~Hook();
+    ~Hook();
     
     enum Action
     {
@@ -37,8 +37,10 @@ public:
 	
 
 	//network
-	Circle* getHookTip(){return hookTip;};
-	Rectangle* getHookBase() {return hookBase;};
+	Circle* getHookTip(){ return hookTip; };
+	Rectangle* getHookBase() { return hookBase; };
+    float getPassiveLength() { return passiveLength; }
+    b2Body* getGrabbedBox() { return grabbedBox; }
 
 	int getAction() {return ACTION;};
     
@@ -51,6 +53,10 @@ private:
 	Player* owner;
     
     Action ACTION;
+    
+    // This is set in grab and used by makeStatic to release hook if grabbed box
+    // just got static. We cannot hook static shapes and therefore this should happen
+    b2Body* grabbedBox;
     
     b2PrismaticJoint* prismaticJoint;
     b2RevoluteJoint* revoluteJoint;
@@ -70,6 +76,7 @@ private:
     // This is needed so as to not, for example, go into the if case
     // of hook length > x several times because it has yet to adjust
     float currentLength;
+    float minLength;
     // This is only needed for comparison in calculating what degree
     // set the revolute joint at. See Utility::mouseAngle
     float hookDegrees;

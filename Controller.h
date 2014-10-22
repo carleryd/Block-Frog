@@ -6,6 +6,7 @@
 #include "Game.h"
 
 class Menu;
+class StartMenu;
 
 class Controller
 {
@@ -18,6 +19,7 @@ private:
     
     Game* game;
     Menu* menu;
+    StartMenu* startMenu;
 	bool pressedLastFrame;
 };
 

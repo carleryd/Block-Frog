@@ -4,8 +4,7 @@
 
 class Player;
 
-class Item :
-	public Rectangle
+class Item : public Rectangle
 {
 public:
 	Item(Game* game, b2Vec2* size, b2Vec2* position,

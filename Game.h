@@ -26,6 +26,7 @@ class Game
 public:
 	Game(sf::RenderWindow* window, OSHandler* osHandler);
 	~Game();
+    void destroyPlayer();
     
     void basicInit();
     void init(int playerType, sf::IpAddress* serverip = nullptr, unsigned short serverPort = 0);
@@ -38,17 +39,19 @@ public:
     void spawnBox(sf::Vector2i position);
     
     // Getter methods
-    sf::RenderWindow* getWindow();
-    b2World* getWorld();
-    Player* getPlayer();
 	Textor* getTextor() {return textor;};
+    sf::RenderWindow* getWindow() { return window; }
+    b2World* getWorld() { return world; }
+    Player* getPlayer() { return player; }
+    Utility* getUtility() { return utility; }
+    OSHandler* getOSHandler() { return osHandler; }
+    ShapeFactory* getShapeFactory() { return shapeFactory; }
 
 	/*
 		get any one player, remote or local
 		returns nullptr if not found
 	*/
 	Player* getPlayer(string name);
-    Utility* getUtility();
 	sf::Vector2i& getViewOffset() {return viewOffset;};
 	list<Player*>& getRemotePlayers() {return remotePlayers;};
 	//returns nullptr if not found
@@ -58,12 +61,15 @@ public:
 	Shape* getShape(int id);
 	Shape* getLastStaticShape() const {return lastStaticShape;};
 	sf::Shape* getWater() const {return water;};
-    OSHandler* getOSHandler();
     ContactListener* getContactListener() { return contactListener; }
+    bool getGameHasStarted() { return gameHasStarted; }
     
     // Setter methods
     void setUtility(Utility* utility);
     void setPlayer(Player* player);
+    void setStaticPlatform(Shape* shape) { lastStaticShape = shape; }
+    void setPrepTime(int prepTime_) { prepTime = prepTime_; }
+    void setGameHasStarted(bool hasStarted) { gameHasStarted = hasStarted; }
     
     // Network
 	void addRemotePlayer(Player* rPlayer);
@@ -84,6 +90,7 @@ private:
 
 	void boxHandling(); //destroy boxes. 
 	Shape* createBoxes(); //for server only. Returns pointer to last created box, nullptr if no box was created
+    void createStaticPlatform();
 	void handleThreads();
 	void playerHandling();
 
@@ -108,6 +115,9 @@ private:
 	Textor* textor;
 	Remover* remover;
     
+    // temporary
+    Shape* staticPlatform;
+    
     // This is for the live menu
     Shape* hostRectangle;
     Shape* joinRectangle;
@@ -117,6 +127,7 @@ private:
 
     // This score is incremented when new boxes are created in createBoxes()
     int score;
+    bool gameHasStarted;
     
 	//network
 	UDPNetwork* localHost;
@@ -126,15 +137,32 @@ private:
 	Synchronizer* synchronizer;
 
     std::vector<Shape*> boxes;
+    std::vector<Shape*> staticShapes;
 	Shape* lastStaticShape;
-	sf::Shape* water;
+	
+    // Water
+    sf::Shape* water;
+    // int values, 1 is start, for each new stage a new static platform is created
+    int waterStage;
+    int prevStage;
+    float platformsPerLevel;
+    int arrangeX;
+    int prevArrangeX;
+    sf::Vector2i oldViewOffset;
+    
+    // Holds timer.asSeconds() value. Used to create new boxes in intervals
 	double duration;
+    // Holds timer.asSeconds() value. Used to count time in preparation before game starts
+    int prepTime;
+    int boxCount;
+//    int gameLevel;
+    
 	bool rise;
 	float riseSpeed;
 	int secPerDrops; //time before a new block is dropped
 	bool allowJoin;
 	//float updateTime;
-	int staticPlatform; //every staticPlatform:th created box will be a static platform
+//	int staticPlatform; //every staticPlatform:th created box will be a static platform
 	friend Controller;
 	friend UDPNetwork;
 };

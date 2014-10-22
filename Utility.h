@@ -17,6 +17,7 @@ public:
     
     b2Vec2 mouseToBox2D(sf::Vector2i mousePos);
 	sf::Vector2f box2dToSf(const b2Vec2& vector);
+  	sf::Vector2f B2DtoSFML(const b2Vec2& vector);
     float angleBetweenPoints(b2Vec2 meterPosA, b2Vec2 meterPosB);
     float angleBetweenPoints(sf::Vector2i meterPosA, sf::Vector2i meterPosB);
     float mouseAngle(sf::Vector2i mousePixelPos, b2Vec2 playerMeterPos, float hookDegrees);

@@ -103,6 +103,11 @@ void Synchronizer::requestShapeUpdates()
 	}
 }
 
+void Synchronizer::requestGameHasStarted() {
+    sf::Packet request = game.getPacketParser()->pack(UDPNetwork::GAME_STARTED_REQUEST);
+    dynamic_cast<Client*>(game.getLocalHost())->sendToServer(request);
+}
+
 void Synchronizer::requestPlayerUpdates()
 {
 	//remote players

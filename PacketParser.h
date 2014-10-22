@@ -32,6 +32,7 @@ struct player_info
 };
 struct shapeSync;
 struct hook_info;
+struct res_info;
 
 class PacketParser
 {
@@ -104,14 +105,16 @@ struct shapeSync
 //	int collisionID;
 };
 
-
-
-
 struct hook_info
 {
 	string name;
 	sf::Vector2i mousePos;
 };
 
+struct res_info
+{
+    string name;
+    b2Vec2 spawn;
+};
 
 #endif

@@ -3,6 +3,7 @@
 #include "Game.h"
 #include "Player.h"
 #include "Controller.h"
+#include "StartMenu.h"
 
 Menu::Menu(sf::RenderWindow* window_, OSHandler* osHandler_) {
     window = window_;
@@ -14,15 +15,16 @@ Menu::Menu(sf::RenderWindow* window_, OSHandler* osHandler_) {
     ipAddress = "";
     portAddress = "";
     
-    game = new Game(window, osHandler);
+    game = new Game(window_, osHandler_);
     menuState = START;
     joinState = IP;
     
 	a = nullptr;
 	p = 0;
     
-    game->basicInit();
-    game->initStartMenu();
+//    game->basicInit();
+//    game->initStartMenu();
+    startMenu = new StartMenu(game);
     controller = new Controller(game, this);
 }
 
@@ -64,16 +66,16 @@ void Menu::draw() {
         case JOIN:
             if(joinState == IP) {
                 window->draw(textor->write("ENTER HOST'S IP ADDRESS",
-                                           sf::Vector2f(window->getSize().y/2 + 100, 250)));
+                                           sf::Vector2f(window->getSize().x/2, 250)));
 	            window->draw(textor->write(ipAddress,
-                                           sf::Vector2f(window->getSize().y/2 + 100, 350)));
+                                           sf::Vector2f(window->getSize().x/2, 350)));
                 
             }
             else if(joinState == PORT) {
                 window->draw(textor->write("ENTER HOST'S PORT",
-                                           sf::Vector2f(window->getSize().y/2 + 100, 250)));
+                                           sf::Vector2f(window->getSize().x/2, 250)));
                 window->draw(textor->write(portAddress,
-                                           sf::Vector2f(window->getSize().y/2 + 100, 350)));
+                                           sf::Vector2f(window->getSize().x/2, 350)));
             }
             break;
         default: ;
@@ -83,17 +85,20 @@ void Menu::draw() {
 void Menu::update() {
     switch(menuState) {
         case START:
-            game->runStartMenu();
+//            game->runStartMenu();
+            startMenu->run();
             controller->checkInput();
             
             if(game->getContactListener()->getHostGame()) {
-                game->removeStartMenu();
+//                game->removeStartMenu();
+                delete startMenu;
                 joinAs = SERVER;
                 gameStarted = true;
                 cout << "HOOKED HOST" << endl;
             }
             else if(game->getContactListener()->getJoinGame()) {
-                game->removeStartMenu();
+//                game->removeStartMenu();
+                delete startMenu;
                 joinAs = CLIENT;
                 menuState = JOIN;
                 cout << "HOOKED JOIN" << endl;

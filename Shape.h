@@ -57,7 +57,7 @@ public:
 
 protected:
 	Shape(Game* game, b2Vec2* position,
-		bool dynamic, int id, float density, float friction, int groupIndex);
+		bool dynamic, int id, float density, float friction);
 
 	void checkForContacts();
     

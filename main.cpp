@@ -39,7 +39,10 @@ int main(int argc, char* argv[])
     
     
     // Create the main window
-    sf::RenderWindow* window = new sf::RenderWindow(sf::VideoMode(800, 600), "SFML window");
+    sf::ContextSettings settings;
+	settings.antialiasingLevel = 5;
+    // 800x600
+    sf::RenderWindow* window = new sf::RenderWindow(sf::VideoMode(1280, 800), "SFML window", 7U, settings);
 
     // Set the Icon
     sf::Image icon;

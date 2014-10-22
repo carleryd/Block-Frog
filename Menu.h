@@ -9,6 +9,7 @@ class Textor;
 class OSHandler;
 class Game;
 class Controller;
+class StartMenu;
 
 using namespace std;
 
@@ -19,12 +20,14 @@ public:
     void run();
     void update();
 	Game* getGame() {return game;};
+    StartMenu* getStartMenu() { return startMenu; }
 private:
     void draw();
     
-    Textor* textor;
     Game* game;
+    StartMenu* startMenu;
     Controller* controller;
+    Textor* textor;
     OSHandler* osHandler;
     sf::RenderWindow* window;
 	sf::Event event;

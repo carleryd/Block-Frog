@@ -8,18 +8,14 @@
 #include <iomanip>
 
 Hook::Hook(Game* game_, Player* player) {
-    cout << "Hook()" << endl;
     game = game_;
 	owner = player;
     utility = game->getUtility();
-    //contactListener = game->getPlayer()->getContactListener();
-	contactListener = player->getContactListener();
+	contactListener = game->getContactListener();
     recentBoxContact = contactListener->getRecentHookContact(player->getBirthNumber());
     
     ACTION = PASSIVE;
     
-    /*playerMeterPos = b2Vec2(game->getPlayer()->getBody()->GetPosition().x,
-                            game->getPlayer()->getBody()->GetPosition().y);*/
 	playerMeterPos = b2Vec2(player->getBody()->GetPosition().x,
                             player->getBody()->GetPosition().y);
     
@@ -30,11 +26,11 @@ Hook::Hook(Game* game_, Player* player) {
                          true,
 						 -1,
                          0.01,
-                         0.0);
+                         0.0,
+                         3);
     
     // This way it will be recognized in the ContactListnener(see if statements ContactListener.cpp)
     hookTip->getBody()->GetFixtureList()->SetUserData( (void*)(uintptr_t)(player->getBirthNumber()+10));
-    cout << "birthNumber: " << player->getBirthNumber() << endl;
     
     hookBase = new Rectangle(game,
                              new b2Vec2(10.0, 10.0),
@@ -43,32 +39,17 @@ Hook::Hook(Game* game_, Player* player) {
                              true,
 							 -1,
                              1.0,
-                             0.3);
+                             0.3,
+                             3);
     
-    //EFTER ATT JAG IMPLEMENTERADE DETTA BUGGAR DET IBLAND
-//    b2Filter filter = hookTip->getBody()->GetFixtureList()->GetFilterData();
-//    filter.groupIndex = 0;
-//    hookTip->getBody()->GetFixtureList()->SetFilterData(filter);
-//    
-//    cout << "player filter: " << game->getPlayer()->getBody()->GetFixtureList()->GetFilterData().groupIndex << endl;
-//    
 	hookTip->getShape()->setFillColor(sf::Color(255, 0, 0));
     hookBase->getShape()->setFillColor(sf::Color(0, 0, 255));
     
-//    b2DistanceJointDef def;
-//    def.bodyA = game->getBody()->getBody();
-//    def.bodyB = hookTip->getBody();
-//    def.localAnchorA = b2Vec2(0, 0);
-//    def.localAnchorB = b2Vec2(0, 0);
-//    def.length = 0;
-//    def.collideConnected = false;
-//    
-//	distanceJoint = (b2DistanceJoint*)(game->getWorld()->CreateJoint(&def));
-    
-    passiveLength = 0.5;
+    passiveLength = 0.6;
     grabLength = 2.0;
     reachLength = 5.0;
     currentLength = passiveLength;
+    minLength = 0.0;
     
     b2RevoluteJointDef revDef;
     revDef.bodyA = hookBase->getBody();
@@ -79,7 +60,7 @@ Hook::Hook(Game* game_, Player* player) {
     revDef.enableMotor = true;
     revDef.lowerAngle = 0.0;
     revDef.upperAngle = 1.0;
-    revDef.maxMotorTorque = 10;
+    revDef.maxMotorTorque = 100;
     
     revoluteJoint = (b2RevoluteJoint*)(game->getWorld()->CreateJoint(&revDef));
     
@@ -92,7 +73,8 @@ Hook::Hook(Game* game_, Player* player) {
     def.bodyA = hookBase->getBody();
     def.bodyB = hookTip->getBody();
     def.localAnchorA = b2Vec2(0, 0);
-    def.localAnchorB = b2Vec2(0, 0);    def.enableLimit = true;
+    def.localAnchorB = b2Vec2(0, 0);
+    def.enableLimit = true;
     def.enableMotor = true;
     def.lowerTranslation = 0.0f;
     def.upperTranslation = passiveLength;
@@ -106,16 +88,35 @@ Hook::Hook(Game* game_, Player* player) {
     newMouseAngle = 10;
 }
 
+Hook::~Hook() {
+    owner = nullptr;
+    utility = nullptr;
+    contactListener = nullptr;
+    recentBoxContact = nullptr;
+    
+	game->getWorld()->DestroyJoint(revoluteJoint);
+    revoluteJoint = nullptr;
+    game->getWorld()->DestroyJoint(prismaticJoint);
+    prismaticJoint = nullptr;
+    
+    delete hookTip;
+    hookTip = nullptr;
+    delete hookBase;
+    hookBase = nullptr;
+    
+    game = nullptr;
+}
+
 void Hook::aim(sf::Vector2i mousePixelPos) {
-    hookDegrees = utility->angleBetweenPoints(hookTip->getBody()->GetPosition(),
-                                              hookBase->getBody()->GetPosition());
+    hookDegrees = 1.0;//utility->angleBetweenPoints(hookTip->getBody()->GetPosition(),
+                    //                          hookBase->getBody()->GetPosition());
     newMouseAngle = utility->mouseAngle(mousePixelPos, playerMeterPos, hookDegrees);
 	revoluteJoint->SetLimits(utility->degToRad(newMouseAngle), utility->degToRad(newMouseAngle));
 }
 
 void Hook::shoot(sf::Vector2i mousePixelPos) {
     newMouseAngle = utility->mouseAngle(mousePixelPos, playerMeterPos, hookDegrees);
-    prismaticJoint->SetLimits(0.0, reachLength);
+    prismaticJoint->SetLimits(minLength, reachLength);
 
     // We want too look for objects to grab
     contactListener->setHookActive(true, owner->getBirthNumber());
@@ -123,8 +124,9 @@ void Hook::shoot(sf::Vector2i mousePixelPos) {
 }
 
 b2RevoluteJoint* Hook::grab(b2Body* box) {
+    grabbedBox = box;
     // Makes the box more easily handled by frog
-    if(box->GetType() == b2BodyType::b2_dynamicBody) {
+    if(box->GetType() == b2BodyType::b2_dynamicBody) { // to be removed
 	    box->GetFixtureList()->SetDensity(0.0001);
     	box->SetFixedRotation(true);
         box->ResetMassData();
@@ -141,8 +143,8 @@ b2RevoluteJoint* Hook::grab(b2Body* box) {
 }
 
 void Hook::release() {
-    if(grabJoint != NULL) {
-        prismaticJoint->SetLimits(0.0, passiveLength);
+    if(grabJoint != nullptr) {
+        prismaticJoint->SetLimits(minLength, passiveLength);
         // Return to original density and friction
         if(grabJoint->GetBodyB()->GetType() == b2BodyType::b2_dynamicBody) {
 	        grabJoint->GetBodyB()->GetFixtureList()->SetDensity(1.0);
@@ -153,7 +155,7 @@ void Hook::release() {
         
         // Destroy the joint connecting hook and box
     	game->getWorld()->DestroyJoint(grabJoint);
-    	grabJoint = NULL;
+    	grabJoint = nullptr;
         
         // Remove the recent contact, we no longer want to grab it
         contactListener->removeRecentHookContact(owner->getBirthNumber());
@@ -169,7 +171,11 @@ void Hook::update() {
     hookBase->update();
 	playerMeterPos = b2Vec2(owner->getBody()->GetPosition().x,
                             owner->getBody()->GetPosition().y);
-	;
+    
+//	cout << "--- HOOK POSITIONS ---" << endl;
+//    cout << "hookTip: x: " << hookTip->getBody()->GetPosition().x << " y: " << hookTip->getBody()->GetPosition().y << endl;
+//    cout << "hookBase: x: " << hookBase->getBody()->GetPosition().x << " y: " << hookBase->getBody()->GetPosition().y << endl;
+	
 	/*if(recentBoxContact != NULL && ((b2BodyUserData*)recentBoxContact->GetUserData())->toBeRemoved)
 		release();*/
     
@@ -179,13 +185,13 @@ void Hook::update() {
             recentBoxContact = contactListener->getRecentHookContact(owner->getBirthNumber());
             
 			if(recentBoxContact != NULL && grabJoint == NULL) {
-                prismaticJoint->SetLimits(0.0, grabLength);
+                prismaticJoint->SetLimits(minLength, grabLength);
                 grabJoint = grab(recentBoxContact);
                 ACTION = PASSIVE;
             }
             else if(recentBoxContact == NULL && getLength() > (reachLength - 0.01)) {
                 contactListener->setHookActive(false, owner->getBirthNumber());
-                prismaticJoint->SetLimits(0.0, passiveLength);
+                prismaticJoint->SetLimits(minLength, passiveLength);
                 ACTION = PASSIVE;
             }
             break;
@@ -198,8 +204,8 @@ void Hook::update() {
 }
 
 void Hook::draw() {
-    game->getWindow()->draw(*hookTip->getShape());
 	game->getWindow()->draw(*hookBase->getShape());
+    game->getWindow()->draw(*hookTip->getShape());
 }
 
 float Hook::getLength() {

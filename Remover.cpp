@@ -24,7 +24,7 @@ void Remover::checkShapeRemoval(Shape* shape)
 	if(shape->getShape()->getPosition().y > updateKillOffset() && shape != game->getLastStaticShape())
 	{
 		deletion.push(shape);
-		//cout << "shape killed at "<< updateKillOffset() << endl;
+//		cout << "shape killed at "<< updateKillOffset() << endl;
 	}
 	//check for making shape stale
 	else if(shape->getShape()->getPosition().y > updateStaleOffset()) //make sure there is still a static platform to stand on
@@ -91,8 +91,8 @@ float Remover::updateKillOffset()
 }
 
 float Remover::updateStaleOffset()
-{	
-	return game->getWater()->getPosition().y;;
+{
+	return game->getWater()->getPosition().y;
 }
 
 void Remover::respawnPlayer(Player* player)
@@ -109,7 +109,12 @@ void Remover::respawnPlayer(Player* player)
 		game->getTextor()->writeTemporaryText(s, v, 3);*/
 
 		player->setDeath(false);
+        
 		sf::Packet p = packetParser->pack(UDPNetwork::PLAYER_RES);
+        p << player->getName();
+        p << spawn.x;
+        p << spawn.y;
+        
 		UDPNetwork* lh = game->getLocalHost();
 		if(lh->isServer())
 		{

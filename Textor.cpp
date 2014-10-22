@@ -16,13 +16,18 @@ Textor::Textor(OSHandler* os)
 
 Textor::~Textor(void)
 {
+    cout << "Destructor not implemented" << endl;
 }
 
-sf::Text Textor::write(string _text, sf::Vector2f pos)
+sf::Text Textor::write(string text_, sf::Vector2f pos)
 {
-	text.setString(_text);
-	text.setPosition(pos);
-	text.setOrigin(text.getGlobalBounds().width/2, text.getGlobalBounds().height/2);
+	text.setString(text_);
+    
+    sf::FloatRect textRect = text.getLocalBounds();
+    text.setOrigin(textRect.left + textRect.width/2.0f,
+                   textRect.top  + textRect.height/2.0f);
+    
+    text.setPosition(pos);
 	return text;
 }
 
@@ -35,7 +40,6 @@ void Textor::writeTemporaryText(string t, sf::Vector2f p, int l)
 
 void Textor::handleTemporaryTexts(sf::RenderWindow& w)
 {
-	
 	for (tempText tt: temporaryTexts)
 	{
 		w.draw(tt.t);

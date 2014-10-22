@@ -15,6 +15,7 @@ public:
 
 	void requestShapeUpdates();
 	void requestPlayerUpdates();
+    void requestGameHasStarted();
 private:
 	b2Vec2 interpolate(const b2Vec2& oldV, const b2Vec2& newV);
 	const float interpolate(float oldV, float newV);

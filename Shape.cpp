@@ -8,7 +8,7 @@ const float PI = 3.14f;
 
 #include <iostream>
 
-Shape::Shape(Game* game_, b2Vec2* position_, bool dynamic_, int id, float density_, float friction_, int groupIndex)
+Shape::Shape(Game* game_, b2Vec2* position_, bool dynamic_, int id, float density_, float friction_)
 {
     game = game_;
     position = position_;
@@ -89,7 +89,15 @@ void Shape::makeStatic()
 {
 	if(body->GetType() != b2BodyType::b2_staticBody)
 	{
+        // Make all players release their hooks when hooked box become static
+        list<Player*> players = game->getRemotePlayers();
+        players.push_back(game->getPlayer());
+        for(Player* player : players) {
+            if(player->getHook()->getGrabbedBox() == body)
+                player->releaseHook();
+        }
 		body->SetType(b2BodyType::b2_staticBody);
+        body->GetFixtureList()->SetUserData((void*)98);
 		dynamic = false;
 		startParticles();
 	}
