@@ -68,7 +68,7 @@ public:
     void setUtility(Utility* utility);
     void setPlayer(Player* player);
     void setStaticPlatform(Shape* shape) { lastStaticShape = shape; }
-    void setPrepTime(int prepTime_) { prepTime = prepTime_; }
+    void setElapsedPrepTime(int elapsedPrepTime_) { elapsedPrepTime = elapsedPrepTime_; }
     void setGameHasStarted(bool hasStarted) { gameHasStarted = hasStarted; }
     
     // Network
@@ -154,6 +154,7 @@ private:
 	double duration;
     // Holds timer.asSeconds() value. Used to count time in preparation before game starts
     int prepTime;
+    int elapsedPrepTime;
     int boxCount;
 //    int gameLevel;
     

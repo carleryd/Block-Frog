@@ -80,7 +80,7 @@ Shape* ShapeFactory::createItem(b2Vec2* position, int id_)
 	b2Vec2* size = new b2Vec2(10, 10);
 	Item* item;
     int i = id++;
-    cout << "item id: " << id << " id_: " << id_ << endl;
+//    cout << "item id: " << id << " id_: " << id_ << endl;
 	if(id_ == -1)
 		item = new Item(game, size, position, true, i);
 	else

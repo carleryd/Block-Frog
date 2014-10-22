@@ -47,6 +47,7 @@ Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_)
     score = 0;
     boxCount = 0;
 	localHost = NULL;
+    prepTime = 30;
     
     // Used by client to set position of given water levels
     oldViewOffset = sf::Vector2i(0, 0);
@@ -146,7 +147,7 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
 	
     // Needed so that preparation time is not started on Game::Game(...)
     clock.restart();
-	secPerDrops = 5;
+	secPerDrops = 3;
 }
 
 void Game::createStaticPlatform() {
@@ -160,16 +161,18 @@ void Game::createStaticPlatform() {
     b2Vec2* pos = new b2Vec2(size->x * arrangeX - window->getSize().x/3,
                              waterStage * window->getSize().y / platformsPerLevel - window->getSize().y/2);
     
-    boxes.push_back(shapeFactory->createRectangle(size, pos,
+    Shape* staticPlatform = shapeFactory->createRectangle(size, pos,
                                                   false,
                                                   1.0,
                                                   1.0,
-                                                  2));
+                                                  2);
     
-    staticShapes.push_back(boxes.back());
+    boxes.push_back(staticPlatform);
+    staticShapes.push_back(staticPlatform);
     
-//    sf::Packet packet = packetParser->pack(boxes.back());
-//    dynamic_cast<Server*>(localHost)->broadCast(packet);
+    // Send new static shape to clients
+    sf::Packet packet = packetParser->pack(boxes.back());
+    dynamic_cast<Server*>(localHost)->broadCast(packet);
     
     b2Vec2 itemPos = b2Vec2(staticShapes.back()->getBody()->GetPosition().x * utility->getMTP(),
                             staticShapes.back()->getBody()->GetPosition().y * utility->getMTP());
@@ -178,9 +181,9 @@ void Game::createStaticPlatform() {
     Shape* item = shapeFactory->createItem(&itemPos);
     boxes.push_back(item);
     
-//    packet.clear();
-    cout << "Packing item " << item->getId() << " at pos: " << item->getBody()->GetPosition().x << " " << item->getBody()->GetPosition().y << endl;
-    sf::Packet packet = packetParser->pack(item);
+    // Send new item to clients
+    packet.clear();
+    packet = packetParser->pack(item);
     dynamic_cast<Server*>(localHost)->broadCast(packet);
 }
 
@@ -228,21 +231,21 @@ void Game::run() {
     timer = clock.getElapsedTime();
     if(!gameHasStarted) {
         if(localHost->isServer()) {
-        	prepTime = timer.asSeconds();
+        	elapsedPrepTime = timer.asSeconds();
         	
             sf::Packet packet = packetParser->pack(UDPNetwork::PREPTIME_CHANGE);
-        	packet << prepTime;
+        	packet << elapsedPrepTime;
         	dynamic_cast<Server*>(localHost)->broadCast(packet);
         }
         else
             synchronizer->requestGameHasStarted();
         
-        string countDown = to_string(prepTime-20);
+        string countDown = to_string(elapsedPrepTime - prepTime);
         countDown = countDown.substr(1, countDown.size());
         
         window->draw(textor->write(countDown, sf::Vector2f(window->getSize().x/2,
                                                            30+viewOffset.y)));
-        if(prepTime - 20 >= 0) {
+        if(elapsedPrepTime - prepTime >= 0) {
          	gameHasStarted = true;
             score = 0;
         }

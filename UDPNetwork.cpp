@@ -273,8 +273,8 @@ void UDPNetwork::handleReceivedData(Game* game)
                 break;
             case PREPTIME_CHANGE:
             {
-                float prepTime = packetParser.unpack<int>(*packet);
-                game->setPrepTime(prepTime);
+                float elapsedPrepTime = packetParser.unpack<int>(*packet);
+                game->setElapsedPrepTime(elapsedPrepTime);
             }
                 break;
             case GAME_STARTED:
