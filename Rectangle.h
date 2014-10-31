@@ -16,6 +16,8 @@ public:
   	b2Vec2* getSize() const;
 private:
     b2Vec2* size;
+    
+    sf::Texture rockTexture;
 };
 
 #endif /* defined(__Block_Frog__Square__) */

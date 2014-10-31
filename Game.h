@@ -18,8 +18,10 @@ class Textor;
 class ContactListener;
 class Remover;
 class Synchronizer;
+class Lobby;
+class Director;
 
-enum {SERVER, CLIENT, SINGLE_PLAYER};
+//enum {SERVER, CLIENT, SINGLE_PLAYER};
 
 class Game
 {
@@ -29,7 +31,7 @@ public:
     void destroyPlayer();
     
     void basicInit();
-    void init(int playerType, sf::IpAddress* serverip = nullptr, unsigned short serverPort = 0);
+    void init();
     void initStartMenu();
     void runStartMenu();
     void run();
@@ -46,23 +48,27 @@ public:
     Utility* getUtility() { return utility; }
     OSHandler* getOSHandler() { return osHandler; }
     ShapeFactory* getShapeFactory() { return shapeFactory; }
+    Synchronizer* getSynchronizer() { return synchronizer; }
 
 	/*
 		get any one player, remote or local
 		returns nullptr if not found
 	*/
-	Player* getPlayer(string name);
+	Player* getPlayer(int localID);
 	sf::Vector2i& getViewOffset() {return viewOffset;};
 	list<Player*>& getRemotePlayers() {return remotePlayers;};
 	//returns nullptr if not found
-	Player* getRemotePlayer(string name);
+	Player* getRemotePlayer(int localID);
 	vector<Shape*>& getShapes() {return boxes;};
 	//returns nullptr if not found
 	Shape* getShape(int id);
 	Shape* getLastStaticShape() const {return lastStaticShape;};
 	sf::Shape* getWater() const {return water;};
     ContactListener* getContactListener() { return contactListener; }
+    Lobby* getLobby() { return lobby; }
+    Director* getDirector() { return director; }
     bool getGameHasStarted() { return gameHasStarted; }
+    int getLocalID() { return localID; }
     
     // Setter methods
     void setUtility(Utility* utility);
@@ -70,12 +76,17 @@ public:
     void setStaticPlatform(Shape* shape) { lastStaticShape = shape; }
     void setElapsedPrepTime(int elapsedPrepTime_) { elapsedPrepTime = elapsedPrepTime_; }
     void setGameHasStarted(bool hasStarted) { gameHasStarted = hasStarted; }
+    void setLobby(Lobby* lobby_) { lobby = lobby_; }
+    void setDirector(Director* director_) { director = director_; }
+    // Unique ID for every machine connected to game.
+    void setLocalID(int localID_) { localID = localID_; }
     
     // Network
 	void addRemotePlayer(Player* rPlayer);
-	bool removeRemotePlayer(string name);
+	bool removeRemotePlayer(int localID);
 	bool playersAllowedToJoined(){return allowJoin;};
 	UDPNetwork* getLocalHost(){return localHost;};
+    void setLocalHost(UDPNetwork* localHost_) { localHost = localHost_; }
 	PacketParser* getPacketParser() const {return packetParser;};
 	//synchronize shapes against servers game state
 	void updateShapes(shapeSync* s); 
@@ -105,6 +116,8 @@ private:
     OSHandler* osHandler;
 	ShapeFactory* shapeFactory;
     ContactListener* contactListener;
+    Lobby* lobby;
+    Director* director;
     
     sf::RenderWindow* window;
 	sf::View* view;
@@ -130,6 +143,7 @@ private:
     bool gameHasStarted;
     
 	//network
+    int localID;
 	UDPNetwork* localHost;
 	std::thread* network;
     std::vector<shapeSync*> localChanges;

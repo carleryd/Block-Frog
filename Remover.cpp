@@ -41,7 +41,7 @@ void Remover::checkPlayerKill(Player* player)
 	if(player->getBox()->getShape()->getPosition().y > updateKillOffset()
 		&& !player->isDead())
 	{
-		string s = player->getName() + " is now sleeping with the fishes.";
+		string s = player->getAlias() + " is now sleeping with the fishes.";
 		player->setDeath(true);
 		sf::Vector2f v = sf::Vector2f(game->getWindow()->getSize().x/2, game->getWindow()->getSize().y/2);
 		v += sf::Vector2f(game->getViewOffset());
@@ -111,7 +111,7 @@ void Remover::respawnPlayer(Player* player)
 		player->setDeath(false);
         
 		sf::Packet p = packetParser->pack(UDPNetwork::PLAYER_RES);
-        p << player->getName();
+        p << player->getLocalID();
         p << spawn.x;
         p << spawn.y;
         

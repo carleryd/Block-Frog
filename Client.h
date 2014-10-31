@@ -5,15 +5,15 @@
 #include <list>
 using namespace std;
 
-
+class Game;
 
 class Client: public UDPNetwork
 {
 public:
-	Client(string playerName, sf::IpAddress serverAddress, unsigned short port, ShapeFactory& f);
+	Client(Game* game, sf::IpAddress serverAddress, unsigned short port);
 	~Client(void);
 	bool isServer() override;
-	bool connect(b2Vec2* playerPosition);
+	bool connect();
 	void sendToServer(sf::Packet& packet);
 	void dropServer();
 private:

@@ -1,6 +1,7 @@
 #include "Synchronizer.h"
 #include "Client.h"
 #include "Server.h"
+#include "Lobby.h"
 #include <Box2D/Box2D.h>
 
 Synchronizer::Synchronizer(Game& g):
@@ -61,7 +62,7 @@ void Synchronizer::updateShapes(shapeSync* s)
 
 void Synchronizer::updatePlayer(player_info* p)
 {
-	Player* player = game.getRemotePlayer(p->name);
+	Player* player = game.getRemotePlayer(p->localID);
 	if(player != nullptr)
 	{
 		//cout << "Updating player " << player->getName() << endl;
@@ -104,7 +105,7 @@ void Synchronizer::requestShapeUpdates()
 }
 
 void Synchronizer::requestGameHasStarted() {
-    sf::Packet request = game.getPacketParser()->pack(UDPNetwork::GAME_STARTED_REQUEST);
+    sf::Packet request = game.getPacketParser()->pack(UDPNetwork::PREPTIME_OVER_REQUEST);
     dynamic_cast<Client*>(game.getLocalHost())->sendToServer(request);
 }
 
@@ -119,11 +120,12 @@ void Synchronizer::requestPlayerUpdates()
 		if(p != nullptr && p->getBox()->timeSinceUpdate().asSeconds() > updateTime)
 		{
 			//cout << "Request update for player: " << p->getName() << endl;
-			sf::Packet request = game.getPacketParser()->pack<string>(UDPNetwork::PLAYER_SYNCH_REQUEST, p->getName());
+			sf::Packet request = game.getPacketParser()->pack<int>(UDPNetwork::PLAYER_SYNCH_REQUEST,
+                                                                   p->getLocalID());
 			if(game.getLocalHost()->isServer())
 			{
 				Server* server = dynamic_cast<Server*>(game.getLocalHost());
-				client* receiver = server->getClient(p->getName());
+				client* receiver = server->getClient(p->getLocalID());
 				game.getLocalHost()->send(request, receiver->clientAddress, receiver->clientPort);
 			}
 			else
@@ -132,6 +134,12 @@ void Synchronizer::requestPlayerUpdates()
 			}
 		}
 	}
+}
+
+void Synchronizer::requestConnectedPlayers() {
+    cout << "ON CLIENT: sending connected players request packet to server" << endl;
+    sf::Packet request = game.getPacketParser()->pack(UDPNetwork::CONNECTED_PLAYERS_REQUEST);
+    dynamic_cast<Client*>(game.getLobby()->getLocalHost())->sendToServer(request);
 }
 
 b2Vec2 Synchronizer::interpolate(const b2Vec2& oldV, const b2Vec2& newV)

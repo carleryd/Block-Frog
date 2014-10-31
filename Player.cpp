@@ -8,20 +8,22 @@
 #include "Item.h"
 #include "Utility.h"
 
-Player::Player(Game* game_, string color) {
+Player::Player(Game* game_, int localID_, string color) {
+    cout << "color: " << color << endl;
     game = game_;
-	Player::name = name;
+    localID = localID_;
+    alias = "noname";
+    window = game->getWindow();
     // World, Size, Position, Dynamic, Density, Friction, Collision group
     box = new Rectangle(game_,
                         new b2Vec2(50.0f, 50.0f),
-                        new b2Vec2(0, 0),
+                        new b2Vec2((localID-4) * (int)window->getSize().x/8, -200),
                         true,
 						-1,
                         0.1,
                         1.0,
                         3);
     box->getBody()->SetFixedRotation(true);
-//    box->getBody()->SetGravityScale(3);
     
     // Jump parameters
 	jumpHeight = 15;
@@ -58,8 +60,7 @@ Player::Player(Game* game_, string color) {
     footSensorFixture = box->getBody()->CreateFixture(&myFixtureDef);
     
     // This is needed for the ContactListener to recognize footSensor(see ContactListener.cpp)
-    footSensorFixture->SetUserData( (void*)1 );
-    birthNumber = 1;
+    footSensorFixture->SetUserData((void*)(uintptr_t)localID);
     
 	// ##### HOOKSHOT #####
     // game object, radius, position, dynamic, density, friction
@@ -100,15 +101,8 @@ Hook* Player::getHook() {
 	return hook;
 }
 
-void Player::setName(string n)
-{
-	name = n;
-}
-
-void Player::setBirthNumber(int number) {
-    birthNumber = number;
-    footSensorFixture->SetUserData((void*)(uintptr_t)number);
-	// also set hook number+10
+int Player::getLocalID() {
+	return localID;
 }
 
 void Player::resetPlayer(b2Vec2* newPos) {
@@ -160,7 +154,7 @@ void Player::move(int dir, bool localPlayer, bool is_jumping)
 		//if client then tell server about movement
         sf::Packet packet;
 		player_info p;
-		p.name = name;
+		p.localID = localID;
 		p.movedir = dir;
 		p.jumped = jumped;
 		p.velocity = box->getBody()->GetLinearVelocity();
@@ -189,7 +183,7 @@ void Player::useHook(sf::Vector2i mousePos, bool local) {
 		if(local)
 		{
 			hook_info h;
-			h.name = name;
+			h.localID = localID;
 			h.mousePos = mousePos;
 			sf::Packet p = game->getPacketParser()->pack(UDPNetwork::HOOK_SHOT, h);
 			send(p);
@@ -204,7 +198,7 @@ void Player::aimHook(sf::Vector2i mousePos, bool local) {
 		if(local)
 		{
 			hook_info h;
-			h.name = name;
+			h.localID = localID;
 			h.mousePos = mousePos;
 			sf::Packet p = game->getPacketParser()->pack(UDPNetwork::HOOK_AIM, h);
 			send(p);
@@ -218,7 +212,7 @@ void Player::releaseHook(bool local) {
 		hook->release();
 		if(local)
 		{
-			sf::Packet p = game->getPacketParser()->pack<string>(UDPNetwork::HOOK_RELEASE, name);
+			sf::Packet p = game->getPacketParser()->pack<int>(UDPNetwork::HOOK_RELEASE, localID);
 			send(p);
 		}
 
@@ -226,12 +220,12 @@ void Player::releaseHook(bool local) {
 }
 
 bool Player::isJumping() {
-	if(contactListener->getNumFootContacts(birthNumber) > 0) return false;
+	if(contactListener->getNumFootContacts(localID) > 0) return false;
     else return true;
 }
 
 void Player::draw() {
-    game->getWindow()->draw(frogSprite);
+    window->draw(frogSprite);
     if(hook != nullptr) hook->draw();
     
     frogSprite.setPosition(box->getBody()->GetPosition().x, box->getBody()->GetPosition().y);

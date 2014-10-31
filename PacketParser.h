@@ -9,20 +9,9 @@ class Player;
 
 struct player_info
 {
-	player_info(){};
-	/*player_info(Player& p)
-	{
-		
-		name = p.getName();
-		movedir = -1; // illegal is set in player::move
-		jumped = false;  // illegal is set in player::move
-		velocity = p.getBody()->GetLinearVelocity();
-		position = p.getBody()->GetPosition();
-
-		/*hookTip = shapeSync(*p.getHookTip());
-		hookBase = shapeSync(*p.getHookBase());*/
-	//}*/
-	string name;
+	player_info() {};
+    
+	int localID;
 	int movedir;
 	bool jumped; 
 	b2Vec2 velocity;
@@ -33,13 +22,15 @@ struct player_info
 struct shapeSync;
 struct hook_info;
 struct res_info;
+struct lp_info;
 
 class PacketParser
 {
 public:
-	PacketParser(ShapeFactory& factory);
+	PacketParser(Game* game);
 	~PacketParser(void);
 	sf::Packet pack(Shape* shape);
+    sf::Packet pack(lp_info* lp);
 	/*
 		for when the player acts(moves)
 		- use PLAYER_MOVE for only communicating movement
@@ -75,7 +66,7 @@ public:
 	T unpack(sf::Packet& packet);
 
 private:
-	ShapeFactory& factory;
+	ShapeFactory* factory;
 };
 
 /*sf::Packet& operator<<(sf::Packet& appendto, const sf::Packet appendwith)
@@ -107,14 +98,21 @@ struct shapeSync
 
 struct hook_info
 {
-	string name;
+	int localID;
 	sf::Vector2i mousePos;
 };
 
 struct res_info
 {
-    string name;
+   	int localID;
     b2Vec2 spawn;
+};
+
+struct lp_info
+{
+    int ID;
+    string alias;
+    string color;
 };
 
 #endif

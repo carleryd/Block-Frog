@@ -8,24 +8,31 @@ class Game;
 
 struct client
 {
-	client(sf::IpAddress address, unsigned short port, string name)
+	client(int localID_, sf::IpAddress address, unsigned short port)
 	{
+        localID = localID_;
 		clientAddress = address;
 		clientPort = port;
-		client::name = name;
 	}
+	int localID;
 	sf::IpAddress clientAddress;
 	unsigned short clientPort;
-	string name;
 };
 
 class Server: public  UDPNetwork
 {
 public:
-	Server(string playerName, ShapeFactory& f, Game* game);
+	Server(Game* game);
 	~Server(void);
 	void handleNewPlayer(packetInfo& pack);
-	bool dropPlayer(string name); //remove player from server either if player disconnects voluntarily or not
+	//returns nullptr if client not found
+	client* getClient(int localID);
+    //remove player from server either if player disconnects voluntarily or not
+	bool dropPlayer(int localID);
+    
+  	void playerEnteredLobby(packetInfo& pack);
+    void playerLeftLobby(int ID); // not yet implemented
+    
 	bool isServer() override;
 	//broadcast a packet
 	void broadCast(sf::Packet packet);
@@ -35,13 +42,12 @@ public:
 	{
 		return remoteConnections;
 	}
-	//returns nullptr if client not found
-	client* getClient(string name);
 private:
-	bool playerMoved;
+	Game* game;
+    
 	sf::SocketSelector selector;
 	vector<client*> remoteConnections;
-	Game* game;
+	bool playerMoved;
 };
 
 #endif

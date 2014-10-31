@@ -1,11 +1,12 @@
 #include "Controller.h"
-#include "Menu.h"
+#include "Director.h"
 #include "StartMenu.h"
+#include "Lobby.h"
 
-Controller::Controller(Game* game_, Menu* menu_)
+Controller::Controller(Game* game_, Director* director_)
 {
     game = game_;
-    menu = menu_;
+    director = director_;
 	game->window->setKeyRepeatEnabled(false);
 }
 
@@ -31,15 +32,15 @@ void Controller::checkInput() {
                     game->getWindow()->close();
                     break;
              	case sf::Keyboard::A:
-                    menu->getStartMenu()->setAPressed();
+                    director->getStartMenu()->setAPressed();
                     game->getPlayer()->move(game->getPlayer()->LEFT);
                     break;
              	case sf::Keyboard::D:
-                    menu->getStartMenu()->setDPressed();
+                    director->getStartMenu()->setDPressed();
                     game->getPlayer()->move(game->getPlayer()->RIGHT);
                     break;
                 case sf::Keyboard::Space:
-                    menu->getStartMenu()->setSpacePressed();
+                    director->getStartMenu()->setSpacePressed();
                     game->getPlayer()->move(game->getPlayer()->JUMP);
                     break;
 				case sf::Keyboard::J:
@@ -75,34 +76,54 @@ void Controller::checkInput() {
             }
         }
         
-        // Checks for Menu.cpp
-        if (event.type == sf::Event::TextEntered && menu->joinAs == CLIENT) {
+        // Checks for Director.cpp
+        if (event.type == sf::Event::TextEntered && director->joinAs == director->CLIENT) {
             // 8 is backspace | 10 is enter
             if(event.text.unicode == 8) {
-                if(menu->joinState == menu->IP)
-                    menu->ipAddress = menu->ipAddress.substr(0, menu->ipAddress.size()-1);
-                else if(menu->joinState == menu->PORT)
-                    menu->portAddress = menu->portAddress.substr(0, menu->portAddress.size()-1);
+                if(director->joinState == director->IP)
+                    director->ipAddress = director->ipAddress.substr(0, director->ipAddress.size()-1);
+                else if(director->joinState == director->PORT)
+                    director->portAddress = director->portAddress.substr(0, director->portAddress.size()-1);
             }
 			else if(event.text.unicode == 10 || event.text.unicode == 13) {
-                if(menu->joinState == menu->IP)
-                    menu->joinState = menu->PORT;
-                else if(menu->joinState == menu->PORT)
-                    menu->gameStarted = true;
+                if(director->joinState == director->IP)
+                    director->joinState = director->PORT;
+                else if(director->joinState == director->PORT)
+//                    director->state = director->GAME;
+                    director->state = LOBBY;
             }
             else {
-                if(menu->joinState == menu->IP)
-                    menu->ipAddress += static_cast<char>(event.text.unicode);
-                else if(menu->joinState == menu->PORT)
-                    menu->portAddress += static_cast<char>(event.text.unicode);
+                if(director->joinState == director->IP)
+                    director->ipAddress += static_cast<char>(event.text.unicode);
+                else if(director->joinState == director->PORT)
+                    director->portAddress += static_cast<char>(event.text.unicode);
             }
         }
+        if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+            position = sf::Mouse::getPosition(*game->getWindow());
+            for(Button button : director->getButtons()) {
+                if(position.x > button.position.x - button.size.x/2 &&
+                   position.x < button.position.x + button.size.x/2 &&
+                   position.y > button.position.y - button.size.y/2 &&
+                   position.y < button.position.y + button.size.y/2) {
+                    if(button.function == "STARTBUTTON") {
+                        cout << "CLICKED STARTBUTTON" << endl;
+                        UDPNetwork* localHost = director->getLobby()->getLocalHost();
+                    	if(localHost != nullptr && localHost->isServer()) {
+                            cout << "SERVER CHANGING STATE" << endl;
+                         	director->state = GAME;
+                        }
+                    }
+                }
+            }
+        }
+        
         if(game->getPlayer() != nullptr) {
             position = sf::Mouse::getPosition(*game->getWindow());
             game->getPlayer()->aimHook(position + game->viewOffset);
+            
             if(sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-                menu->getStartMenu()->setLeftClickPressed();
-                position = sf::Mouse::getPosition(*game->getWindow());
+                director->getStartMenu()->setLeftClickPressed();
                 game->getPlayer()->useHook(position);
             }
             else if(sf::Mouse::isButtonPressed(sf::Mouse::Right)) {

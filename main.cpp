@@ -23,7 +23,7 @@
 #include "Controller.h"
 #include <Box2D/Box2D.h>
 #include "OSHandler.h"
-#include "Menu.h"
+#include "Director.h"
 
 int main(int argc, char* argv[])
 {
@@ -51,23 +51,21 @@ int main(int argc, char* argv[])
         //return EXIT_FAILURE;
     }
 
-	sf::Music music;
-    music.setLoop(true);
-	if(!music.openFromFile(osHandler->getResourcePath() + "frog_theme.wav")) {
-		cerr  << "Could not load music!" << endl;
-	}
-	else {
-		music.play();
-	}
+//	sf::Music music;
+//    music.setLoop(true);
+//	if(!music.openFromFile(osHandler->getResourcePath() + "frog_theme.wav")) {
+//		cerr  << "Could not load music!" << endl;
+//	}
+//	else {
+//		music.play();
+//	}
     
     window->setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 	
     
-    Menu* menu = new Menu(window, osHandler);
+    Director* director = new Director(window, osHandler);
 	window->setFramerateLimit(60);
 
-	
-	
 
     // Start the game loop
     while (window->isOpen())
@@ -75,7 +73,7 @@ int main(int argc, char* argv[])
         // Clear screen
 		window->clear(sf::Color(0,100,160));
         
-        menu->run();
+        director->run();
 
         // Update the window
         window->display();

@@ -15,7 +15,7 @@ class Player;
 class Hook
 {
 public:
-	Hook(Game* game, Player* player);
+	Hook(Game* game_, Player* player_);
     ~Hook();
     
     enum Action
@@ -50,7 +50,9 @@ private:
     Rectangle* hookBase;
     Utility* utility;
 	ContactListener* contactListener;
-	Player* owner;
+	Player* player;
+    
+    int localID;
     
     Action ACTION;
     

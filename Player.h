@@ -18,25 +18,24 @@ using namespace std;
 class Player
 {
 public:
-	Player(Game* game, string color = "green");
+	Player(Game* game_, int localID_, string color);
     ~Player();
     void init();
 
-	void setName(string n);
     void setPosition(b2Vec2* newPos);
+    void setLocalID(int localID_) { localID = localID_; }
+    
     void resetPlayer(b2Vec2* newPos);
-    void setBirthNumber(int number);
     
     b2Body* getBody() { return box->getBody(); }
-	string& getName(){return name;};
 	b2Vec2* getPosition() const{return box->getPosition();};
     ContactListener* getContactListener() { return contactListener; }
 	Shape* getBox() {return box;};
 	Circle* getHookTip() {return hook->getHookTip();};
 	Rectangle* getHookBase() {return hook->getHookBase();};
-    int getBirthNumber() { return birthNumber; }
     Hook* getHook();
-
+    int getLocalID();
+    string getAlias() { return alias; }
     
 	enum { LEFT, RIGHT, JUMP, LEFT_STOP, RIGHT_STOP };
 	//set bool to true when moving a remote player
@@ -59,6 +58,7 @@ public:
 
 private:
     Game* game;
+    sf::RenderWindow* window;
     Hook* hook;
     Rectangle* box;
     ContactListener* contactListener;
@@ -69,12 +69,12 @@ private:
 	//check for item collision
 	void itemCheck();
     
+    int localID;
 	float leftSpeed, rightSpeed;
 	float jumpHeight, downWardPull, linearDamping;
     float movementSpeed;
     bool jumping;
-	string name;
-    int birthNumber;
+	string alias;
 	bool dead;
 	friend Item;
 

@@ -1,14 +1,16 @@
+#include <iostream>
+#include <typeinfo>
+
+#include "Game.h"
 #include "PacketParser.h"
 #include "ShapeFactory.h"
 #include "UDPNetwork.h"
-#include <iostream>
 #include "Rectangle.h"
 #include "Item.h"
-#include <typeinfo>
 
-PacketParser::PacketParser(ShapeFactory& f):
-	factory(f)
+PacketParser::PacketParser(Game* game)
 {
+    factory = game->getShapeFactory();
 }
 
 
@@ -51,15 +53,11 @@ sf::Packet PacketParser::pack<player_info*>(int type, player_info* p)
 {
 	sf::Packet packet;
 	packet << type;
-	packet << p->name;
+	packet << p->localID;
 	packet << p->movedir;
 	packet << p->jumped;
 	packet << p->velocity.x << p->velocity.y;
 	packet << p->position.x << p->position.y;
-	/*sf::Packet ht = pack(&p->hookTip, true);
-	sf::Packet hb = pack(&p->hookBase, true);*/
-	/*packet.append(ht.getData(), ht.getDataSize());
-	packet.append(hb.getData(), ht.getDataSize());*/
 	return packet;
 }
 
@@ -67,8 +65,8 @@ sf::Packet PacketParser::pack(Player* p)
 {
 	sf::Packet packet;
 	packet << UDPNetwork::NEW_PLAYER;
-	packet << p->getBody()->GetPosition().x << p->getBody()->GetPosition().y;
-	packet << p->getName();
+//	packet << p->getBody()->GetPosition().x << p->getBody()->GetPosition().y;
+//	packet << p->getName();
 	return packet;
 }
 
@@ -84,6 +82,16 @@ sf::Packet PacketParser::pack(shapeSync* s, bool appendee)
 	p << s->angle;
 //	p << s->collisionID;
 	return p;
+}
+
+sf::Packet PacketParser::pack(lp_info* lp) {
+    sf::Packet packet;
+    int type = UDPNetwork::NEW_LOBBY_PLAYER;
+    packet << type;
+    packet << lp->ID;
+    packet << lp->alias;
+    packet << lp->color;
+    return packet;
 }
 
 template<>
@@ -114,7 +122,7 @@ sf::Packet PacketParser::pack(int type, hook_info& h)
 {
 	sf::Packet p;
 	p << type;
-	p << h.name;
+	p << h.localID;
 	p << h.mousePos.x << h.mousePos.y;
 	return p;
 }
@@ -131,13 +139,13 @@ Shape* PacketParser::unpack<Shape*>(sf::Packet& packet)
 	Shape* s;
 	if(!item)
 	{
-		s = factory.createClientRectangle(new b2Vec2(size), new b2Vec2(pos), dynamic, id, (uintptr_t)collisionID);
+		s = factory->createClientRectangle(new b2Vec2(size), new b2Vec2(pos), dynamic, id, (uintptr_t)collisionID);
 		//cout << "regular shape created" << endl;
 	}
 	else
 	{
         cout << "Item " << id << " created at pos: " << pos.x << " " << pos.y << endl;
-		s = factory.createItem(new b2Vec2(pos), id); // Needs collisionID, cba to add it :>
+		s = factory->createItem(new b2Vec2(pos), id); // Needs collisionID, cba to add it :>
 		//cout << "item created" << endl;
 	}
 	s->setPosition(&pos);
@@ -145,13 +153,13 @@ Shape* PacketParser::unpack<Shape*>(sf::Packet& packet)
 	return s;
 }
 
-template<>
-b2Vec2* PacketParser::unpack<b2Vec2*>(sf::Packet& packet)
-{
-	b2Vec2 pos;
-	packet >> pos.x >> pos.y;
-	return new b2Vec2(pos);
-}
+//template<>
+//b2Vec2* PacketParser::unpack<b2Vec2*>(sf::Packet& packet)
+//{
+//	b2Vec2 pos;
+//	packet >> pos.x >> pos.y;
+//	return new b2Vec2(pos);
+//}
 
 template<>
 int PacketParser::unpack<int>(sf::Packet& packet)
@@ -194,7 +202,7 @@ template<>
 player_info* PacketParser::unpack<player_info*>(sf::Packet& packet)
 {
 	player_info* info = new player_info;
-	packet >> info->name;
+	packet >> info->localID;
 	packet >> info->movedir;
 	packet >> info->jumped;
 	packet >> info->velocity.x >> info->velocity.y;
@@ -214,7 +222,7 @@ template<>
 hook_info* PacketParser::unpack<hook_info*>(sf::Packet& p)
 {
 	hook_info* h = new hook_info;
-	p >> h->name;
+	p >> h->localID;
 	p >> h->mousePos.x >> h->mousePos.y;
 	return h;
 }
@@ -223,8 +231,19 @@ template<>
 res_info* PacketParser::unpack<res_info*>(sf::Packet& p)
 {
     res_info* resInfo = new res_info;
-    p >> resInfo->name;
+    p >> resInfo->localID;
     p >> resInfo->spawn.x;
     p >> resInfo->spawn.y;
     return resInfo;
 }
+
+template<>
+lp_info* PacketParser::unpack<lp_info*>(sf::Packet& p)
+{
+ 	lp_info* lpInfo = new lp_info;
+    p >> lpInfo->ID;
+    p >> lpInfo->alias;
+    p >> lpInfo->color;
+    return lpInfo;
+}
+

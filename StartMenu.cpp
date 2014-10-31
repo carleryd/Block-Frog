@@ -8,17 +8,18 @@
 
 StartMenu::StartMenu(Game* game_) {
     game = game_;
+    game->setLocalID(1);
     world = game->getWorld();
     shapeFactory = game->getShapeFactory();
     window = game->getWindow();
-    player = new Player(game);
+    player = new Player(game, 1, "green");
+    player->setPosition(new b2Vec2(0, 0));
     textor = game->getTextor();
     osHandler = game->getOSHandler();
     utility = game->getUtility();
     
     player->init();
     game->setPlayer(player);
-    
     
     hostRectangle = shapeFactory->createRectangle(new b2Vec2(100.0f, 50.0f),
                                                   new b2Vec2(-200.0f, -50.0f),

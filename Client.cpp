@@ -2,8 +2,8 @@
 #include <iostream>
 #include <typeinfo>
 
-Client::Client(string name, sf::IpAddress sAddress, unsigned short port, ShapeFactory& f):
-	UDPNetwork(name, f), serverAddress(sAddress), serverPort(port)
+Client::Client(Game* game, sf::IpAddress sAddress, unsigned short port):
+	UDPNetwork(game), serverAddress(sAddress), serverPort(port)
 {
 	//cout << (connect() ? "Connected to "  : "Failed to connect to " ) << sAddress.toString() << endl;
 	selector.add(mySocket);
@@ -19,25 +19,22 @@ bool Client::isServer()
 	return false;
 }
 
-bool Client::connect(b2Vec2* pPos)
+bool Client::connect()
 {
 	cout << "contacting server" << endl;
 	//send
 	sf::Packet p;
 	p << UDPNetwork::NEW_PLAYER;
-	p << pPos->x << pPos->y;
-	string m = playerName;
-	p << m;
 	send(p, serverAddress, serverPort);
 	p.clear();
-	m.clear();
 	
 	//receive
 	cout << "Waiting for host response" << endl;
 	int ret = receive(&p);
-	p >> m;
+    string message;
+	p >> message;
 	
-	cout << "Message received from host: " << m << endl;
+	cout << "Message received from host: " << message << endl;
 	return ret == sf::Socket::Done ? true : false;
 }
 void Client::sendToServer(sf::Packet& p)

@@ -10,21 +10,46 @@ class OSHandler;
 class Game;
 class Controller;
 class StartMenu;
+class Lobby;
+struct Button;
 
 using namespace std;
 
-class Menu
+struct Button {
+    Button(sf::Vector2i position_, sf::Vector2i size_, string function_)
+    : position(position_), size(size_), function(function_) {}
+    
+    sf::Vector2i position;
+    sf::Vector2i size;
+    string function;
+};
+
+enum State {
+    START,
+    LOBBY,
+    JOIN,
+    GAME
+};
+
+class Director
 {
 public:
-    Menu(sf::RenderWindow* window, OSHandler* osHandler);
+    Director(sf::RenderWindow* window, OSHandler* osHandler);
     void run();
     void update();
 	Game* getGame() {return game;};
     StartMenu* getStartMenu() { return startMenu; }
+    Lobby* getLobby() { return lobby; }
+    vector<Button>& getButtons() { return buttons; }
+    
+    void addButton(Button& button) { buttons.push_back(button); }
+    void setState(State state_) { state = state_; }
+    
 private:
     void draw();
     
     Game* game;
+    Lobby* lobby;
     StartMenu* startMenu;
     Controller* controller;
     Textor* textor;
@@ -32,12 +57,7 @@ private:
     sf::RenderWindow* window;
 	sf::Event event;
     
-	enum State {
-        START,
-        LOBBY,
-        JOIN,
-        GAME
-    };
+    vector<Button> buttons;
     
     enum Enter {
         IP,
@@ -49,8 +69,9 @@ private:
         CLIENT
     };
     
-    bool gameStarted;
-    State menuState;
+    bool inGame;
+    bool inLobby;
+    State state;
     Enter joinState;
 	JoinAs joinAs;
     string ipAddress;

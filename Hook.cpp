@@ -1,4 +1,5 @@
 #include "Hook.h"
+#include "Player.h"
 #include "Circle.h"
 #include "Game.h"
 #include "Utility.h"
@@ -7,12 +8,16 @@
 #include <math.h>
 #include <iomanip>
 
-Hook::Hook(Game* game_, Player* player) {
+Hook::Hook(Game* game_, Player* player_) {
     game = game_;
-	owner = player;
+    // We need to pass player to avoid BAD_ACCESS
+	player = player_;
+    localID = player->getLocalID();
+    cout << "Player localID: " << localID << endl;
     utility = game->getUtility();
 	contactListener = game->getContactListener();
-    recentBoxContact = contactListener->getRecentHookContact(player->getBirthNumber());
+    recentBoxContact = contactListener->getRecentHookContact(localID);
+    
     
     ACTION = PASSIVE;
     
@@ -30,7 +35,7 @@ Hook::Hook(Game* game_, Player* player) {
                          3);
     
     // This way it will be recognized in the ContactListnener(see if statements ContactListener.cpp)
-    hookTip->getBody()->GetFixtureList()->SetUserData( (void*)(uintptr_t)(player->getBirthNumber()+10));
+    hookTip->getBody()->GetFixtureList()->SetUserData((void*)(uintptr_t)(localID+10));
     
     hookBase = new Rectangle(game,
                              new b2Vec2(10.0, 10.0),
@@ -89,7 +94,7 @@ Hook::Hook(Game* game_, Player* player) {
 }
 
 Hook::~Hook() {
-    owner = nullptr;
+    player = nullptr;
     utility = nullptr;
     contactListener = nullptr;
     recentBoxContact = nullptr;
@@ -119,7 +124,7 @@ void Hook::shoot(sf::Vector2i mousePixelPos) {
     prismaticJoint->SetLimits(minLength, reachLength);
 
     // We want too look for objects to grab
-    contactListener->setHookActive(true, owner->getBirthNumber());
+    contactListener->setHookActive(true, localID);
     ACTION = SHOOTING;
 }
 
@@ -158,10 +163,10 @@ void Hook::release() {
     	grabJoint = nullptr;
         
         // Remove the recent contact, we no longer want to grab it
-        contactListener->removeRecentHookContact(owner->getBirthNumber());
+        contactListener->removeRecentHookContact(localID);
         
         // Make it so that we dont grab boxes while hook is returning to us
-    	contactListener->setHookActive(false, owner->getBirthNumber());
+    	contactListener->setHookActive(false, localID);
         ACTION = PASSIVE;
     }
 }
@@ -169,8 +174,8 @@ void Hook::release() {
 void Hook::update() {
     hookTip->update();
     hookBase->update();
-	playerMeterPos = b2Vec2(owner->getBody()->GetPosition().x,
-                            owner->getBody()->GetPosition().y);
+	playerMeterPos = b2Vec2(player->getBody()->GetPosition().x,
+                            player->getBody()->GetPosition().y);
     
 //	cout << "--- HOOK POSITIONS ---" << endl;
 //    cout << "hookTip: x: " << hookTip->getBody()->GetPosition().x << " y: " << hookTip->getBody()->GetPosition().y << endl;
@@ -182,7 +187,7 @@ void Hook::update() {
     switch(ACTION)
     {
         case SHOOTING:
-            recentBoxContact = contactListener->getRecentHookContact(owner->getBirthNumber());
+            recentBoxContact = contactListener->getRecentHookContact(localID);
             
 			if(recentBoxContact != NULL && grabJoint == NULL) {
                 prismaticJoint->SetLimits(minLength, grabLength);
@@ -190,7 +195,7 @@ void Hook::update() {
                 ACTION = PASSIVE;
             }
             else if(recentBoxContact == NULL && getLength() > (reachLength - 0.01)) {
-                contactListener->setHookActive(false, owner->getBirthNumber());
+                contactListener->setHookActive(false, localID);
                 prismaticJoint->SetLimits(minLength, passiveLength);
                 ACTION = PASSIVE;
             }

@@ -8,12 +8,12 @@
 #include "ContactListener.h"
 #include "Remover.h"
 #include "Synchronizer.h"
+#include "Lobby.h"
 
 using namespace std;
 
 Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_)
 {
-	
     window = window_;
     osHandler = osHandler_;
     
@@ -35,6 +35,11 @@ Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_)
     water->setPosition(float(window->getSize().x * -0.1),
                        float(viewOffset.y + water->getLocalBounds().height - 10));
 	textor = new Textor(osHandler_);
+	// This is set in Lobby::Lobby(...)
+    lobby = nullptr;
+    // This is set in Director::Director(...)
+    director = nullptr;
+    
 	exitCalled = false;
     gameHasStarted = false;
 	
@@ -54,6 +59,7 @@ Game::Game(sf::RenderWindow* window_, OSHandler* osHandler_)
     
     shapeFactory = new ShapeFactory(this);
     utility = new Utility(this);
+	synchronizer = new Synchronizer(*this);
     
     contactListener = new ContactListener(this);
     world->SetContactListener(contactListener);
@@ -87,12 +93,21 @@ void Game::destroyPlayer() {
     }
 }
 
-void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short serverPort) {
-	player = new Player(this);
-    player->init();
-	playerAmount = 1;
+void Game::init() {
+	player = new Player(this, localID, lobby->getColors()[localID-1]);
+   	player->init();
+    cout << "THIS MACHINE LOCALID: " << localID << endl;
     
-	packetParser = new PacketParser(*shapeFactory);
+    // Add all players from lobby
+	for(LobbyPlayer lp : lobby->getConnected()) {
+        if(lp.ID != localID) {
+	        Player* newPlayer = new Player(this, lp.ID, lp.color);
+            cout << "Remote player: " << newPlayer->getLocalID() << " " << lp.color << endl;
+    	    addRemotePlayer(newPlayer);
+        }
+    }
+    
+	packetParser = new PacketParser(this);
     
 	//ground
     boxes.push_back(shapeFactory->createRectangle(new b2Vec2(1280.0f, 50.0f),
@@ -113,32 +128,6 @@ void Game::init(int playerType, sf::IpAddress* serverAddress, unsigned short ser
 	riseSpeed = -0.2f;
 	allowJoin = true;
 	remover = new Remover(this);
-	synchronizer = new Synchronizer(*this);
-    
-	//networking
-	switch (playerType)
-	{
-        case SERVER:
-            localHost = new Server("HOST", *shapeFactory, this);
-            player->setName("HOST");
-            cout << "Waiting for players..." << endl;
-            window->setTitle("SERVER");
-            break;
-        case CLIENT:
-            localHost = new Client("CLIENT", *serverAddress, serverPort, *shapeFactory);
-            player->setName("CLIENT");
-            dynamic_cast<Client*>(localHost)->connect(player->getPosition());
-            window->setTitle("CLIENT");
-            break;
-        case SINGLE_PLAYER:
-            localHost = new Server("HOST", *shapeFactory, this);
-            player->setName("HOST");
-            window->setTitle("SINGLE PLAYER");
-            break;
-        default:
-            break;
-	}
-	network = new thread(&UDPNetwork::listen, localHost);
 	
     if(localHost->isServer())
 	    createStaticPlatform();
@@ -410,9 +399,6 @@ Shape* Game::createBoxes()
 
 void Game::addRemotePlayer(Player* p)
 {
-	playerAmount++;
-    cout << "playerAmount: " << playerAmount << endl;
-    p->setBirthNumber(playerAmount);
 	remotePlayers.push_back(p);
 	p->init();
 }
@@ -429,7 +415,7 @@ void Game::exitGame()
             Server* server = dynamic_cast<Server*>(localHost);
             sf::Packet packet;
             packet << UDPNetwork::SERVER_EXIT;
-            packet << player->getName();
+            packet << player->getLocalID();
             server->broadCast(packet);
             cout << "Waiting for network thread to join..." << endl;
         }
@@ -438,24 +424,24 @@ void Game::exitGame()
             Client* client = dynamic_cast<Client*>(localHost);
             sf::Packet packet;
             packet << UDPNetwork::CLIENT_EXIT;
-            packet << player->getName();
+            packet << player->getLocalID();
             client->sendToServer(packet);
             
         }
         cout << "Waiting for listen thread to join..."<< endl;
-        network->join();
+        lobby->getNetwork()->join();
     }
 	window->close();
 	exitCalled = true;
 	cout << "Good bye!" << endl;
 }
 
-bool Game::removeRemotePlayer(string name)
+bool Game::removeRemotePlayer(int localID)
 {
 	//remove remote player
-	list<Player*>::iterator i = remove_if(remotePlayers.begin(), remotePlayers.end(), [name](Player* a)
+	list<Player*>::iterator i = remove_if(remotePlayers.begin(), remotePlayers.end(), [localID](Player* p)
 	{
-		return a->getName() == name;
+		return p->getLocalID() == localID;
 	});
 	if(i != remotePlayers.end())
 	{
@@ -464,7 +450,7 @@ bool Game::removeRemotePlayer(string name)
 		if(!localHost->isServer())
 			return true;
 		else
-			return dynamic_cast<Server*>(localHost)->dropPlayer(name);
+			return dynamic_cast<Server*>(localHost)->dropPlayer(localID);
 	}
 	else
 		return false;
@@ -543,7 +529,7 @@ void Game::playerHandling()
 {
 	player->draw();
 	player->update();
-//	window->draw(textor->write(player->getName(), player->getBox()->getShape()->getPosition()));
+    
 	remover->checkPlayerKill(player);
 	remover->respawnPlayer(player);
 
@@ -552,9 +538,6 @@ void Game::playerHandling()
 		Player* remotePlayer = *itr;
 		remotePlayer->draw();
 		remotePlayer->update();
-//		window->draw(textor->write(remotePlayer->getName(), remotePlayer->getBox()->getShape()->getPosition()));
-		/*if(remotePlayer->getBox()->getShape()->getPosition().y > /*window->getSize().y - viewOffset.y*//* viewOffset.y + killOffset)
-			remotePlayer->setPosition(lastStaticShape->getPosition());*/
 	}	
 }
 
@@ -570,11 +553,11 @@ Shape* Game::getShape(int id)
 		return nullptr;
 }
 
-Player* Game::getRemotePlayer(string name)
+Player* Game::getRemotePlayer(int localID)
 {
-	list<Player*>::iterator found = find_if(remotePlayers.begin(), remotePlayers.end(), [name](Player* player)
+	list<Player*>::iterator found = find_if(remotePlayers.begin(), remotePlayers.end(), [localID](Player* player)
 	{
-		return name == player->getName();
+		return localID == player->getLocalID();
 	});
 	if(found != remotePlayers.end())
 		return *found;
@@ -582,12 +565,12 @@ Player* Game::getRemotePlayer(string name)
 		return nullptr;
 }
 
-Player* Game::getPlayer(string name)
+Player* Game::getPlayer(int localID)
 {
-	if(player->getName() == name)
+	if(player->getLocalID() == localID)
 		return player;
 	else
-		return getRemotePlayer(name);
+		return getRemotePlayer(localID);
 }
 
 void Game::startRise()

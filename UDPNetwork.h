@@ -48,19 +48,55 @@ public:
 	void handleReceivedData(Game* game);
 	bool exit;
 
-	enum typreceive{SERVER_EXIT, CLIENT_EXIT, NEW_PLAYER, 
-		SHAPE, ALL_SHAPES, SHAPE_SYNCH, REMOVE_SHAPE, SHAPE_SYNCH_REQUEST, GAME_STARTED_REQUEST, SHAPE_STATIC,
-		PLAYER_MOVE, PLAYER_SYNCH, PLAYER_SYNCH_REQUEST, PLAYER_DEAD, PLAYER_RES,
-		HOOK_AIM, HOOK_SHOT, HOOK_RELEASE,
-		WATER_LEVEL, START_RISE, RISE_CHANGE, SCORE_CHANGE, PLATFORM_CHANGE, PREPTIME_CHANGE, GAME_STARTED};
+	enum typreceive{
+//        SERVER_EXIT, CLIENT_EXIT, NEW_PLAYER,
+//		SHAPE, ALL_SHAPES, SHAPE_SYNCH, REMOVE_SHAPE, SHAPE_SYNCH_REQUEST, GAME_STARTED_REQUEST, SHAPE_STATIC,
+//		PLAYER_MOVE, PLAYER_SYNCH, PLAYER_SYNCH_REQUEST, PLAYER_DEAD, PLAYER_RES,
+//		HOOK_AIM, HOOK_SHOT, HOOK_RELEASE,
+//        PREPTIME_OVER, PREPTIME_OVER_REQUEST,
+//		WATER_LEVEL, START_RISE, RISE_CHANGE, SCORE_CHANGE, PLATFORM_CHANGE, PREPTIME_CHANGE, GAME_STARTED,
+//    	CONNECTED_PLAYERS_REQUEST, NEW_LOBBY_PLAYER,
+        
+        // LOBBY
+        NEW_LOBBY_PLAYER, GAME_STARTED,
+        GAME_STARTED_REQUEST,
+        
+        // SERVER
+        SERVER_EXIT,
+        
+        // CLIENT
+        CLIENT_EXIT, LOCAL_ID,
+        
+        // GAME
+        NEW_PLAYER,
+        
+        // SHAPE
+        SHAPE, ALL_SHAPES, REMOVE_SHAPE, SHAPE_STATIC,
+        SHAPE_SYNCH_REQUEST,
+        SHAPE_SYNCH,
+		
+        // PLAYER
+        PLAYER_MOVE, PLAYER_DEAD, PLAYER_RES,
+        PLAYER_SYNCH_REQUEST, CONNECTED_PLAYERS_REQUEST,
+        PLAYER_SYNCH,
+        
+        // HOOK
+        HOOK_AIM, HOOK_SHOT, HOOK_RELEASE,
+        
+        // GAME MECHANICS
+        WATER_LEVEL, START_RISE, RISE_CHANGE, SCORE_CHANGE, PLATFORM_CHANGE, PREPTIME_CHANGE, PREPTIME_OVER,
+        PREPTIME_OVER_REQUEST
+    };
+    
 protected:
-	UDPNetwork(string playerName, ShapeFactory& factory);
+	UDPNetwork(Game* game);
 
 	list<packetInfo> packets;
 
 	sf::UdpSocket mySocket;
 	sf::IpAddress myAddress;
-	std::string playerName;
+//	std::string playerName;
+//    int playerID;
 	PacketParser packetParser;
 	sf::SocketSelector selector;
 private:

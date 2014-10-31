@@ -1,6 +1,7 @@
 #include "Rectangle.h"
 #include "Game.h"
 #include "Utility.h"
+#include "OSHandler.h"
 
 Rectangle::Rectangle(Game* game, b2Vec2* size_, b2Vec2* position,
 					 bool dynamic, int id, float density, float friction, int groupIndex):
@@ -34,6 +35,16 @@ Rectangle::Rectangle(Game* game, b2Vec2* size_, b2Vec2* position,
     body->CreateFixture(&fixtureDef);
     
     shape = new sf::RectangleShape(sf::Vector2f(size->x, size->y));
+    
+    if (!rockTexture.loadFromFile(game->getOSHandler()->getResourcePath() + "placeholder_rock.png")) {
+        std::cout << "Could not load frog image" << std::endl;
+    }
+    
+    float startX = rand() * 50;
+    float startY = rand() * 50;
+    
+    shape->setTexture(&rockTexture);
+    shape->setTextureRect(sf::IntRect(startX, startY, startX + size->x, startY + size->y));
     
     // This makes SFML use the same origin for shapes as Box2D(middle, middle)
     shape->setOrigin(size->x/2, size->y/2);
